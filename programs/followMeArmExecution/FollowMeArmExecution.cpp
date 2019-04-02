@@ -201,7 +201,7 @@ void FollowMeArmExecution::run()
                 leftArmQ[1] = 5;
                 std::vector<double> rightArmQ(7,0.0);
                 rightArmQ[1] = -5;
-                rightArmQ[0] = 20;
+                rightArmQ[0] = -20;
                 armJointsMoveAndWait(leftArmQ,rightArmQ);
                 phase = false;
             }
@@ -213,7 +213,7 @@ void FollowMeArmExecution::run()
                 leftArmQ[1] = 5;
                 std::vector<double> rightArmQ(7,0.0);
                 rightArmQ[1] = -5;
-                rightArmQ[0] = -20;
+                rightArmQ[0] = 20;
                 armJointsMoveAndWait(leftArmQ,rightArmQ);
                 phase = true;
             }
@@ -225,27 +225,27 @@ void FollowMeArmExecution::run()
                 std::vector<double> leftArmQ(7,0.0);
                 std::vector<double> rightArmQ(7,0.0);
                 leftArmQ[1] = 4;    // Tray security position
-                rightArmQ[0] = 45;
-                rightArmQ[2] = 20;
-                rightArmQ[3] = 80;
-                armJointsMoveAndWait(leftArmQ,rightArmQ);
-            }
-            {
-                std::vector<double> leftArmQ(7,0.0);
-                std::vector<double> rightArmQ(7,0.0);
-                leftArmQ[1] = 4;    // Tray security position
-                rightArmQ[0] = 45;
+                rightArmQ[0] = -45;
                 rightArmQ[2] = -20;
-                rightArmQ[3] = 80;
+                rightArmQ[3] = -80;
                 armJointsMoveAndWait(leftArmQ,rightArmQ);
             }
             {
                 std::vector<double> leftArmQ(7,0.0);
                 std::vector<double> rightArmQ(7,0.0);
                 leftArmQ[1] = 4;    // Tray security position
-                rightArmQ[0] = 45;
-                rightArmQ[2] = 20;
-                rightArmQ[3] = 80;
+                rightArmQ[0] = -45;
+                rightArmQ[2] = -20;
+                rightArmQ[3] = -80;
+                armJointsMoveAndWait(leftArmQ,rightArmQ);
+            }
+            {
+                std::vector<double> leftArmQ(7,0.0);
+                std::vector<double> rightArmQ(7,0.0);
+                leftArmQ[1] = 4;    // Tray security position
+                rightArmQ[0] = -45;
+                rightArmQ[2] = -20;
+                rightArmQ[3] = -80;
                 armJointsMoveAndWait(leftArmQ,rightArmQ);
             }
             state = VOCAB_STATE_ARM_SWINGING;
@@ -257,23 +257,23 @@ void FollowMeArmExecution::run()
                 std::vector<double> leftArmQ(7,0.0);
                 std::vector<double> rightArmQ(7,0.0);
                 leftArmQ[1] = 4;    // Tray security position
-                rightArmQ[0] = 50;
+                rightArmQ[0] = -50;
                 rightArmQ[1] = -20;
-                rightArmQ[2] = -10;
-                rightArmQ[3] = 70;
-                rightArmQ[4] = -20;
-                rightArmQ[5] = 40;
+                rightArmQ[2] = 10;
+                rightArmQ[3] = -70;
+                rightArmQ[4] = 20;
+                rightArmQ[5] = -40;
                 armJointsMoveAndWait(leftArmQ,rightArmQ);
             }
             {
                 std::vector<double> leftArmQ(7,0.0);
                 std::vector<double> rightArmQ(7,0.0);
                 leftArmQ[1] = 4;    // Tray security position
-                rightArmQ[0] = 50;
+                rightArmQ[0] = -50;
                 rightArmQ[1] = -20;
-                rightArmQ[2] = -10;
-                rightArmQ[3] = 70;
-                rightArmQ[4] = -20;
+                rightArmQ[2] = 10;
+                rightArmQ[3] = -70;
+                rightArmQ[4] = 20;
                 rightArmQ[5] = 0;
                 armJointsMoveAndWait(leftArmQ,rightArmQ);
             }
@@ -287,9 +287,9 @@ void FollowMeArmExecution::run()
                 std::vector<double> rightArmQ(7,0.0);
                 leftArmQ[0] = -50;
                 leftArmQ[1] = 20;
-                leftArmQ[2] = 10;
+                leftArmQ[2] = -10;
                 leftArmQ[3] = -70;
-                leftArmQ[4] = 20;
+                leftArmQ[4] = -20;
                 leftArmQ[5] = -40;
                 armJointsMoveAndWait(leftArmQ,rightArmQ);
             }
@@ -298,9 +298,9 @@ void FollowMeArmExecution::run()
                 std::vector<double> rightArmQ(7,0.0);
                 leftArmQ[0] = -50;
                 leftArmQ[1] = 20;
-                leftArmQ[2] = 10;
-                leftArmQ[3] = -70;
-                leftArmQ[4] = 20;
+                leftArmQ[2] = -10;
+                leftArmQ[3] = 70;
+                leftArmQ[4] = -20;
                 leftArmQ[5] = 0;
                 armJointsMoveAndWait(leftArmQ,rightArmQ);
             }
