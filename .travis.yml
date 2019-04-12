@@ -24,14 +24,14 @@ compiler:
   
 # Establecemos variables
 
-env:
-  global:
-    - CACHE_DIR=~/cached-deps
+#env:
+#  global:
+#    - CACHE_DIR=~/cached-deps
   
 # Directorio caché donde se guardan las dependencias
 
-cache:
-  directories: $CACHE_DIR
+#cache:
+#  directories: $CACHE_DIR
 
 # Tareas a realizar antes de instalacción
 
@@ -82,31 +82,31 @@ install:
   - make -j$(nproc) # Compile
   - sudo make install && sudo ldconfig && cd # Install and go home
   
-
 # Tareas a ejecutar antes de nuestra prueba
 
 before_script:
 
-  #- cd programs
-  #- cd linux
-  #- mkdir build
-  #- cd build
-  #- cmake ..
+  - cd
+  - mkdir -p repos; cd repos  
+  - git clone https://github.com/roboticslab-uc3m/follow-me.git 
+  - cd follow-me; mkdir build; cd build; cmake ..   
 
 # Compilamos
-
 script:
-  #- make -j$(nproc)
+  - make -j$(nproc)  # Compile
 
 # En caso de compilación exitosa
 
 after_success:
-  #- sudo make install
-#  - ./ocr
-  #- sudo make uninstall
+
+  - sudo make install
+  - sudo make uninstall
+  - cd ..
+  - cd yarp
+  - cd build
+  - sudo make uninstall
 
 # Notificaciones por correo
-
 notifications:
-# email: true
+email: true
 
