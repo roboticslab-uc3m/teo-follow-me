@@ -21,17 +21,6 @@ sudo: enabled
 compiler: 
   - gcc
   - clang
-  
-# Establecemos variables
-
-#env:
-#  global:
-#    - CACHE_DIR=~/cached-deps
-  
-# Directorio caché donde se guardan las dependencias
-
-#cache:
-#  directories: $CACHE_DIR
 
 # Tareas a realizar antes de instalacción
 
@@ -101,10 +90,6 @@ script:
 after_success:
 
   - sudo make install
-  - sudo make uninstall
-  - cd ..
-  - cd yarp
-  - cd build
   - sudo make uninstall
 
 # Notificaciones por correo
