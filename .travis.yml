@@ -76,9 +76,9 @@ install:
   - sudo apt install libjpeg8-dev # Needed for mjpeg carrier
   - sudo apt install libedit-dev # Enables keyboard arrow keys within an RPC communication channel via terminal
   - mkdir -p ~/repos && cd ~/repos # Create $HOME/repos if it doesn't exist; then, enter it
-  - git clone https://github.com/robotology/yarp
-  - git checkout v2.3.72.1
+  - git clone https://github.com/robotology/yarp  
   - cd yarp && mkdir build && cd build
+  - git checkout v2.3.72.1
   - cmake .. -DSKIP_ACE=ON -DCREATE_LIB_MATH=ON -DCREATE_GUIS=ON -DCREATE_OPTIONAL_CARRIERS=ON -DENABLE_yarpcar_mjpeg=ON # configure
   - make -j$(nproc) # Compile
   - sudo make install && sudo ldconfig && cd # Install and go home
