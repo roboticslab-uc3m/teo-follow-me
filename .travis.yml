@@ -22,13 +22,12 @@ compiler:
   - gcc
   - clang
   
-# compilación en paralelo en diferentes versiones de YARP
+# compilación en paralelo con diferentes versiones de YARP
 
 env:
   matrix:
     - YARP_CHECKOUT=master
-    - YARP_CHECKOUT=v2.3.72.1
-    - YARP_CHECKOUT=v2.3.70.2
+    - YARP_CHECKOUT=v2.3.72.1 # stable version
 
 # Tareas a realizar antes de instalacción
 
