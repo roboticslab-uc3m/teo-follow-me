@@ -21,6 +21,14 @@ sudo: enabled
 compiler: 
   - gcc
   - clang
+  
+# compilación en paralelo en diferentes versiones de YARP
+
+env:
+  matrix:
+    - YARP_CHECKOUT=master
+    - YARP_CHECKOUT=v2.3.72.1
+    - YARP_CHECKOUT=v2.3.70.2
 
 # Tareas a realizar antes de instalacción
 
@@ -66,8 +74,9 @@ install:
   - sudo apt install libedit-dev # Enables keyboard arrow keys within an RPC communication channel via terminal
   - mkdir -p ~/repos && cd ~/repos # Create $HOME/repos if it doesn't exist; then, enter it
   - git clone https://github.com/robotology/yarp  
-  - cd yarp && mkdir build && cd build
-  - git checkout v2.3.72.1
+  - cd yarp
+  - git checkout "$YARP_CHECKOUT"
+  - mkdir build && cd build
   - cmake .. -DSKIP_ACE=ON -DCREATE_LIB_MATH=ON -DCREATE_GUIS=ON -DCREATE_OPTIONAL_CARRIERS=ON -DENABLE_yarpcar_mjpeg=ON # configure
   - make -j$(nproc) # Compile
   - sudo make install && sudo ldconfig && cd # Install and go home
