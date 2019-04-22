@@ -41,7 +41,7 @@ Installation instructions for installing from source can be found [here]( /doc/f
 
 ## Status
 
-[![Build Status (Linux/OSX)](https://travis-ci.org/roboticslab-uc3m/follow-me.svg?branch=master)](https://travis-ci.org/roboticslab-uc3m/follow-me)
+[![Build Status (Linux/OSX)](https://travis-ci.org/roboticslab-uc3m/follow-me.svg?branch=develop)](https://travis-ci.org/roboticslab-uc3m/follow-me)
 
 [![Coverage Status](https://coveralls.io/repos/roboticslab-uc3m/follow-me/badge.svg)](https://coveralls.io/r/roboticslab-uc3m/follow-me)
 
