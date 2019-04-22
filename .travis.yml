@@ -100,7 +100,3 @@ after_success:
   - sudo make install
   - sudo make uninstall
 
-# Notificaciones por correo
-notifications:
-email: true
-
