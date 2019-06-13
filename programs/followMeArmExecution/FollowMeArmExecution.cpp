@@ -37,15 +37,15 @@ bool FollowMeArmExecution::configure(yarp::os::ResourceFinder &rf)
       return false;
     }
 
-    if (!leftArmDevice.view(leftArmIControlMode2) ) { // connecting our device with "control mode 2" interface, initializing which control mode we want (position)
-        printf("[warning] Problems acquiring leftArmIControlMode2 interface\n");
+    if (!leftArmDevice.view(leftArmIControlMode) ) { // connecting our device with "control mode" interface, initializing which control mode we want (position)
+        printf("[warning] Problems acquiring leftArmIControlMode interface\n");
         return false;
-    } else printf("[success] Acquired leftArmIControlMode2 interface\n");
+    } else printf("[success] Acquired leftArmIControlMode interface\n");
 
-    if (!leftArmDevice.view(leftArmIPositionControl2) ) { // connecting our device with "position control 2" interface (configuring our device: speed, acceleration... and sending joint positions)
-        printf("[warning] Problems acquiring leftArmIPositionControl2 interface\n");
+    if (!leftArmDevice.view(leftArmIPositionControl) ) { // connecting our device with "position control 2" interface (configuring our device: speed, acceleration... and sending joint positions)
+        printf("[warning] Problems acquiring leftArmIPositionControl interface\n");
         return false;
-    } else printf("[success] Acquired leftArmIPositionControl2 interface\n");
+    } else printf("[success] Acquired leftArmIPositionControl interface\n");
 
     // ------ RIGHT ARM -------
     yarp::os::Property rightArmOptions;
@@ -60,31 +60,31 @@ bool FollowMeArmExecution::configure(yarp::os::ResourceFinder &rf)
       return false;
     }
 
-    if (!rightArmDevice.view(rightArmIControlMode2) ) { // connecting our device with "control mode 2" interface, initializing which control mode we want (position)
-        printf("[warning] Problems acquiring rightArmIControlMode2 interface\n");
+    if (!rightArmDevice.view(rightArmIControlMode) ) { // connecting our device with "control mode" interface, initializing which control mode we want (position)
+        printf("[warning] Problems acquiring rightArmIControlMode interface\n");
         return false;
-    } else printf("[success] Acquired rightArmIControlMode2 interface\n");
+    } else printf("[success] Acquired rightArmIControlMode interface\n");
 
 
-    if ( ! rightArmDevice.view(rightArmIPositionControl2) ) {
-        printf("[warning] Problems acquiring rightArmIPositionControl2 interface\n");
+    if ( ! rightArmDevice.view(rightArmIPositionControl) ) {
+        printf("[warning] Problems acquiring rightArmIPositionControl interface\n");
         return false;
-    } else printf("[success] Acquired rightArmIPositionControl2 interface\n");
+    } else printf("[success] Acquired rightArmIPositionControl interface\n");
 
     //-- Set control modes for both arms
 
     int leftArmAxes;
-    leftArmIPositionControl2->getAxes(&leftArmAxes);
+    leftArmIPositionControl->getAxes(&leftArmAxes);
     std::vector<int> leftArmControlModes(leftArmAxes,VOCAB_CM_POSITION);
-    if(! leftArmIControlMode2->setControlModes( leftArmControlModes.data() )){
+    if(! leftArmIControlMode->setControlModes( leftArmControlModes.data() )){
         printf("[warning] Problems setting position control mode of: left-arm\n");
         return false;
     }
 
     int rightArmAxes;
-    rightArmIPositionControl2->getAxes(&rightArmAxes);
+    rightArmIPositionControl->getAxes(&rightArmAxes);
     std::vector<int> rightArmControlModes(rightArmAxes,VOCAB_CM_POSITION);
-    if(! rightArmIControlMode2->setControlModes(rightArmControlModes.data())){
+    if(! rightArmIControlMode->setControlModes(rightArmControlModes.data())){
         printf("[warning] Problems setting position control mode of: right-arm\n");
         return false;
     }
@@ -129,30 +129,30 @@ bool FollowMeArmExecution::armJointsMoveAndWait(std::vector<double>& leftArmQ, s
 {
     // -- Configuring Speeds and Accelerations
     int armAxes;
-    rightArmIPositionControl2->getAxes(&armAxes); // number of axes is the same in both arms
+    rightArmIPositionControl->getAxes(&armAxes); // number of axes is the same in both arms
 
     std::vector<double> armSpeeds(armAxes,30.0);
     std::vector<double> armAccelerations(armAxes,30.0);
 
-    rightArmIPositionControl2->setRefSpeeds(armSpeeds.data());
-    leftArmIPositionControl2->setRefSpeeds(armSpeeds.data());
-    rightArmIPositionControl2->setRefAccelerations(armAccelerations.data());
-    leftArmIPositionControl2->setRefAccelerations(armAccelerations.data());
-    rightArmIPositionControl2->positionMove( rightArmQ.data() );
-    leftArmIPositionControl2->positionMove( leftArmQ.data() );
+    rightArmIPositionControl->setRefSpeeds(armSpeeds.data());
+    leftArmIPositionControl->setRefSpeeds(armSpeeds.data());
+    rightArmIPositionControl->setRefAccelerations(armAccelerations.data());
+    leftArmIPositionControl->setRefAccelerations(armAccelerations.data());
+    rightArmIPositionControl->positionMove( rightArmQ.data() );
+    leftArmIPositionControl->positionMove( leftArmQ.data() );
 
     //printf("Waiting for right arm.");
     bool doneRight = false;
     bool doneLeft = false;
     while((!doneRight)&&(!Thread::isStopping()))
     {
-        rightArmIPositionControl2->checkMotionDone(&doneRight);
+        rightArmIPositionControl->checkMotionDone(&doneRight);
         yarp::os::Time::delay(0.1);
     }
 
     while((!doneLeft)&&(!Thread::isStopping()))
     {
-         leftArmIPositionControl2->checkMotionDone(&doneLeft);
+         leftArmIPositionControl->checkMotionDone(&doneLeft);
           yarp::os::Time::delay(0.1);
     }
 
@@ -201,7 +201,7 @@ void FollowMeArmExecution::run()
                 leftArmQ[1] = 5;
                 std::vector<double> rightArmQ(7,0.0);
                 rightArmQ[1] = -5;
-                rightArmQ[0] = 20;
+                rightArmQ[0] = -20;
                 armJointsMoveAndWait(leftArmQ,rightArmQ);
                 phase = false;
             }
@@ -213,7 +213,7 @@ void FollowMeArmExecution::run()
                 leftArmQ[1] = 5;
                 std::vector<double> rightArmQ(7,0.0);
                 rightArmQ[1] = -5;
-                rightArmQ[0] = -20;
+                rightArmQ[0] = 20;
                 armJointsMoveAndWait(leftArmQ,rightArmQ);
                 phase = true;
             }
@@ -225,27 +225,27 @@ void FollowMeArmExecution::run()
                 std::vector<double> leftArmQ(7,0.0);
                 std::vector<double> rightArmQ(7,0.0);
                 leftArmQ[1] = 4;    // Tray security position
-                rightArmQ[0] = 45;
-                rightArmQ[2] = 20;
-                rightArmQ[3] = 80;
-                armJointsMoveAndWait(leftArmQ,rightArmQ);
-            }
-            {
-                std::vector<double> leftArmQ(7,0.0);
-                std::vector<double> rightArmQ(7,0.0);
-                leftArmQ[1] = 4;    // Tray security position
-                rightArmQ[0] = 45;
+                rightArmQ[0] = -45;
                 rightArmQ[2] = -20;
-                rightArmQ[3] = 80;
+                rightArmQ[3] = -80;
                 armJointsMoveAndWait(leftArmQ,rightArmQ);
             }
             {
                 std::vector<double> leftArmQ(7,0.0);
                 std::vector<double> rightArmQ(7,0.0);
                 leftArmQ[1] = 4;    // Tray security position
-                rightArmQ[0] = 45;
-                rightArmQ[2] = 20;
-                rightArmQ[3] = 80;
+                rightArmQ[0] = -45;
+                rightArmQ[2] = -20;
+                rightArmQ[3] = -80;
+                armJointsMoveAndWait(leftArmQ,rightArmQ);
+            }
+            {
+                std::vector<double> leftArmQ(7,0.0);
+                std::vector<double> rightArmQ(7,0.0);
+                leftArmQ[1] = 4;    // Tray security position
+                rightArmQ[0] = -45;
+                rightArmQ[2] = -20;
+                rightArmQ[3] = -80;
                 armJointsMoveAndWait(leftArmQ,rightArmQ);
             }
             state = VOCAB_STATE_ARM_SWINGING;
@@ -257,23 +257,23 @@ void FollowMeArmExecution::run()
                 std::vector<double> leftArmQ(7,0.0);
                 std::vector<double> rightArmQ(7,0.0);
                 leftArmQ[1] = 4;    // Tray security position
-                rightArmQ[0] = 50;
+                rightArmQ[0] = -50;
                 rightArmQ[1] = -20;
-                rightArmQ[2] = -10;
-                rightArmQ[3] = 70;
-                rightArmQ[4] = -20;
-                rightArmQ[5] = 40;
+                rightArmQ[2] = 10;
+                rightArmQ[3] = -70;
+                rightArmQ[4] = 20;
+                rightArmQ[5] = -40;
                 armJointsMoveAndWait(leftArmQ,rightArmQ);
             }
             {
                 std::vector<double> leftArmQ(7,0.0);
                 std::vector<double> rightArmQ(7,0.0);
                 leftArmQ[1] = 4;    // Tray security position
-                rightArmQ[0] = 50;
+                rightArmQ[0] = -50;
                 rightArmQ[1] = -20;
-                rightArmQ[2] = -10;
-                rightArmQ[3] = 70;
-                rightArmQ[4] = -20;
+                rightArmQ[2] = 10;
+                rightArmQ[3] = -70;
+                rightArmQ[4] = 20;
                 rightArmQ[5] = 0;
                 armJointsMoveAndWait(leftArmQ,rightArmQ);
             }
@@ -287,9 +287,9 @@ void FollowMeArmExecution::run()
                 std::vector<double> rightArmQ(7,0.0);
                 leftArmQ[0] = -50;
                 leftArmQ[1] = 20;
-                leftArmQ[2] = 10;
+                leftArmQ[2] = -10;
                 leftArmQ[3] = -70;
-                leftArmQ[4] = 20;
+                leftArmQ[4] = -20;
                 leftArmQ[5] = -40;
                 armJointsMoveAndWait(leftArmQ,rightArmQ);
             }
@@ -298,9 +298,9 @@ void FollowMeArmExecution::run()
                 std::vector<double> rightArmQ(7,0.0);
                 leftArmQ[0] = -50;
                 leftArmQ[1] = 20;
-                leftArmQ[2] = 10;
+                leftArmQ[2] = -10;
                 leftArmQ[3] = -70;
-                leftArmQ[4] = 20;
+                leftArmQ[4] = -20;
                 leftArmQ[5] = 0;
                 armJointsMoveAndWait(leftArmQ,rightArmQ);
             }

@@ -9,8 +9,8 @@ namespace teo
 
 void InCvPort::onRead(Bottle& b) {
     if ( ! follow ) {
-        iPositionControl2->positionMove(0, 0.0);
-        iPositionControl2->positionMove(1, 0.0);
+        iPositionControl->positionMove(0, 0.0);
+        iPositionControl->positionMove(1, 0.0);
         return;
     }
     if (b.size() < 3) return;
@@ -19,11 +19,11 @@ void InCvPort::onRead(Bottle& b) {
     double y = b.get(1).asDouble();
     double z = b.get(2).asDouble();
     printf("%f %f %f\n",x,y,z);
-    if( x > 50 ) iPositionControl2->relativeMove(0, 2);
-    if( x < -50 ) iPositionControl2->relativeMove(0, -2);
+    if( x > 0.30 ) iPositionControl->relativeMove(0, 2);
+    if( x < -0.30 ) iPositionControl->relativeMove(0, -2);
     //
-    if( y > 50 ) iPositionControl2->relativeMove(1, 2);
-    if( y < -50 ) iPositionControl2->relativeMove(1, -2);
+    if( y > 0.30 ) iPositionControl->relativeMove(1, 2);
+    if( y < -0.30 ) iPositionControl->relativeMove(1, -2);
 
 }
 
