@@ -37,10 +37,10 @@ class FollowMeHeadExecution : public RFModule {
 
         /** Head Device */
         yarp::dev::PolyDriver headDevice;
-        /** Head ControlMode2 Interface */
-        yarp::dev::IControlMode2 *headIControlMode2;
-        /** Head PositionControl2 Interface */
-        yarp::dev::IPositionControl2 *headIPositionControl2;
+        /** Head ControlMode Interface */
+        yarp::dev::IControlMode *headIControlMode;
+        /** Head PositionControl Interface */
+        yarp::dev::IPositionControl *headIPositionControl;
 
         yarp::dev::IEncoders *iEncoders;
 

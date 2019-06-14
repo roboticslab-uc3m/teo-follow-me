@@ -45,6 +45,7 @@ protected:
     char sentence;
 
     std::string _language;
+    bool microAct;
 
     // input variables
     std::string hiTeo;
@@ -99,6 +100,9 @@ public:
      * Get its state.
      */
     int getMachineState();
+
+    /** Micro On/Off **/
+    void setMicro(bool microAct);
 
     /** Register an input callback port for asr. */
     void setInSrPort(yarp::os::BufferedPort<yarp::os::Bottle>* inSrPort);

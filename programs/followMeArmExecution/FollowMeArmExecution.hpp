@@ -40,16 +40,16 @@ private:
     /** Left Arm Device */
     yarp::dev::PolyDriver leftArmDevice;
     /** Left Arm ControlMode2 Interface */
-    yarp::dev::IControlMode2 *leftArmIControlMode2;
+    yarp::dev::IControlMode *leftArmIControlMode;
    /** Left Arm PositionControl2 Interface */
-    yarp::dev::IPositionControl2 *leftArmIPositionControl2;
+    yarp::dev::IPositionControl *leftArmIPositionControl;
 
      /** Right Arm Device */
      yarp::dev::PolyDriver rightArmDevice;
      /** Right Arm ControlMode2 Interface */
-     yarp::dev::IControlMode2 *rightArmIControlMode2;
+     yarp::dev::IControlMode *rightArmIControlMode;
      /** Right Arm PositionControl2 Interface */
-      yarp::dev::IPositionControl2 *rightArmIPositionControl2;
+      yarp::dev::IPositionControl *rightArmIPositionControl;
 
      /** Phase of arm swing movement */
      bool phase;

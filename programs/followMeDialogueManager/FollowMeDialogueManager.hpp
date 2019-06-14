@@ -9,6 +9,7 @@
 #include "StateMachine.hpp"
 
 #define DEFAULT_LANGUAGE "english"
+#define DEFAULT_MICRO "off"
 
 namespace teo
 {
@@ -38,6 +39,10 @@ class FollowMeDialogueManager : public yarp::os::RFModule {
 
   public:
     bool configure(yarp::os::ResourceFinder &rf);
+
+    // micro (on/off) to give speaking orders to TEO
+    bool microState;
+    void setMicro(bool microAct);
 };
 
 }  // namespace teo

@@ -1,8 +1,8 @@
 <application>
-<name>follow-me_spanish_App</name>
+<name>follow-me_spanish_with_microphone_App</name>
     <module>
         <name>followMeDialogueManager</name>
-        <parameters>--language spanish</parameters>
+        <parameters>--language spanish --micro on</parameters>
         <node>localhost</node>
     </module>
 
@@ -46,7 +46,17 @@
     <connection>
         <from>/haarDetection/img:o</from>
         <to>/yarpview/haarDetection/img:i</to>
-    </connection>  
+    </connection>
+
+    <connection>
+        <from>/followMeDialogueManager/speechRecognition/rpc:c</from>
+        <to>/speechRecognition/rpc:s</to>
+    </connection>
+
+    <connection>
+        <from>/speechRecognition:o</from>
+        <to>/followMeDialogueManager/speechRecognition/speech:i</to>
+    </connection>   
 
     <connection>
         <from>/followMeDialogueManager/tts/rpc:c</from>

@@ -16,11 +16,23 @@ bool StateMachine::threadInit() {
 /************************************************************************/
 
 void StateMachine::run() {  
-
     ttsSay( presentation1 );
-    bool following = false;
+    bool following = false;    
 
     while(!isStopping()) {
+
+        // follow only (no speach)
+        if(!microAct) {
+            following = true;
+            ttsSay( okFollow );
+            yarp::os::Bottle cmd;
+            cmd.addVocab(VOCAB_STATE_SALUTE);
+            outCmdArmPort->write(cmd);
+            cmd.clear();
+            cmd.addVocab(VOCAB_FOLLOW_ME);
+            outCmdHeadPort->write(cmd);
+        }
+
         if(_machineState == 0){
             ttsSay( presentation2 );
             ttsSay( presentation3 );
@@ -201,6 +213,12 @@ char position = '0'; //-- char position (l = left, c = center, r = right)
 
 int StateMachine::getMachineState() {
     return _machineState;
+}
+
+/************************************************************************/
+
+void StateMachine::setMicro(bool microAct) {
+    this->microAct = microAct;
 }
 
 /************************************************************************/

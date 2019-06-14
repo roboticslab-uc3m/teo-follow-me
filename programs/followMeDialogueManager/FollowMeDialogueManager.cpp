@@ -9,14 +9,15 @@ namespace teo
 
 bool FollowMeDialogueManager::configure(yarp::os::ResourceFinder &rf) {
 
-    //ConstString fileName(DEFAULT_FILE_NAME);
-    std::string language = rf.check("language",yarp::os::Value(DEFAULT_LANGUAGE),"language to be used").asString();
-    
+    std::string language = rf.check("language",yarp::os::Value(DEFAULT_LANGUAGE),"language to be used").asString();    
+    std::string micro = rf.check("micro",yarp::os::Value(DEFAULT_MICRO),"use or not microphone").asString();
+
     printf("--------------------------------------------------------------\n");
     if (rf.check("help")) {
         printf("FollowMeDialogueManager options:\n");
         printf("\t--help (this help)\t--from [file.ini]\t--context [path]\n");
         printf("\t--language (default: \"%s\")\n",language.c_str());
+        printf("\t--micro (default: \"%s\")\n",micro.c_str());
         //printf("\t--file (default: \"%s\")\n",fileName.c_str());
     }
     //if (rf.check("file")) fileName = rf.find("file").asString();
@@ -26,6 +27,15 @@ bool FollowMeDialogueManager::configure(yarp::os::ResourceFinder &rf) {
     if(rf.check("help")) {
         ::exit(1);
     }
+
+    if(micro == "on") microState = true;
+    else if(micro == "off") microState = false;
+    else
+    {
+        printf("You need to specify if you want to use microphone or not in this demo\n. Please use '--micro on' or '--micro off'\n");
+        return false;
+    }
+
 
     //-----------------OPEN LOCAL PORTS------------//
     outCmdHeadPort.open("/followMeDialogueManager/head/rpc:c");
@@ -40,10 +50,12 @@ bool FollowMeDialogueManager::configure(yarp::os::ResourceFinder &rf) {
     stateMachine.setOutSrecPort(&outSrecPort);
     stateMachine.setInSrPort(&inSrPort);
 
-    while(1){
-        if(outSrecPort.getOutputCount() > 0) break;
-        printf("Waiting for \"/followMeDialogueManager/speechRecognition/rpc:c\" to be connected to something...\n");
-        yarp::os::Time::delay(0.5);
+    if(microState){
+        while(1){
+            if(outSrecPort.getOutputCount() > 0) break;
+            printf("Waiting for \"/followMeDialogueManager/speechRecognition/rpc:c\" to be connected to something...\n");
+            yarp::os::Time::delay(0.5);
+        }
     }
 
     while(1){
@@ -83,6 +95,7 @@ bool FollowMeDialogueManager::configure(yarp::os::ResourceFinder &rf) {
     outSrecPort.write(bSpRecOut);
 
     // set functions
+    stateMachine.setMicro(microState);
     stateMachine.setLanguage(language);
     stateMachine.setSpeakLanguage(language);
 
