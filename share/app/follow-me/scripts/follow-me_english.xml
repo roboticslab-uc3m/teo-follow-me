@@ -28,7 +28,7 @@
 
     <module>
         <name>haarDetection</name>
-        <parameters>--kinectDevice OpenNI2DeviceClient --kinectLocal /haarDetection</parameters>
+        <parameters>--RGBDRemote /xtion </parameters>
         <node>/head</node>
     </module>
 
@@ -47,16 +47,6 @@
         <from>/haarDetection/img:o</from>
         <to>/yarpview/haarDetection/img:i</to>
     </connection>
-
-    <connection>
-        <from>/followMeDialogueManager/speechRecognition/rpc:c</from>
-        <to>/speechRecognition/rpc:s</to>
-    </connection>
-
-    <connection>
-        <from>/speechRecognition:o</from>
-        <to>/followMeDialogueManager/speechRecognition/speech:i</to>
-    </connection>   
 
     <connection>
         <from>/followMeDialogueManager/tts/rpc:c</from>
