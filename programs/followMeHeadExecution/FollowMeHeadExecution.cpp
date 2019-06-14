@@ -61,10 +61,9 @@ bool FollowMeHeadExecution::configure(ResourceFinder &rf) {
         return false;
     }
 
-    /*
     // -- Configure Speed and Acc
-    std::vector<double> speed(2, 20);
-    std::vector<double> acc(2, 20);
+    std::vector<double> speed(2, 30);
+    std::vector<double> acc(2, 30);
 
 
     if(!headIPositionControl->setRefSpeeds(speed.data())){
@@ -77,7 +76,7 @@ bool FollowMeHeadExecution::configure(ResourceFinder &rf) {
         printf("[ERROR] Problems setting reference acc on head joints.\n");
         return false;
     }
-    */
+
 
     inCvPort.setIPositionControl(headIPositionControl);
     inDialoguePortProcessor.setIEncoders(iEncoders);
