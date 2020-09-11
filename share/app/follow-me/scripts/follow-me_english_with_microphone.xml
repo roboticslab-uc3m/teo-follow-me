@@ -1,0 +1,68 @@
+<application>
+<name>follow-me_english_with_microphone_App</name>
+    <module>
+        <name>followMeDialogueManager</name>
+        <parameters>--language english --micro on</parameters>
+        <node>localhost</node>
+    </module>
+
+    <module>
+        <name>followMeHeadExecution</name>
+        <node>localhost</node>
+    </module>
+
+    <module>
+        <name>followMeArmExecution</name>
+        <node>localhost</node>
+    </module>
+
+    <connection>
+        <from>/followMeDialogueManager/head/rpc:c</from>
+        <to>/followMeHeadExecution/dialogueManager/rpc:s</to>
+    </connection>
+
+    <connection>
+        <from>/followMeDialogueManager/arms/rpc:c</from>
+        <to>/followMeArmExecution/dialogueManager/rpc:s</to>
+    </connection>
+
+    <module>
+        <name>haarDetection</name>
+        <parameters>--RGBDRemote /xtion </parameters>
+        <node>/head</node>
+    </module>
+
+    <connection>
+        <from>/haarDetection/state:o</from>
+        <to>/followMeHeadExecution/cv/state:i</to>
+    </connection>
+
+    <module>
+        <name>yarpview</name>
+        <parameters>--name /yarpview/haarDetection/img:i</parameters>
+        <node>localhost</node>
+    </module>
+
+    <connection>
+        <from>/haarDetection/img:o</from>
+        <to>/yarpview/haarDetection/img:i</to>
+    </connection>
+
+    <connection>
+        <from>/followMeDialogueManager/speechRecognition/rpc:c</from>
+        <to>/speechRecognition/rpc:s</to>
+    </connection>
+
+    <connection>
+        <from>/speechRecognition:o</from>
+        <to>/followMeDialogueManager/speechRecognition/speech:i</to>
+    </connection>   
+
+    <connection>
+        <from>/followMeDialogueManager/tts/rpc:c</from>
+        <to>/tts/rpc:s</to>
+    </connection>
+
+
+</application>
+

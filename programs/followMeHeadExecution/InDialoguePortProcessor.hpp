@@ -10,7 +10,8 @@
 #include "InCvPort.hpp"
 
 #define VOCAB_FOLLOW_ME VOCAB4('f','o','l','l')
-#define VOCAB_STOP_FOLLOWING VOCAB4('s','f','o','l')
+#define VOCAB_GET_ENCODER_POSITION VOCAB4('g','e','p','s')
+#define VOCAB_FAILED VOCAB4('f','a','i','l')
 
 using namespace yarp::os;
 
@@ -23,18 +24,30 @@ namespace teo
  * @brief Input port of speech recognition data.
  *
  */
-class InSrPort : public BufferedPort<Bottle> {
+
+
+class InDialoguePortProcessor : public PortReader {
     public:
         void setInCvPortPtr(InCvPort *inCvPortPtr) {
             this->inCvPortPtr = inCvPortPtr;
         }
 
-    protected:
-        /** Callback on incoming Bottle. **/
-        virtual void onRead(Bottle& b);
+        void setIEncoders(yarp::dev::IEncoders *iEncoders) {
+            this->iEncoders = iEncoders;
+        }
 
+
+    protected:
+        /** Getting replies **/
+        virtual bool read(ConnectionReader& connection);
+
+        //-- Cv Port
         InCvPort* inCvPortPtr;
+
+        //-- Robot device
+        yarp::dev::IEncoders *iEncoders;
 };
+
 
 }  // namespace teo
 

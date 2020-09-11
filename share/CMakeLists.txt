@@ -1,5 +1,5 @@
 # Copyright: UC3M 2016
-# Author: Juan G Victores
+# Authors: Juan G Victores & Raul de Santos Rico
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 # 
 

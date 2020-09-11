@@ -1,28 +1,40 @@
 <application>
-<name>follow-me App</name>
+<name>follow-me_english_App</name>
     <module>
         <name>followMeDialogueManager</name>
+        <parameters>--language english</parameters>
         <node>localhost</node>
     </module>
 
     <module>
-        <name>followMeExecutionCore</name>
+        <name>followMeHeadExecution</name>
         <node>localhost</node>
     </module>
+
+    <module>
+        <name>followMeArmExecution</name>
+        <node>localhost</node>
+    </module>
+
     <connection>
-        <from>/followMeDialogueManager/command:o</from>
-        <to>/followMeExecutionCore/dialogueManager/command:i</to>
+        <from>/followMeDialogueManager/head/rpc:c</from>
+        <to>/followMeHeadExecution/dialogueManager/rpc:s</to>
+    </connection>
+
+    <connection>
+        <from>/followMeDialogueManager/arms/rpc:c</from>
+        <to>/followMeArmExecution/dialogueManager/rpc:s</to>
     </connection>
 
     <module>
         <name>haarDetection</name>
-        <parameters>--kinectDevice OpenNI2DeviceClient --kinectLocal /haarDetection</parameters>
+        <parameters>--RGBDRemote /xtion </parameters>
         <node>/head</node>
     </module>
 
     <connection>
         <from>/haarDetection/state:o</from>
-        <to>/followMeExecutionCore/cv/state:i</to>
+        <to>/followMeHeadExecution/cv/state:i</to>
     </connection>
 
     <module>
@@ -30,25 +42,17 @@
         <parameters>--name /yarpview/haarDetection/img:i</parameters>
         <node>localhost</node>
     </module>
+
     <connection>
         <from>/haarDetection/img:o</from>
         <to>/yarpview/haarDetection/img:i</to>
     </connection>
 
     <connection>
-        <from>/speechRecognition:o</from>
-        <to>/followMeDialogueManager/speechRecognition:i</to>
+        <from>/followMeDialogueManager/tts/rpc:c</from>
+        <to>/tts/rpc:s</to>
     </connection>
 
-    <connection>
-        <from>/followMeDialogueManager/iSpeak:o</from>
-        <to>/icub/speech:rpc</to>
-    </connection>
-
-    <module>
-        <name>followMeArmSwing</name>
-        <node>localhost</node>
-    </module>
 
 </application>
 

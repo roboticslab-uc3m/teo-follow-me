@@ -1,7 +1,7 @@
 # Copyright: Universidad Carlos III de Madrid (C) 2016
-# Authors: Juan G Victores
+# Authors: Juan G Victores & Raul de Santos Rico 
 
-add_subdirectory(followMeArmSwing)
+add_subdirectory(followMeArmExecution)
 add_subdirectory(followMeDialogueManager)
-add_subdirectory(followMeExecutionCore)
+add_subdirectory(followMeHeadExecution)
 

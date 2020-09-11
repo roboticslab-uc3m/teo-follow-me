@@ -9,12 +9,15 @@ namespace teo
 
 bool FollowMeDialogueManager::configure(yarp::os::ResourceFinder &rf) {
 
-    //ConstString fileName(DEFAULT_FILE_NAME);
-    
+    std::string language = rf.check("language",yarp::os::Value(DEFAULT_LANGUAGE),"language to be used").asString();    
+    std::string micro = rf.check("micro",yarp::os::Value(DEFAULT_MICRO),"use or not microphone").asString();
+
     printf("--------------------------------------------------------------\n");
     if (rf.check("help")) {
         printf("FollowMeDialogueManager options:\n");
         printf("\t--help (this help)\t--from [file.ini]\t--context [path]\n");
+        printf("\t--language (default: \"%s\")\n",language.c_str());
+        printf("\t--micro (default: \"%s\")\n",micro.c_str());
         //printf("\t--file (default: \"%s\")\n",fileName.c_str());
     }
     //if (rf.check("file")) fileName = rf.find("file").asString();
@@ -25,18 +28,78 @@ bool FollowMeDialogueManager::configure(yarp::os::ResourceFinder &rf) {
         ::exit(1);
     }
 
+    if(micro == "on") microState = true;
+    else if(micro == "off") microState = false;
+    else
+    {
+        printf("You need to specify if you want to use microphone or not in this demo\n. Please use '--micro on' or '--micro off'\n");
+        return false;
+    }
+
+
     //-----------------OPEN LOCAL PORTS------------//
-    outCmdPort.open("/followMeDialogueManager/command:o");
-    outTtsPort.open("/followMeDialogueManager/iSpeak:o");
-    inSrPort.open("/followMeDialogueManager/speechRecognition:i");
-    stateMachine.setOutCmdPort(&outCmdPort);
+    outCmdHeadPort.open("/followMeDialogueManager/head/rpc:c");
+    outCmdArmPort.open("/followMeDialogueManager/arms/rpc:c");
+    outTtsPort.open("/followMeDialogueManager/tts/rpc:c");
+    outSrecPort.open("/followMeDialogueManager/speechRecognition/rpc:c"); // -- setDictionary (client)
+    inSrPort.open("/followMeDialogueManager/speechRecognition/speech:i"); // -- words (input)
+
+    stateMachine.setOutCmdHeadPort(&outCmdHeadPort);
+    stateMachine.setOutCmdArmPort(&outCmdArmPort);
     stateMachine.setOutTtsPort(&outTtsPort);
+    stateMachine.setOutSrecPort(&outSrecPort);
     stateMachine.setInSrPort(&inSrPort);
+
+    if(microState){
+        while(1){
+            if(outSrecPort.getOutputCount() > 0) break;
+            printf("Waiting for \"/followMeDialogueManager/speechRecognition/rpc:c\" to be connected to something...\n");
+            yarp::os::Time::delay(0.5);
+        }
+    }
+
     while(1){
         if(outTtsPort.getOutputCount() > 0) break;
-        printf("Waiting for \"/followMeDialogueManager/tts:o\" to be connected to something...\n");
+        printf("Waiting for \"/followMeDialogueManager/tts/rpc:c\" to be connected to something...\n");
         yarp::os::Time::delay(0.5);
-    }    
+    }
+
+
+    //--------------------------
+    // cleaning yarp bottles
+    bTtsOut.clear();
+    bSpRecOut.clear();
+
+
+    bTtsOut.addString("setLanguage");
+    bSpRecOut.addString("setDictionary");
+    bSpRecOut.addString("follow-me");
+
+    if( language == "english" )
+    {
+        bTtsOut.addString("mb-en1");
+        bSpRecOut.addString(language );
+    }
+    else if ( language == "spanish" )
+    {
+        bTtsOut.addString("mb-es1");
+        bSpRecOut.addString(language); // -- cambiar a "language" cuando tengamos reconocimiento en español
+    }
+    else
+    {
+        printf("Language not found. Please use '--language english' or '--language spanish'");
+        return false;
+    }
+
+    outTtsPort.write(bTtsOut);
+    outSrecPort.write(bSpRecOut);
+
+    // set functions
+    stateMachine.setMicro(microState);
+    stateMachine.setLanguage(language);
+    stateMachine.setSpeakLanguage(language);
+
+
     stateMachine.start();
     return true;
 }
@@ -56,11 +119,17 @@ bool FollowMeDialogueManager::updateModule() {
 
 bool FollowMeDialogueManager::interruptModule() {
     printf("FollowMeDialogueManager closing...\n");
-    inSrPort.interrupt();
+    outCmdHeadPort.interrupt();
+    outCmdArmPort.interrupt();
     outTtsPort.interrupt();
+    outSrecPort.interrupt();
+    inSrPort.interrupt();
     stateMachine.stop();
-    inSrPort.close();
+    outCmdHeadPort.close();
+    outCmdArmPort.close();
     outTtsPort.close();
+    outTtsPort.close();
+    inSrPort.close();
     return true;
 }
 

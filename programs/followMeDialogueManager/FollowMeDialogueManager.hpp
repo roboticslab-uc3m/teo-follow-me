@@ -8,26 +8,30 @@
 
 #include "StateMachine.hpp"
 
-//j//#define DEFAULT_FILE_NAME "segRec_ecf_params.xml"
-
-#define VOCAB_FOLLOW_ME VOCAB4('f','o','l','l')
-#define VOCAB_STOP_FOLLOWING VOCAB4('s','f','o','l')
-
+#define DEFAULT_LANGUAGE "english"
+#define DEFAULT_MICRO "off"
 
 namespace teo
 {
 
 /**
- * @ingroup followMeDialogueManager
+ * @ingroup follow-me_programs
  *
- * @brief Dialogue Manager 1.
+ * @brief Dialogue Manager.
  */
-class FollowMeDialogueManager : public yarp::os::RFModule {
+class FollowMeDialogueManager : public yarp::os::RFModule {    
+
   private:
     StateMachine stateMachine;
     yarp::os::BufferedPort<yarp::os::Bottle> inSrPort;
-    yarp::os::Port outTtsPort;
-    yarp::os::Port outCmdPort;
+    yarp::os::RpcClient outTtsPort;  // Tts port
+    yarp::os::RpcClient outSrecPort; // SpeechRecognition port
+    yarp::os::RpcClient outCmdHeadPort;
+    yarp::os::RpcClient outCmdArmPort;
+
+    // bTtsOut     -> to config or send tts commands
+    // bSpRecOut   -> to config or send SpeechRecognition commands
+    yarp::os::Bottle bTtsOut, bSpRecOut;
 
     bool interruptModule();
     double getPeriod();
@@ -35,6 +39,10 @@ class FollowMeDialogueManager : public yarp::os::RFModule {
 
   public:
     bool configure(yarp::os::ResourceFinder &rf);
+
+    // micro (on/off) to give speaking orders to TEO
+    bool microState;
+    void setMicro(bool microAct);
 };
 
 }  // namespace teo

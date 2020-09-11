@@ -14,7 +14,11 @@
 
 #define VOCAB_FOLLOW_ME VOCAB4('f','o','l','l')
 #define VOCAB_STOP_FOLLOWING VOCAB4('s','f','o','l')
-
+#define VOCAB_STATE_SALUTE VOCAB4('s','a','l','u')
+#define VOCAB_WAVE_APPROPRIATE_HAND VOCAB4('w','a','p','h')
+#define VOCAB_GET_ENCODER_POSITION VOCAB4('g','e','p','s')
+#define VOCAB_STATE_SIGNALIZE_RIGHT VOCAB4('s','i','g','r')
+#define VOCAB_STATE_SIGNALIZE_LEFT VOCAB4('s','i','g','l')
 
 namespace teo
 {
@@ -28,15 +32,49 @@ class StateMachine : public yarp::os::Thread {
 protected:
 
     yarp::os::BufferedPort<yarp::os::Bottle> *inSrPort;
-    yarp::os::Port *outCmdPort;
-    yarp::os::Port *outTtsPort;
 
-    int _machineState;
+    yarp::os::RpcClient *outCmdHeadPort;
+    yarp::os::RpcClient *outCmdArmPort;
+
+    yarp::os::RpcClient *outTtsPort;
+    yarp::os::RpcClient *outSrecPort;
 
     yarp::os::ConstString _inStrState1;
 
+    int _machineState;
+    char sentence;
+
+    std::string _language;
+    bool microAct;
+
+    // input variables
+    std::string hiTeo;
+    std::string followMe;
+    std::string myNameIs;
+    std::string stopFollowing;
+    // output variables
+    std::string presentation1;
+    std::string presentation2;
+    std::string presentation3;
+    std::string askName;
+    std::string answer1;
+    std::string answer2;
+    std::string answer3;
+    std::string notUnderstand;
+    std::string okFollow;
+    std::string stopFollow;
+    std::string onTheLeft;
+    std::string onTheRight;
+    std::string onTheCenter;
+
+    // bTtsOut     -> to config or send tts commands
+    // bSpRecOut   -> to config or send SpeechRecognition commands
+    yarp::os::Bottle bTtsOut, bSpRecOut;
+
+
     void ttsSay(const yarp::os::ConstString& sayConstString);
     yarp::os::ConstString asrListen();
+    yarp::os::ConstString asrListenWithPeriodicWave();
 
 public:
 
@@ -63,14 +101,29 @@ public:
      */
     int getMachineState();
 
+    /** Micro On/Off **/
+    void setMicro(bool microAct);
+
     /** Register an input callback port for asr. */
     void setInSrPort(yarp::os::BufferedPort<yarp::os::Bottle>* inSrPort);
 
-    /** Register an output Port for commands. */
-    void setOutCmdPort(yarp::os::Port* outCmdPort);
+    /** Register an output Port for [HEAD] commands. */
+    void setOutCmdHeadPort(yarp::os::RpcClient* outCmdPort);
+
+    /** Register an output Port for [ARMS] commands. */
+    void setOutCmdArmPort(yarp::os::RpcClient* outCmdPort);
 
     /** Register an output Port for tts. */
-    void setOutTtsPort(yarp::os::Port* outTtsPort);
+    void setOutTtsPort(yarp::os::RpcClient *outTtsPort);
+
+    /** Register an output Port to configure Speech Recognition. */
+    void setOutSrecPort(yarp::os::RpcClient* outSrecPort);
+
+    /** set language in speechRecognition port */
+    bool setLanguage(std::string language);
+
+    /** set language for speaking */
+    bool setSpeakLanguage(std::string language);
 
 };
 
