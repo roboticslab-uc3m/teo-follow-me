@@ -8,8 +8,6 @@
 
 #define DEFAULT_ROBOT "/teo"
 
-#define VOCAB_FOLLOW_ME VOCAB4('f','o','l','l')
-
 #define VOCAB_STATE_SALUTE VOCAB4('s','a','l','u')
 #define VOCAB_STATE_ARM_SWINGING VOCAB4('s','w','i','n')
 #define VOCAB_STOP_FOLLOWING VOCAB4('s','f','o','l')
@@ -69,6 +67,7 @@ private:
      /** Thread run */
      virtual void run();
 
+     static const yarp::conf::vocab32_t VOCAB_FOLLOW_ME;
 };
 
 }  // namespace teo
