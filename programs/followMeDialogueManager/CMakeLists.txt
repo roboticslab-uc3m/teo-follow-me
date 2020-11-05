@@ -6,9 +6,6 @@ IF (ENABLE_followMeDialogueManager)
 
 set(KEYWORD "followMeDialogueManager")
 
-# Find YARP.  Point the YARP_DIR environment variable at your build.
-find_package(YARP REQUIRED)
-
 # Search for source code.
 file(GLOB folder_source *.cpp *.cc *.c)
 file(GLOB folder_header *.h *.hpp)
@@ -21,13 +18,11 @@ foreach(header_file ${folder_header})
   include_directories(${p})
 endforeach(header_file ${folder_header})
 
-# Include any directories needed for YARP
-include_directories(${YARP_INCLUDE_DIRS} ${XGNITIVE_INCLUDE_DIRS})
-
 # Set up our main executable.
 if (folder_source)
   add_executable(${KEYWORD} ${folder_source} ${folder_header})
-  target_link_libraries(${KEYWORD} ${YARP_LIBRARIES})
+  target_link_libraries(${KEYWORD} YARP::YARP_os
+                                   YARP::YARP_init)
   install(TARGETS ${KEYWORD} DESTINATION bin)
 else (folder_source)
   message(FATAL_ERROR "No source code files found. Please add something")

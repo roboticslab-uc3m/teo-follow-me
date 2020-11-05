@@ -1,14 +1,10 @@
-# Copyright: UC3M 2016
-# Authors: Juan G Victores & Raul de Santos Rico
-# CopyPolicy: Released under the terms of the GNU GPL v2.0.
-# 
+# Authors: see AUTHORS.md at project root.
+# CopyPolicy: released under the terms of the LGPLv2.1, see LICENSE at project root.
+# URL: https://github.com/roboticslab-uc3m/follow-me
 
-find_package(YARP REQUIRED)
-list(APPEND CMAKE_MODULE_PATH ${YARP_MODULE_PATH})
-include(YarpInstallationHelpers)
-yarp_configure_external_installation(follow-me)
-
-### Go through single applications
-
-#add_subdirectory(prog)
-
+yarp_install(FILES applications/ymanager.ini
+                   applications/follow-me_english_with_microphone.xml
+                   applications/follow-me_spanish_with_microphone.xml
+                   applications/follow-me_english.xml
+                   applications/follow-me_spanish.xml
+             DESTINATION ${ROBOTICSLAB-FOLLOW-ME_APPLICATIONS_INSTALL_DIR})
