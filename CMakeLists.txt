@@ -51,7 +51,6 @@ yarp_configure_external_installation(roboticslab-follow-me)
 
 # add main contents
 add_subdirectory(share)
-add_subdirectory(libraries)
 add_subdirectory(programs)
 
 # Configure and create uninstall target.
