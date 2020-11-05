@@ -6,9 +6,6 @@ IF (ENABLE_followMeArmSwing)
 
 set(KEYWORD "followMeArmExecution")
 
-# Find YARP.
-find_package(YARP REQUIRED)
-
 # Search for source code.
 file(GLOB folder_source *.cpp *.cc *.c)
 file(GLOB folder_header *.h)
@@ -21,18 +18,15 @@ foreach(header_file ${folder_header})
   include_directories(${p})
 endforeach(header_file ${folder_header})
 
-include_directories(${YARP_INCLUDE_DIRS} ${TEMPLATE_NAME_INCLUDE_DIRS})
-
-link_directories(${TEMPLATE_NAME_LINK_DIRS})
-
 # Set up our main executable.
 if (folder_source)
   add_executable(${KEYWORD} ${folder_source} ${folder_header})
-  target_link_libraries(${KEYWORD} ${YARP_LIBRARIES} ${TEMPLATE_NAME_LIBRARIES})
+  target_link_libraries(${KEYWORD} YARP::YARP_os
+                                   YARP::YARP_init
+                                   YARP::YARP_dev)
   install(TARGETS ${KEYWORD} DESTINATION bin)
 else (folder_source)
   message(FATAL_ERROR "No source code files found. Please add something")
 endif (folder_source)
 
 ENDIF (ENABLE_followMeArmSwing)
-
