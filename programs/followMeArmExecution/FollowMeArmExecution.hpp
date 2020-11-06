@@ -23,25 +23,16 @@ public:
     virtual bool configure(yarp::os::ResourceFinder &rf);
 
 private:
-    /** RFModule interruptModule. */
     bool interruptModule() override;
-    /** RFModule getPeriod. */
     double getPeriod() override;
-    /** RFModule updateModule. */
     bool updateModule() override;
 
-    /** Left Arm Device */
     yarp::dev::PolyDriver leftArmDevice;
-    /** Left Arm ControlMode2 Interface */
     yarp::dev::IControlMode *leftArmIControlMode;
-    /** Left Arm PositionControl2 Interface */
     yarp::dev::IPositionControl *leftArmIPositionControl;
 
-    /** Right Arm Device */
     yarp::dev::PolyDriver rightArmDevice;
-    /** Right Arm ControlMode2 Interface */
     yarp::dev::IControlMode *rightArmIControlMode;
-    /** Right Arm PositionControl2 Interface */
     yarp::dev::IPositionControl *rightArmIPositionControl;
 
     /** Phase of arm swing movement */
