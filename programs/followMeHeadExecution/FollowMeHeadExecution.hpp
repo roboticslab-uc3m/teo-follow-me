@@ -25,28 +25,28 @@ namespace teo
  *
  */
 class FollowMeHeadExecution : public RFModule {
-    public:
-        bool configure(ResourceFinder &rf);
+public:
+    bool configure(ResourceFinder &rf);
 
 
-    protected:
-        //-- Rpc port, server to knowing encoder position (reply position port), etc...
-        RpcServer inDialoguePort;
-        InDialoguePortProcessor inDialoguePortProcessor; // old (InSrPort)
-        InCvPort inCvPort;
+protected:
+    //-- Rpc port, server to knowing encoder position (reply position port), etc...
+    RpcServer inDialoguePort;
+    InDialoguePortProcessor inDialoguePortProcessor; // old (InSrPort)
+    InCvPort inCvPort;
 
-        /** Head Device */
-        yarp::dev::PolyDriver headDevice;
-        /** Head ControlMode Interface */
-        yarp::dev::IControlMode *headIControlMode;
-        /** Head PositionControl Interface */
-        yarp::dev::IPositionControl *headIPositionControl;
+    /** Head Device */
+    yarp::dev::PolyDriver headDevice;
+    /** Head ControlMode Interface */
+    yarp::dev::IControlMode *headIControlMode;
+    /** Head PositionControl Interface */
+    yarp::dev::IPositionControl *headIPositionControl;
 
-        yarp::dev::IEncoders *iEncoders;
+    yarp::dev::IEncoders *iEncoders;
 
-        bool interruptModule();
-        double getPeriod();
-        bool updateModule();
+    bool interruptModule();
+    double getPeriod();
+    bool updateModule();
 
 
 

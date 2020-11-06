@@ -24,25 +24,25 @@ namespace teo
  *
  */
 class InCvPort : public BufferedPort<Bottle> {
-    public:
+public:
 
-        InCvPort(): follow(false) {}
+    InCvPort(): follow(false) {}
 
-        void setIPositionControl(yarp::dev::IPositionControl *iPositionControl) {
-            this->iPositionControl = iPositionControl;
-        }
+    void setIPositionControl(yarp::dev::IPositionControl *iPositionControl) {
+        this->iPositionControl = iPositionControl;
+    }
 
-        void setFollow(bool value);
+    void setFollow(bool value);
 
 
 protected:
-        bool follow;
+    bool follow;
 
-        /** Callback on incoming Bottle. **/
-        virtual void onRead(Bottle& b);
+    /** Callback on incoming Bottle. **/
+    virtual void onRead(Bottle& b);
 
-        yarp::dev::IEncoders * iEncoder;
-        yarp::dev::IPositionControl *iPositionControl;
+    yarp::dev::IEncoders * iEncoder;
+    yarp::dev::IPositionControl *iPositionControl;
 
 
 };
