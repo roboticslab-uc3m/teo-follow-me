@@ -22,7 +22,7 @@ namespace roboticslab
 class FollowMeDialogueManager : public yarp::os::RFModule
 {
 public:
-    bool configure(yarp::os::ResourceFinder &rf);
+    bool configure(yarp::os::ResourceFinder &rf) override;
 
 private:
     StateMachine stateMachine;

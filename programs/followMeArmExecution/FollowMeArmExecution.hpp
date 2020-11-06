@@ -20,7 +20,7 @@ namespace roboticslab
 class FollowMeArmExecution : public yarp::os::RFModule, public yarp::os::PortReader, public yarp::os::Thread
 {
 public:
-    virtual bool configure(yarp::os::ResourceFinder &rf);
+    bool configure(yarp::os::ResourceFinder &rf) override;
 
 private:
     bool interruptModule() override;
