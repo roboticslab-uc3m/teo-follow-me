@@ -22,7 +22,8 @@ namespace teo
  */
 
 
-class InDialoguePortProcessor : public PortReader {
+class InDialoguePortProcessor : public PortReader
+{
 public:
     void setInCvPortPtr(InCvPort *inCvPortPtr) {
         this->inCvPortPtr = inCvPortPtr;
@@ -32,8 +33,7 @@ public:
         this->iEncoders = iEncoders;
     }
 
-
-protected:
+private:
     /** Getting replies **/
     bool read(ConnectionReader& connection) override;
 
@@ -43,7 +43,6 @@ protected:
     //-- Robot device
     yarp::dev::IEncoders *iEncoders;
 
-private:
     static const yarp::conf::vocab32_t VOCAB_FOLLOW_ME;
     static const yarp::conf::vocab32_t VOCAB_GET_ENCODER_POSITION;
     static const yarp::conf::vocab32_t VOCAB_FAILED;

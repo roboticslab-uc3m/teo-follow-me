@@ -21,6 +21,7 @@ class FollowMeArmExecution : public yarp::os::RFModule, public yarp::os::PortRea
 {
 public:
     virtual bool configure(yarp::os::ResourceFinder &rf);
+
 private:
     /** RFModule interruptModule. */
     bool interruptModule() override;

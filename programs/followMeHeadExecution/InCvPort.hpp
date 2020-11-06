@@ -35,7 +35,7 @@ public:
     void setFollow(bool value);
 
 
-protected:
+private:
     bool follow;
 
     /** Callback on incoming Bottle. **/

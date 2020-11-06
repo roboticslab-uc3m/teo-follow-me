@@ -24,11 +24,12 @@ namespace teo
  * @brief Head Execution Core.
  *
  */
-class FollowMeHeadExecution : public RFModule {
+class FollowMeHeadExecution : public RFModule
+{
 public:
     bool configure(ResourceFinder &rf) override;
 
-protected:
+private:
     //-- Rpc port, server to knowing encoder position (reply position port), etc...
     RpcServer inDialoguePort;
     InDialoguePortProcessor inDialoguePortProcessor; // old (InSrPort)
