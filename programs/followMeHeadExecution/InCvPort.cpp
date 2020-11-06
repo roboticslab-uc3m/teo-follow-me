@@ -7,7 +7,7 @@ namespace teo
 
 /************************************************************************/
 
-void InCvPort::onRead(Bottle& b) {
+void InCvPort::onRead(yarp::os::Bottle& b) {
     if ( ! follow ) {
         iPositionControl->positionMove(0, 0.0);
         iPositionControl->positionMove(1, 0.0);

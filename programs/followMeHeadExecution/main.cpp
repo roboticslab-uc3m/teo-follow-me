@@ -26,11 +26,9 @@
 
 #include "FollowMeHeadExecution.hpp"
 
-using namespace yarp::os;
-
 int main(int argc, char **argv) {
 
-    ResourceFinder rf;
+    yarp::os::ResourceFinder rf;
     rf.setVerbose(true);
     rf.setDefaultContext("followMeHeadExecution");
     rf.setDefaultConfigFile("followMeHeadExecution.ini");
@@ -44,7 +42,7 @@ int main(int argc, char **argv) {
     printf("Run \"%s --help\" for options.\n",argv[0]);
     printf("%s checking for yarp network... ",argv[0]);
     fflush(stdout);
-    Network yarp;
+    yarp::os::Network yarp;
     if (!yarp.checkNetwork()) {
         fprintf(stderr,"[fail]\n%s found no yarp network (try running \"yarpserver &\"), bye!\n",argv[0]);
         return 1;
