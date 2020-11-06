@@ -9,7 +9,7 @@ namespace teo
 
 bool FollowMeDialogueManager::configure(yarp::os::ResourceFinder &rf) {
 
-    std::string language = rf.check("language",yarp::os::Value(DEFAULT_LANGUAGE),"language to be used").asString();    
+    std::string language = rf.check("language",yarp::os::Value(DEFAULT_LANGUAGE),"language to be used").asString();
     std::string micro = rf.check("micro",yarp::os::Value(DEFAULT_MICRO),"use or not microphone").asString();
 
     printf("--------------------------------------------------------------\n");
@@ -50,15 +50,15 @@ bool FollowMeDialogueManager::configure(yarp::os::ResourceFinder &rf) {
     stateMachine.setOutSrecPort(&outSrecPort);
     stateMachine.setInSrPort(&inSrPort);
 
-    if(microState){
-        while(1){
+    if(microState) {
+        while(1) {
             if(outSrecPort.getOutputCount() > 0) break;
             printf("Waiting for \"/followMeDialogueManager/speechRecognition/rpc:c\" to be connected to something...\n");
             yarp::os::Time::delay(0.5);
         }
     }
 
-    while(1){
+    while(1) {
         if(outTtsPort.getOutputCount() > 0) break;
         printf("Waiting for \"/followMeDialogueManager/tts/rpc:c\" to be connected to something...\n");
         yarp::os::Time::delay(0.5);

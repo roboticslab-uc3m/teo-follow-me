@@ -20,8 +20,36 @@ namespace teo
  *
  * @brief implements a specific state machine for followMeDialogueManager.
  */
-class StateMachine : public yarp::os::Thread {
-protected:
+class StateMachine : public yarp::os::Thread
+{
+public:
+    int getMachineState();
+
+    /** Micro On/Off **/
+    void setMicro(bool microAct);
+
+    /** Register an input callback port for asr. */
+    void setInSrPort(yarp::os::BufferedPort<yarp::os::Bottle>* inSrPort);
+
+    /** Register an output Port for [HEAD] commands. */
+    void setOutCmdHeadPort(yarp::os::RpcClient* outCmdPort);
+
+    /** Register an output Port for [ARMS] commands. */
+    void setOutCmdArmPort(yarp::os::RpcClient* outCmdPort);
+
+    /** Register an output Port for tts. */
+    void setOutTtsPort(yarp::os::RpcClient *outTtsPort);
+
+    /** Register an output Port to configure Speech Recognition. */
+    void setOutSrecPort(yarp::os::RpcClient* outSrecPort);
+
+    /** set language in speechRecognition port */
+    bool setLanguage(std::string language);
+
+    /** set language for speaking */
+    bool setSpeakLanguage(std::string language);
+
+private:
 
     yarp::os::BufferedPort<yarp::os::Bottle> *inSrPort;
 
@@ -68,56 +96,9 @@ protected:
     std::string asrListen();
     std::string asrListenWithPeriodicWave();
 
-public:
+    bool threadInit() override;
+    void run() override;
 
-    /**
-     * Initialization method. The thread executes this function
-     * when it starts and before "run". This is a good place to 
-     * perform initialization tasks that need to be done by the 
-     * thread itself (device drivers initialization, memory 
-     * allocation etc). If the function returns false the thread 
-     * quits and never calls "run". The return value of threadInit()
-     * is notified to the class and passed as a parameter 
-     * to afterStart(). Note that afterStart() is called by the 
-     * same thread that is executing the "start" method.
-     */
-    bool threadInit();
-
-    /**
-     * Loop function. This is the thread itself.
-     */
-    void run();
-
-    /**
-     * Get its state.
-     */
-    int getMachineState();
-
-    /** Micro On/Off **/
-    void setMicro(bool microAct);
-
-    /** Register an input callback port for asr. */
-    void setInSrPort(yarp::os::BufferedPort<yarp::os::Bottle>* inSrPort);
-
-    /** Register an output Port for [HEAD] commands. */
-    void setOutCmdHeadPort(yarp::os::RpcClient* outCmdPort);
-
-    /** Register an output Port for [ARMS] commands. */
-    void setOutCmdArmPort(yarp::os::RpcClient* outCmdPort);
-
-    /** Register an output Port for tts. */
-    void setOutTtsPort(yarp::os::RpcClient *outTtsPort);
-
-    /** Register an output Port to configure Speech Recognition. */
-    void setOutSrecPort(yarp::os::RpcClient* outSrecPort);
-
-    /** set language in speechRecognition port */
-    bool setLanguage(std::string language);
-
-    /** set language for speaking */
-    bool setSpeakLanguage(std::string language);
-
-private:
     static const yarp::conf::vocab32_t VOCAB_FOLLOW_ME;
     static const yarp::conf::vocab32_t VOCAB_STOP_FOLLOWING;
     static const yarp::conf::vocab32_t VOCAB_STATE_SALUTE;

@@ -25,9 +25,9 @@ bool StateMachine::threadInit() {
 
 /************************************************************************/
 
-void StateMachine::run() {  
+void StateMachine::run() {
     ttsSay( presentation1 );
-    bool following = false;    
+    bool following = false;
 
     while(!isStopping()) {
 
@@ -43,22 +43,22 @@ void StateMachine::run() {
             outCmdHeadPort->write(cmd);
         }
 
-        if(_machineState == 0){
+        if(_machineState == 0) {
             ttsSay( presentation2 );
             ttsSay( presentation3 );
             _machineState = 3;
         }
 
-         if(_machineState == 1)
-         {
+        if(_machineState == 1)
+        {
             ttsSay( askName );
             yarp::os::Bottle cmd;
             cmd.addVocab(VOCAB_STATE_SALUTE);
             outCmdArmPort->write(cmd);
             _machineState=2;
-         }
-         else if(_machineState == 2)
-         {
+        }
+        else if(_machineState == 2)
+        {
 
             std::string inStr = asrListen();
             // Blocking
@@ -85,14 +85,14 @@ void StateMachine::run() {
                 default:
                     break;
                 }
-            _machineState=3;
+                _machineState=3;
             }
             else
             {
                 ttsSay( notUnderstand );
                 _machineState=1;
             }
-         }
+        }
         else if(_machineState==3)
         {
 
@@ -110,7 +110,7 @@ void StateMachine::run() {
         } else if (_machineState==4) {
 
             following = true;
-            ttsSay( okFollow );            
+            ttsSay( okFollow );
             yarp::os::Bottle cmd;
             cmd.addVocab(VOCAB_FOLLOW_ME);
             outCmdHeadPort->write(cmd);
@@ -174,7 +174,7 @@ std::string StateMachine::asrListen()
 /************************************************************************/
 
 std::string StateMachine::asrListenWithPeriodicWave() {
-char position = '0'; //-- char position (l = left, c = center, r = right)
+    char position = '0'; //-- char position (l = left, c = center, r = right)
 
     while( true ) // read loop
     {
@@ -194,26 +194,26 @@ char position = '0'; //-- char position (l = left, c = center, r = right)
         outCmdHeadPort->write(cmd, encValue);
         printf("EncValue -> %f\n", encValue.get(0).asDouble());
 
-            if( (encValue.get(0).asDouble() > 10) && (position!='l') ) {
-                yarp::os::Bottle cmd;
-                cmd.addVocab(VOCAB_STATE_SIGNALIZE_LEFT);
-                outCmdArmPort->write(cmd);
-                yarp::os::Time::delay(5);
-                ttsSay( onTheLeft );
-                position = 'l';
-            }
-            else if( (encValue.get(0).asDouble() < -10) && (position!='r') ) {
-                yarp::os::Bottle cmd;
-                cmd.addVocab(VOCAB_STATE_SIGNALIZE_RIGHT);
-                outCmdArmPort->write(cmd);
-                yarp::os::Time::delay(5);
-                ttsSay( onTheRight );
-                position = 'r';
-            }
-            else if( (encValue.get(0).asDouble() > -3) && (encValue.get(0).asDouble() < 3) && (position!='c') ){
-                ttsSay( onTheCenter );
-                position = 'c';
-            }
+        if( (encValue.get(0).asDouble() > 10) && (position!='l') ) {
+            yarp::os::Bottle cmd;
+            cmd.addVocab(VOCAB_STATE_SIGNALIZE_LEFT);
+            outCmdArmPort->write(cmd);
+            yarp::os::Time::delay(5);
+            ttsSay( onTheLeft );
+            position = 'l';
+        }
+        else if( (encValue.get(0).asDouble() < -10) && (position!='r') ) {
+            yarp::os::Bottle cmd;
+            cmd.addVocab(VOCAB_STATE_SIGNALIZE_RIGHT);
+            outCmdArmPort->write(cmd);
+            yarp::os::Time::delay(5);
+            ttsSay( onTheRight );
+            position = 'r';
+        }
+        else if( (encValue.get(0).asDouble() > -3) && (encValue.get(0).asDouble() < 3) && (position!='c') ) {
+            ttsSay( onTheCenter );
+            position = 'c';
+        }
 
         //-- ...to finally continue the read loop.
     }

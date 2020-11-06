@@ -20,48 +20,40 @@ namespace teo
 class FollowMeArmExecution : public yarp::os::RFModule, public yarp::os::PortReader, public yarp::os::Thread
 {
 public:
-     virtual bool configure(yarp::os::ResourceFinder &rf);
-private:
-     /** RFModule interruptModule. */
-     virtual bool interruptModule();
-     /** RFModule getPeriod. */
-     virtual double getPeriod();
-     /** RFModule updateModule. */
-     virtual bool updateModule();
+    virtual bool configure(yarp::os::ResourceFinder &rf);
 
-    /** Left Arm Device */
+private:
+    bool interruptModule() override;
+    double getPeriod() override;
+    bool updateModule() override;
+
     yarp::dev::PolyDriver leftArmDevice;
-    /** Left Arm ControlMode2 Interface */
     yarp::dev::IControlMode *leftArmIControlMode;
-   /** Left Arm PositionControl2 Interface */
     yarp::dev::IPositionControl *leftArmIPositionControl;
 
-     /** Right Arm Device */
-     yarp::dev::PolyDriver rightArmDevice;
-     /** Right Arm ControlMode2 Interface */
-     yarp::dev::IControlMode *rightArmIControlMode;
-     /** Right Arm PositionControl2 Interface */
-      yarp::dev::IPositionControl *rightArmIPositionControl;
+    yarp::dev::PolyDriver rightArmDevice;
+    yarp::dev::IControlMode *rightArmIControlMode;
+    yarp::dev::IPositionControl *rightArmIPositionControl;
 
-     /** Phase of arm swing movement */
-     bool phase;
+    /** Phase of arm swing movement */
+    bool phase;
 
-     /** Arm Joints Move And Wait */
-     bool armJointsMoveAndWait(std::vector<double>& leftArmQ, std::vector<double>& rightArmQ);
+    /** Arm Joints Move And Wait */
+    bool armJointsMoveAndWait(std::vector<double>& leftArmQ, std::vector<double>& rightArmQ);
 
-     /** State */
-     int state;
+    /** State */
+    int state;
 
-     /** Input port from dialogue manager */
-     yarp::os::RpcServer inDialogPort;
+    /** Input port from dialogue manager */
+    yarp::os::RpcServer inDialogPort;
 
-     /** Treats data received from input port from speech recognition */
-     virtual bool read(yarp::os::ConnectionReader& connection);
+    /** Treats data received from input port from speech recognition */
+    bool read(yarp::os::ConnectionReader& connection) override;
 
-     /** Thread run */
-     virtual void run();
+    /** Thread run */
+    void run() override;
 
-     static const yarp::conf::vocab32_t VOCAB_FOLLOW_ME;
+    static const yarp::conf::vocab32_t VOCAB_FOLLOW_ME;
 
     static const yarp::conf::vocab32_t VOCAB_STATE_SALUTE;
     static const yarp::conf::vocab32_t VOCAB_STATE_ARM_SWINGING;

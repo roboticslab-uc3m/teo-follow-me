@@ -22,28 +22,27 @@ namespace teo
  */
 
 
-class InDialoguePortProcessor : public PortReader {
-    public:
-        void setInCvPortPtr(InCvPort *inCvPortPtr) {
-            this->inCvPortPtr = inCvPortPtr;
-        }
+class InDialoguePortProcessor : public PortReader
+{
+public:
+    void setInCvPortPtr(InCvPort *inCvPortPtr) {
+        this->inCvPortPtr = inCvPortPtr;
+    }
 
-        void setIEncoders(yarp::dev::IEncoders *iEncoders) {
-            this->iEncoders = iEncoders;
-        }
-
-
-    protected:
-        /** Getting replies **/
-        virtual bool read(ConnectionReader& connection);
-
-        //-- Cv Port
-        InCvPort* inCvPortPtr;
-
-        //-- Robot device
-        yarp::dev::IEncoders *iEncoders;
+    void setIEncoders(yarp::dev::IEncoders *iEncoders) {
+        this->iEncoders = iEncoders;
+    }
 
 private:
+    /** Getting replies **/
+    bool read(ConnectionReader& connection) override;
+
+    //-- Cv Port
+    InCvPort* inCvPortPtr;
+
+    //-- Robot device
+    yarp::dev::IEncoders *iEncoders;
+
     static const yarp::conf::vocab32_t VOCAB_FOLLOW_ME;
     static const yarp::conf::vocab32_t VOCAB_GET_ENCODER_POSITION;
     static const yarp::conf::vocab32_t VOCAB_FAILED;

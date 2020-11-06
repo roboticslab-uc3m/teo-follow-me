@@ -40,10 +40,10 @@ bool FollowMeArmExecution::configure(yarp::os::ResourceFinder &rf)
     leftArmOptions.put("local",followMeArmExecutionStr+robot+"/leftArm");
     leftArmDevice.open(leftArmOptions);
     if(!leftArmDevice.isValid()) {
-      printf("robot leftArm device not available.\n");
-      leftArmDevice.close();
-      yarp::os::Network::fini();
-      return false;
+        printf("robot leftArm device not available.\n");
+        leftArmDevice.close();
+        yarp::os::Network::fini();
+        return false;
     }
 
     if (!leftArmDevice.view(leftArmIControlMode) ) { // connecting our device with "control mode" interface, initializing which control mode we want (position)
@@ -63,10 +63,10 @@ bool FollowMeArmExecution::configure(yarp::os::ResourceFinder &rf)
     rightArmOptions.put("local",followMeArmExecutionStr+robot+"/rightArm");
     rightArmDevice.open(rightArmOptions);
     if(!rightArmDevice.isValid()) {
-      printf("robot rightArm device not available.\n");
-      rightArmDevice.close();
-      yarp::os::Network::fini();
-      return false;
+        printf("robot rightArm device not available.\n");
+        rightArmDevice.close();
+        yarp::os::Network::fini();
+        return false;
     }
 
     if (!rightArmDevice.view(rightArmIControlMode) ) { // connecting our device with "control mode" interface, initializing which control mode we want (position)
@@ -85,7 +85,7 @@ bool FollowMeArmExecution::configure(yarp::os::ResourceFinder &rf)
     int leftArmAxes;
     leftArmIPositionControl->getAxes(&leftArmAxes);
     std::vector<int> leftArmControlModes(leftArmAxes,VOCAB_CM_POSITION);
-    if(! leftArmIControlMode->setControlModes( leftArmControlModes.data() )){
+    if(! leftArmIControlMode->setControlModes( leftArmControlModes.data() )) {
         printf("[warning] Problems setting position control mode of: left-arm\n");
         return false;
     }
@@ -93,7 +93,7 @@ bool FollowMeArmExecution::configure(yarp::os::ResourceFinder &rf)
     int rightArmAxes;
     rightArmIPositionControl->getAxes(&rightArmAxes);
     std::vector<int> rightArmControlModes(rightArmAxes,VOCAB_CM_POSITION);
-    if(! rightArmIControlMode->setControlModes(rightArmControlModes.data())){
+    if(! rightArmIControlMode->setControlModes(rightArmControlModes.data())) {
         printf("[warning] Problems setting position control mode of: right-arm\n");
         return false;
     }
@@ -161,8 +161,8 @@ bool FollowMeArmExecution::armJointsMoveAndWait(std::vector<double>& leftArmQ, s
 
     while((!doneLeft)&&(!Thread::isStopping()))
     {
-         leftArmIPositionControl->checkMotionDone(&doneLeft);
-          yarp::os::Time::delay(0.1);
+        leftArmIPositionControl->checkMotionDone(&doneLeft);
+        yarp::os::Time::delay(0.1);
     }
 
     //printf("\n");
@@ -173,24 +173,24 @@ bool FollowMeArmExecution::armJointsMoveAndWait(std::vector<double>& leftArmQ, s
 
 bool FollowMeArmExecution::read(yarp::os::ConnectionReader& connection)
 {
-     yarp::os::Bottle b;
-     b.read(connection);
-     // process data in b
-     printf("[FollowMeArmExecution] Got %s\n", b.toString().c_str());
-     if( (VOCAB_FOLLOW_ME ==b.get(0).asVocab()) || (VOCAB_STATE_SALUTE ==b.get(0).asVocab()) )
-     {
-         state = VOCAB_STATE_SALUTE;
-     }
-     else if (VOCAB_STOP_FOLLOWING ==b.get(0).asVocab())
-         state = VOCAB_STOP_FOLLOWING;
+    yarp::os::Bottle b;
+    b.read(connection);
+    // process data in b
+    printf("[FollowMeArmExecution] Got %s\n", b.toString().c_str());
+    if( (VOCAB_FOLLOW_ME ==b.get(0).asVocab()) || (VOCAB_STATE_SALUTE ==b.get(0).asVocab()) )
+    {
+        state = VOCAB_STATE_SALUTE;
+    }
+    else if (VOCAB_STOP_FOLLOWING ==b.get(0).asVocab())
+        state = VOCAB_STOP_FOLLOWING;
 
-     else if (VOCAB_STATE_SIGNALIZE_RIGHT == b.get(0).asVocab())
-         state = VOCAB_STATE_SIGNALIZE_RIGHT;
+    else if (VOCAB_STATE_SIGNALIZE_RIGHT == b.get(0).asVocab())
+        state = VOCAB_STATE_SIGNALIZE_RIGHT;
 
-     else if (VOCAB_STATE_SIGNALIZE_LEFT == b.get(0).asVocab())
-         state = VOCAB_STATE_SIGNALIZE_LEFT;
+    else if (VOCAB_STATE_SIGNALIZE_LEFT == b.get(0).asVocab())
+        state = VOCAB_STATE_SIGNALIZE_LEFT;
 
-     return true;
+    return true;
 }
 
 /************************************************************************/

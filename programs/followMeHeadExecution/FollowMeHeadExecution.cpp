@@ -10,7 +10,7 @@ namespace teo
 bool FollowMeHeadExecution::configure(ResourceFinder &rf) {
 
     //std::string fileName(DEFAULT_FILE_NAME);
-    
+
     printf("--------------------------------------------------------------\n");
     if (rf.check("help")) {
         printf("FollowMeHeadExecution options:\n");
@@ -56,7 +56,7 @@ bool FollowMeHeadExecution::configure(ResourceFinder &rf) {
     int headAxes;
     headIPositionControl->getAxes(&headAxes);
     std::vector<int> headControlModes(headAxes,VOCAB_CM_POSITION);
-    if(! headIControlMode->setControlModes( headControlModes.data() )){
+    if(! headIControlMode->setControlModes( headControlModes.data() )) {
         printf("[warning] Problems setting position control mode of: head\n");
         return false;
     }
@@ -66,13 +66,13 @@ bool FollowMeHeadExecution::configure(ResourceFinder &rf) {
     std::vector<double> acc(2, 30);
 
 
-    if(!headIPositionControl->setRefSpeeds(speed.data())){
+    if(!headIPositionControl->setRefSpeeds(speed.data())) {
         printf("[ERROR] Problems setting reference speed on head joints.\n");
         return false;
     }
 
 
-    if(!headIPositionControl->setRefAccelerations(acc.data())){
+    if(!headIPositionControl->setRefAccelerations(acc.data())) {
         printf("[ERROR] Problems setting reference acc on head joints.\n");
         return false;
     }
