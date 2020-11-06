@@ -9,7 +9,7 @@ namespace teo
 
 bool FollowMeHeadExecution::configure(ResourceFinder &rf) {
 
-    //ConstString fileName(DEFAULT_FILE_NAME);
+    //std::string fileName(DEFAULT_FILE_NAME);
     
     printf("--------------------------------------------------------------\n");
     if (rf.check("help")) {

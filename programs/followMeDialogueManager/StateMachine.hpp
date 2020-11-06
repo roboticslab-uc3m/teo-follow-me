@@ -31,7 +31,7 @@ protected:
     yarp::os::RpcClient *outTtsPort;
     yarp::os::RpcClient *outSrecPort;
 
-    yarp::os::ConstString _inStrState1;
+    std::string _inStrState1;
 
     int _machineState;
     char sentence;
@@ -64,9 +64,9 @@ protected:
     yarp::os::Bottle bTtsOut, bSpRecOut;
 
 
-    void ttsSay(const yarp::os::ConstString& sayConstString);
-    yarp::os::ConstString asrListen();
-    yarp::os::ConstString asrListenWithPeriodicWave();
+    void ttsSay(const std::string& sayString);
+    std::string asrListen();
+    std::string asrListenWithPeriodicWave();
 
 public:
 

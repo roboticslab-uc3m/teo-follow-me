@@ -60,13 +60,13 @@ void StateMachine::run() {
          else if(_machineState == 2)
          {
 
-            yarp::os::ConstString inStr = asrListen();            
+            std::string inStr = asrListen();
             // Blocking
             _inStrState1 = inStr;
-            if((_inStrState1.find(stopFollowing) != yarp::os::ConstString::npos))
+            if((_inStrState1.find(stopFollowing) != std::string::npos))
                 _machineState = 5;
 
-            else if((_inStrState1.find(myNameIs) != yarp::os::ConstString::npos))
+            else if((_inStrState1.find(myNameIs) != std::string::npos))
             {
 
                 switch (sentence) {
@@ -96,15 +96,15 @@ void StateMachine::run() {
         else if(_machineState==3)
         {
 
-            yarp::os::ConstString inStr;
+            std::string inStr;
             if(following) inStr = asrListenWithPeriodicWave();
             else inStr = asrListen();
 
             // Blocking
             _inStrState1 = inStr;
-            if( _inStrState1.find(hiTeo) != yarp::os::ConstString::npos ) _machineState=0;
-            else if( _inStrState1.find(followMe) != yarp::os::ConstString::npos ) _machineState=4;
-            else if ( _inStrState1.find(stopFollowing) != yarp::os::ConstString::npos ) _machineState=5;
+            if( _inStrState1.find(hiTeo) != std::string::npos ) _machineState=0;
+            else if( _inStrState1.find(followMe) != std::string::npos ) _machineState=4;
+            else if ( _inStrState1.find(stopFollowing) != std::string::npos ) _machineState=5;
             else _machineState=3;
 
         } else if (_machineState==4) {
@@ -128,7 +128,7 @@ void StateMachine::run() {
             _machineState=3;
 
         } else {
-            ttsSay( yarp::os::ConstString("ANOMALY") );
+            ttsSay( std::string("ANOMALY") );
             _machineState=1;
         }
     }
@@ -136,7 +136,7 @@ void StateMachine::run() {
 
 /************************************************************************/
 
-void StateMachine::ttsSay(const yarp::os::ConstString& sayConstString) {
+void StateMachine::ttsSay(const std::string &sayString) {
 
     // -- mute microphone
     bSpRecOut.clear();
@@ -148,9 +148,9 @@ void StateMachine::ttsSay(const yarp::os::ConstString& sayConstString) {
     yarp::os::Bottle bRes;
     bTtsOut.clear();
     bTtsOut.addString("say");
-    bTtsOut.addString(sayConstString);
+    bTtsOut.addString(sayString);
     outTtsPort->write(bTtsOut,bRes);
-    printf("[StateMachine] Said: %s [%s]\n", sayConstString.c_str(), bRes.toString().c_str());
+    printf("[StateMachine] Said: %s [%s]\n", sayString.c_str(), bRes.toString().c_str());
     yarp::os::Time::delay(0.5);
 
     // -- unmute microphone
@@ -164,7 +164,7 @@ void StateMachine::ttsSay(const yarp::os::ConstString& sayConstString) {
 
 /************************************************************************/
 
-yarp::os::ConstString StateMachine::asrListen()
+std::string StateMachine::asrListen()
 {
     yarp::os::Bottle* bIn = inSrPort->read(true);  // shouldWait
     printf("[StateMachine] Listened: %s\n", bIn->toString().c_str());
@@ -173,7 +173,7 @@ yarp::os::ConstString StateMachine::asrListen()
 
 /************************************************************************/
 
-yarp::os::ConstString StateMachine::asrListenWithPeriodicWave() {
+std::string StateMachine::asrListenWithPeriodicWave() {
 char position = '0'; //-- char position (l = left, c = center, r = right)
 
     while( true ) // read loop
