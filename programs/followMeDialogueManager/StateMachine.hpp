@@ -12,14 +12,6 @@
 #include <yarp/dev/CartesianControl.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 
-#define VOCAB_FOLLOW_ME VOCAB4('f','o','l','l')
-#define VOCAB_STOP_FOLLOWING VOCAB4('s','f','o','l')
-#define VOCAB_STATE_SALUTE VOCAB4('s','a','l','u')
-#define VOCAB_WAVE_APPROPRIATE_HAND VOCAB4('w','a','p','h')
-#define VOCAB_GET_ENCODER_POSITION VOCAB4('g','e','p','s')
-#define VOCAB_STATE_SIGNALIZE_RIGHT VOCAB4('s','i','g','r')
-#define VOCAB_STATE_SIGNALIZE_LEFT VOCAB4('s','i','g','l')
-
 namespace teo
 {
 
@@ -125,6 +117,14 @@ public:
     /** set language for speaking */
     bool setSpeakLanguage(std::string language);
 
+private:
+    static const yarp::conf::vocab32_t VOCAB_FOLLOW_ME;
+    static const yarp::conf::vocab32_t VOCAB_STOP_FOLLOWING;
+    static const yarp::conf::vocab32_t VOCAB_STATE_SALUTE;
+    static const yarp::conf::vocab32_t VOCAB_WAVE_APPROPRIATE_HAND;
+    static const yarp::conf::vocab32_t VOCAB_GET_ENCODER_POSITION;
+    static const yarp::conf::vocab32_t VOCAB_STATE_SIGNALIZE_RIGHT;
+    static const yarp::conf::vocab32_t VOCAB_STATE_SIGNALIZE_LEFT;
 };
 
 }  // namespace teo

@@ -9,10 +9,6 @@
 
 #include "InCvPort.hpp"
 
-#define VOCAB_FOLLOW_ME VOCAB4('f','o','l','l')
-#define VOCAB_GET_ENCODER_POSITION VOCAB4('g','e','p','s')
-#define VOCAB_FAILED VOCAB4('f','a','i','l')
-
 using namespace yarp::os;
 
 namespace teo
@@ -46,6 +42,12 @@ class InDialoguePortProcessor : public PortReader {
 
         //-- Robot device
         yarp::dev::IEncoders *iEncoders;
+
+private:
+    static const yarp::conf::vocab32_t VOCAB_FOLLOW_ME;
+    static const yarp::conf::vocab32_t VOCAB_GET_ENCODER_POSITION;
+    static const yarp::conf::vocab32_t VOCAB_FAILED;
+    static const yarp::conf::vocab32_t VOCAB_STOP_FOLLOWING;
 };
 
 

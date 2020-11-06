@@ -7,6 +7,15 @@ namespace teo
 
 /************************************************************************/
 
+const yarp::conf::vocab32_t FollowMeArmExecution::VOCAB_FOLLOW_ME = yarp::os::createVocab('f','o','l','l');
+const yarp::conf::vocab32_t FollowMeArmExecution::VOCAB_STATE_SALUTE = yarp::os::createVocab('s','a','l','u');
+const yarp::conf::vocab32_t FollowMeArmExecution::VOCAB_STATE_ARM_SWINGING  = yarp::os::createVocab('s','w','i','n');
+const yarp::conf::vocab32_t FollowMeArmExecution::VOCAB_STOP_FOLLOWING = yarp::os::createVocab('s','f','o','l');
+const yarp::conf::vocab32_t FollowMeArmExecution::VOCAB_STATE_SIGNALIZE_RIGHT = yarp::os::createVocab('s','i','g','r');
+const yarp::conf::vocab32_t FollowMeArmExecution::VOCAB_STATE_SIGNALIZE_LEFT = yarp::os::createVocab('s','i','g','l');
+
+/************************************************************************/
+
 bool FollowMeArmExecution::configure(yarp::os::ResourceFinder &rf)
 {
     std::string robot = rf.check("robot",yarp::os::Value(DEFAULT_ROBOT),"name of /robot to be used").asString();
