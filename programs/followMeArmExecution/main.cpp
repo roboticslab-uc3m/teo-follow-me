@@ -24,15 +24,15 @@
 
 #include "FollowMeArmExecution.hpp"
 
-int main(int argc, char **argv) {
-
+int main(int argc, char **argv)
+{
     yarp::os::ResourceFinder rf;
     rf.setVerbose(true);
     rf.setDefaultContext("followMeArmExecution");
     rf.setDefaultConfigFile("followMeArmExecution.ini");
     rf.configure(argc, argv);
 
-    teo::FollowMeArmExecution mod;
+    roboticslab::FollowMeArmExecution mod;
     if(rf.check("help")) {
         return mod.runModule(rf);
     }

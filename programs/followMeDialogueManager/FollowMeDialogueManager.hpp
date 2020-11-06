@@ -11,7 +11,7 @@
 #define DEFAULT_LANGUAGE "english"
 #define DEFAULT_MICRO "off"
 
-namespace teo
+namespace roboticslab
 {
 
 /**
@@ -45,6 +45,6 @@ private:
     void setMicro(bool microAct);
 };
 
-}  // namespace teo
+} // namespace roboticslab
 
 #endif  // __FM_DIALOGUE_MANAGER_HPP__

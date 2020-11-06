@@ -2,7 +2,7 @@
 
 #include "FollowMeHeadExecution.hpp"
 
-namespace teo
+namespace roboticslab
 {
 
 /************************************************************************/
@@ -116,4 +116,4 @@ bool FollowMeHeadExecution::interruptModule() {
 
 /************************************************************************/
 
-}  // namespace teo
+} // namespace roboticslab

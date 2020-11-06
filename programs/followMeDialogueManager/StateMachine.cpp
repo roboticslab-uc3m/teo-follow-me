@@ -2,7 +2,7 @@
 
 #include "StateMachine.hpp"
 
-namespace teo
+namespace roboticslab
 {
 
 /************************************************************************/
@@ -340,4 +340,4 @@ bool StateMachine::setSpeakLanguage(std::string language) {
     }
 }
 
-}  // namespace teo
+} // namespace roboticslab

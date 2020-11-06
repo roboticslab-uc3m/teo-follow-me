@@ -12,7 +12,7 @@
 #include <yarp/dev/CartesianControl.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 
-namespace teo
+namespace roboticslab
 {
 
 /**
@@ -108,7 +108,6 @@ private:
     static const yarp::conf::vocab32_t VOCAB_STATE_SIGNALIZE_LEFT;
 };
 
-}  // namespace teo
+} // namespace roboticslab
 
 #endif
-

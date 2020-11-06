@@ -2,7 +2,7 @@
 
 #include "FollowMeArmExecution.hpp"
 
-namespace teo
+namespace roboticslab
 {
 
 /************************************************************************/
@@ -337,5 +337,4 @@ void FollowMeArmExecution::run()
 
 /************************************************************************/
 
-}  // namespace teo
-
+} // namespace roboticslab

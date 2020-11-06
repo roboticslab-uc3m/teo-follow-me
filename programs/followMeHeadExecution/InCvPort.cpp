@@ -2,12 +2,12 @@
 
 #include "InCvPort.hpp"
 
-namespace teo
+namespace roboticslab
 {
 
 /************************************************************************/
 
-void InCvPort::onRead(Bottle& b) {
+void InCvPort::onRead(yarp::os::Bottle& b) {
     if ( ! follow ) {
         iPositionControl->positionMove(0, 0.0);
         iPositionControl->positionMove(1, 0.0);
@@ -36,5 +36,4 @@ void InCvPort::setFollow(bool value)
 
 /************************************************************************/
 
-}  // namespace teo
-
+} // namespace roboticslab

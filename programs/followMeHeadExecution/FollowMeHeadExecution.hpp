@@ -13,9 +13,7 @@
 #define VOCAB_FOLLOW_ME VOCAB4('f','o','l','l')
 #define VOCAB_STOP_FOLLOWING VOCAB4('s','f','o','l')
 
-using namespace yarp::os;
-
-namespace teo
+namespace roboticslab
 {
 
 /**
@@ -24,7 +22,7 @@ namespace teo
  * @brief Head Execution Core.
  *
  */
-class FollowMeHeadExecution : public RFModule
+class FollowMeHeadExecution : public yarp::os::RFModule
 {
 public:
     bool configure(ResourceFinder &rf) override;
@@ -49,6 +47,6 @@ private:
     bool updateModule() override;
 };
 
-}  // namespace teo
+} // namespace roboticslab
 
 #endif  // __FM_EXECUTION_CORE_HPP__
