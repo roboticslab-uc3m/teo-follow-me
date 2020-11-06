@@ -2,7 +2,7 @@
 
 #include "InDialoguePortProcessor.hpp"
 
-namespace teo
+namespace roboticslab
 {
 
 /************************************************************************/
@@ -54,4 +54,4 @@ bool InDialoguePortProcessor::read(ConnectionReader& connection) {
 
 /************************************************************************/
 
-}  // namespace teo
+} // namespace roboticslab

@@ -11,7 +11,7 @@
 
 using namespace yarp::os;
 
-namespace teo
+namespace roboticslab
 {
 
 /**
@@ -50,6 +50,6 @@ private:
 };
 
 
-}  // namespace teo
+} // namespace roboticslab
 
 #endif  // __IN_SR_PORT_HPP__

@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
     rf.setDefaultConfigFile("followMeDialogueManager.ini");
     rf.configure(argc, argv);
 
-    teo::FollowMeDialogueManager mod;
+    roboticslab::FollowMeDialogueManager mod;
     if(rf.check("help")) {
         return mod.runModule(rf);
     }
@@ -49,4 +49,3 @@ int main(int argc, char **argv) {
 
     return mod.runModule(rf);
 }
-

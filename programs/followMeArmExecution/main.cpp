@@ -32,7 +32,7 @@ int main(int argc, char **argv)
     rf.setDefaultConfigFile("followMeArmExecution.ini");
     rf.configure(argc, argv);
 
-    teo::FollowMeArmExecution mod;
+    roboticslab::FollowMeArmExecution mod;
     if(rf.check("help")) {
         return mod.runModule(rf);
     }

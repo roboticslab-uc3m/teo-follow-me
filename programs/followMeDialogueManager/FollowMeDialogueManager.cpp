@@ -2,7 +2,7 @@
 
 #include "FollowMeDialogueManager.hpp"
 
-namespace teo
+namespace roboticslab
 {
 
 /************************************************************************/
@@ -135,4 +135,4 @@ bool FollowMeDialogueManager::interruptModule() {
 
 /************************************************************************/
 
-}  // namespace teo
+} // namespace roboticslab

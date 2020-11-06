@@ -8,7 +8,7 @@
 
 #define DEFAULT_ROBOT "/teo"
 
-namespace teo
+namespace roboticslab
 {
 
 /**
@@ -62,6 +62,6 @@ private:
     static const yarp::conf::vocab32_t VOCAB_STATE_SIGNALIZE_LEFT;
 };
 
-}  // namespace teo
+} // namespace roboticslab
 
 #endif  // __FOLLOW_ME_ARM_SWING_HPP__

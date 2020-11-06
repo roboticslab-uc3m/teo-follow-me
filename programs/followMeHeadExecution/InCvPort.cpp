@@ -2,7 +2,7 @@
 
 #include "InCvPort.hpp"
 
-namespace teo
+namespace roboticslab
 {
 
 /************************************************************************/
@@ -36,5 +36,4 @@ void InCvPort::setFollow(bool value)
 
 /************************************************************************/
 
-}  // namespace teo
-
+} // namespace roboticslab

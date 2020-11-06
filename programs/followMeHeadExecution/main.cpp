@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
     rf.setDefaultConfigFile("followMeHeadExecution.ini");
     rf.configure(argc, argv);
 
-    teo::FollowMeHeadExecution mod;
+    roboticslab::FollowMeHeadExecution mod;
     if(rf.check("help")) {
         return mod.runModule(rf);
     }
@@ -50,4 +50,3 @@ int main(int argc, char **argv) {
 
     return mod.runModule(rf);
 }
-
