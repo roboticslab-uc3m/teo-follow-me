@@ -19,9 +19,9 @@ namespace teo
  *
  * @brief Dialogue Manager.
  */
-class FollowMeDialogueManager : public yarp::os::RFModule {    
+class FollowMeDialogueManager : public yarp::os::RFModule {
 
-  private:
+private:
     StateMachine stateMachine;
     yarp::os::BufferedPort<yarp::os::Bottle> inSrPort;
     yarp::os::RpcClient outTtsPort;  // Tts port
@@ -37,7 +37,7 @@ class FollowMeDialogueManager : public yarp::os::RFModule {
     double getPeriod();
     bool updateModule();
 
-  public:
+public:
     bool configure(yarp::os::ResourceFinder &rf);
 
     // micro (on/off) to give speaking orders to TEO
