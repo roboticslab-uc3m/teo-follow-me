@@ -8,12 +8,6 @@
 
 #define DEFAULT_ROBOT "/teo"
 
-#define VOCAB_STATE_SALUTE VOCAB4('s','a','l','u')
-#define VOCAB_STATE_ARM_SWINGING VOCAB4('s','w','i','n')
-#define VOCAB_STOP_FOLLOWING VOCAB4('s','f','o','l')
-#define VOCAB_STATE_SIGNALIZE_RIGHT VOCAB4('s','i','g','r')
-#define VOCAB_STATE_SIGNALIZE_LEFT VOCAB4('s','i','g','l')
-
 namespace teo
 {
 
@@ -68,6 +62,12 @@ private:
      virtual void run();
 
      static const yarp::conf::vocab32_t VOCAB_FOLLOW_ME;
+
+    static const yarp::conf::vocab32_t VOCAB_STATE_SALUTE;
+    static const yarp::conf::vocab32_t VOCAB_STATE_ARM_SWINGING;
+    static const yarp::conf::vocab32_t VOCAB_STOP_FOLLOWING;
+    static const yarp::conf::vocab32_t VOCAB_STATE_SIGNALIZE_RIGHT;
+    static const yarp::conf::vocab32_t VOCAB_STATE_SIGNALIZE_LEFT;
 };
 
 }  // namespace teo
