@@ -39,7 +39,7 @@ protected:
     bool follow;
 
     /** Callback on incoming Bottle. **/
-    virtual void onRead(Bottle& b);
+    void onRead(Bottle& b) override;
 
     yarp::dev::IEncoders * iEncoder;
     yarp::dev::IPositionControl *iPositionControl;

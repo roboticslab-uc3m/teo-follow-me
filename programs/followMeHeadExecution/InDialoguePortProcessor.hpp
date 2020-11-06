@@ -35,7 +35,7 @@ public:
 
 protected:
     /** Getting replies **/
-    virtual bool read(ConnectionReader& connection);
+    bool read(ConnectionReader& connection) override;
 
     //-- Cv Port
     InCvPort* inCvPortPtr;

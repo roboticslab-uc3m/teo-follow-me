@@ -23,11 +23,11 @@ public:
     virtual bool configure(yarp::os::ResourceFinder &rf);
 private:
     /** RFModule interruptModule. */
-    virtual bool interruptModule();
+    bool interruptModule() override;
     /** RFModule getPeriod. */
-    virtual double getPeriod();
+    double getPeriod() override;
     /** RFModule updateModule. */
-    virtual bool updateModule();
+    bool updateModule() override;
 
     /** Left Arm Device */
     yarp::dev::PolyDriver leftArmDevice;
@@ -56,10 +56,10 @@ private:
     yarp::os::RpcServer inDialogPort;
 
     /** Treats data received from input port from speech recognition */
-    virtual bool read(yarp::os::ConnectionReader& connection);
+    bool read(yarp::os::ConnectionReader& connection) override;
 
     /** Thread run */
-    virtual void run();
+    void run() override;
 
     static const yarp::conf::vocab32_t VOCAB_FOLLOW_ME;
 

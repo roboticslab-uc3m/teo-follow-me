@@ -26,8 +26,7 @@ namespace teo
  */
 class FollowMeHeadExecution : public RFModule {
 public:
-    bool configure(ResourceFinder &rf);
-
+    bool configure(ResourceFinder &rf) override;
 
 protected:
     //-- Rpc port, server to knowing encoder position (reply position port), etc...
@@ -44,12 +43,9 @@ protected:
 
     yarp::dev::IEncoders *iEncoders;
 
-    bool interruptModule();
-    double getPeriod();
-    bool updateModule();
-
-
-
+    bool interruptModule() override;
+    double getPeriod() override;
+    bool updateModule() override;
 };
 
 }  // namespace teo
