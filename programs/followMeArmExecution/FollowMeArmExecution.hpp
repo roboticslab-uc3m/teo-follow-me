@@ -58,13 +58,7 @@ private:
     /** Thread run */
     void run() override;
 
-    static const yarp::conf::vocab32_t VOCAB_FOLLOW_ME;
-
-    static const yarp::conf::vocab32_t VOCAB_STATE_SALUTE;
     static const yarp::conf::vocab32_t VOCAB_STATE_ARM_SWINGING;
-    static const yarp::conf::vocab32_t VOCAB_STOP_FOLLOWING;
-    static const yarp::conf::vocab32_t VOCAB_STATE_SIGNALIZE_RIGHT;
-    static const yarp::conf::vocab32_t VOCAB_STATE_SIGNALIZE_LEFT;
 };
 
 } // namespace roboticslab

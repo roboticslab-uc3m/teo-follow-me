@@ -3,8 +3,6 @@
 #ifndef __FM_DIALOGUE_MANAGER_HPP__
 #define __FM_DIALOGUE_MANAGER_HPP__
 
-//#include <stdlib.h>
-
 #include <yarp/os/Bottle.h>
 #include <yarp/os/RFModule.h>
 #include <yarp/os/RpcClient.h>
