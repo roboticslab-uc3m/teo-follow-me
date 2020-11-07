@@ -10,6 +10,6 @@ constexpr yarp::conf::vocab32_t VOCAB_STATE_SALUTE = yarp::os::createVocab('s','
 constexpr yarp::conf::vocab32_t VOCAB_STATE_SIGNALIZE_RIGHT = yarp::os::createVocab('s','i','g','r');
 constexpr yarp::conf::vocab32_t VOCAB_STATE_SIGNALIZE_LEFT = yarp::os::createVocab('s','i','g','l');
 
-const yarp::conf::vocab32_t VOCAB_GET_ENCODER_POSITION = yarp::os::createVocab('g','e','p','s');
+constexpr yarp::conf::vocab32_t VOCAB_GET_ENCODER_POSITION = yarp::os::createVocab('g','e','p','s');
 
 #endif // __FOLLOW_ME_VOCABS_HPP__
