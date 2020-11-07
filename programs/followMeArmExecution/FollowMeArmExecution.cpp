@@ -9,10 +9,7 @@ namespace roboticslab
 
 /************************************************************************/
 
-const yarp::conf::vocab32_t FollowMeArmExecution::VOCAB_STATE_SALUTE = yarp::os::createVocab('s','a','l','u');
 const yarp::conf::vocab32_t FollowMeArmExecution::VOCAB_STATE_ARM_SWINGING  = yarp::os::createVocab('s','w','i','n');
-const yarp::conf::vocab32_t FollowMeArmExecution::VOCAB_STATE_SIGNALIZE_RIGHT = yarp::os::createVocab('s','i','g','r');
-const yarp::conf::vocab32_t FollowMeArmExecution::VOCAB_STATE_SIGNALIZE_LEFT = yarp::os::createVocab('s','i','g','l');
 
 /************************************************************************/
 
