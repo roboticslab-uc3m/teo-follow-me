@@ -9,13 +9,13 @@ namespace roboticslab
 
 /************************************************************************/
 
-bool InDialoguePortProcessor::read(ConnectionReader& connection) {
-    Bottle in, out;
+bool InDialoguePortProcessor::read(yarp::os::ConnectionReader& connection) {
+    yarp::os::Bottle in, out;
     double encValue;
     bool ok = in.read(connection);
     if (!ok) return false;
     // -- Gets a way to reply to the message, if possible.
-    ConnectionWriter *returnToSender = connection.getWriter();
+    yarp::os::ConnectionWriter *returnToSender = connection.getWriter();
 
     switch ( in.get(0).asVocab() ) { //-- b.get(0).asVocab()
     case VOCAB_FOLLOW_ME:

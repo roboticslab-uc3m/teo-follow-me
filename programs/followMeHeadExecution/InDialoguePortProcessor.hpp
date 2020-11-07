@@ -9,8 +9,6 @@
 
 #include "InCvPort.hpp"
 
-using namespace yarp::os;
-
 namespace roboticslab
 {
 
@@ -22,7 +20,7 @@ namespace roboticslab
  */
 
 
-class InDialoguePortProcessor : public PortReader
+class InDialoguePortProcessor : public yarp::os::PortReader
 {
 public:
     void setInCvPortPtr(InCvPort *inCvPortPtr) {
@@ -35,7 +33,7 @@ public:
 
 private:
     /** Getting replies **/
-    bool read(ConnectionReader& connection) override;
+    bool read(yarp::os::ConnectionReader& connection) override;
 
     //-- Cv Port
     InCvPort* inCvPortPtr;

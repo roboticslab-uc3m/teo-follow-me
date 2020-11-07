@@ -26,11 +26,11 @@ namespace roboticslab
 class FollowMeHeadExecution : public yarp::os::RFModule
 {
 public:
-    bool configure(ResourceFinder &rf) override;
+    bool configure(yarp::os::ResourceFinder &rf) override;
 
 private:
     //-- Rpc port, server to knowing encoder position (reply position port), etc...
-    RpcServer inDialoguePort;
+    yarp::os::RpcServer inDialoguePort;
     InDialoguePortProcessor inDialoguePortProcessor; // old (InSrPort)
     InCvPort inCvPort;
 

@@ -7,7 +7,7 @@ namespace roboticslab
 
 /************************************************************************/
 
-bool FollowMeHeadExecution::configure(ResourceFinder &rf) {
+bool FollowMeHeadExecution::configure(yarp::os::ResourceFinder &rf) {
 
     //std::string fileName(DEFAULT_FILE_NAME);
 
@@ -26,7 +26,7 @@ bool FollowMeHeadExecution::configure(ResourceFinder &rf) {
     }
 
     //
-    Property headOptions;
+    yarp::os::Property headOptions;
     headOptions.put("device","remote_controlboard");
     headOptions.put("local","/followMeHeadExecution/head");
     headOptions.put("remote","/teo/head");
