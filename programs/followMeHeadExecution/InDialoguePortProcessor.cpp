@@ -2,12 +2,13 @@
 
 #include "InDialoguePortProcessor.hpp"
 
+#include "../FollowMeVocabs.hpp"
+
 namespace roboticslab
 {
 
 /************************************************************************/
 
-const yarp::conf::vocab32_t InDialoguePortProcessor::VOCAB_FOLLOW_ME = yarp::os::createVocab('f','o','l','l');
 const yarp::conf::vocab32_t InDialoguePortProcessor::VOCAB_GET_ENCODER_POSITION = yarp::os::createVocab('g','e','p','s');
 const yarp::conf::vocab32_t InDialoguePortProcessor::VOCAB_FAILED = yarp::os::createVocab('f','a','i','l');
 const yarp::conf::vocab32_t InDialoguePortProcessor::VOCAB_STOP_FOLLOWING = yarp::os::createVocab('s','f','o','l');

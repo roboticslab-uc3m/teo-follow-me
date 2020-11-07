@@ -2,12 +2,13 @@
 
 #include "FollowMeArmExecution.hpp"
 
+#include "../FollowMeVocabs.hpp"
+
 namespace roboticslab
 {
 
 /************************************************************************/
 
-const yarp::conf::vocab32_t FollowMeArmExecution::VOCAB_FOLLOW_ME = yarp::os::createVocab('f','o','l','l');
 const yarp::conf::vocab32_t FollowMeArmExecution::VOCAB_STATE_SALUTE = yarp::os::createVocab('s','a','l','u');
 const yarp::conf::vocab32_t FollowMeArmExecution::VOCAB_STATE_ARM_SWINGING  = yarp::os::createVocab('s','w','i','n');
 const yarp::conf::vocab32_t FollowMeArmExecution::VOCAB_STOP_FOLLOWING = yarp::os::createVocab('s','f','o','l');
