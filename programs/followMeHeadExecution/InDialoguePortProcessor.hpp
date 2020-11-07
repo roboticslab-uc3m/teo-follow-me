@@ -43,7 +43,6 @@ private:
     //-- Robot device
     yarp::dev::IEncoders *iEncoders;
 
-    static const yarp::conf::vocab32_t VOCAB_GET_ENCODER_POSITION;
     static const yarp::conf::vocab32_t VOCAB_FAILED;
 };
 
