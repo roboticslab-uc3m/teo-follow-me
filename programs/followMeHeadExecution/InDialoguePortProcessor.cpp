@@ -9,10 +9,6 @@ namespace roboticslab
 
 /************************************************************************/
 
-const yarp::conf::vocab32_t InDialoguePortProcessor::VOCAB_FAILED = yarp::os::createVocab('f','a','i','l');
-
-/************************************************************************/
-
 bool InDialoguePortProcessor::read(ConnectionReader& connection) {
     Bottle in, out;
     double encValue;
