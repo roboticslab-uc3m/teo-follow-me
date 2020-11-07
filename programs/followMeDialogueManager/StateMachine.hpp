@@ -98,8 +98,6 @@ private:
 
     bool threadInit() override;
     void run() override;
-
-    static const yarp::conf::vocab32_t VOCAB_WAVE_APPROPRIATE_HAND;
 };
 
 } // namespace roboticslab

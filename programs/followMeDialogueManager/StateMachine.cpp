@@ -9,10 +9,6 @@ namespace roboticslab
 
 /************************************************************************/
 
-const yarp::conf::vocab32_t StateMachine::VOCAB_WAVE_APPROPRIATE_HAND = yarp::os::createVocab('w','a','p','h');
-
-/************************************************************************/
-
 bool StateMachine::threadInit() {
     _machineState = 3;
     sentence = 'a';
