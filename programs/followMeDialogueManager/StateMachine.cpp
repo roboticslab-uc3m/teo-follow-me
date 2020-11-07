@@ -9,7 +9,6 @@ namespace roboticslab
 
 /************************************************************************/
 
-const yarp::conf::vocab32_t StateMachine::VOCAB_STOP_FOLLOWING = yarp::os::createVocab('s','f','o','l');
 const yarp::conf::vocab32_t StateMachine::VOCAB_STATE_SALUTE = yarp::os::createVocab('s','a','l','u');
 const yarp::conf::vocab32_t StateMachine::VOCAB_WAVE_APPROPRIATE_HAND = yarp::os::createVocab('w','a','p','h');
 const yarp::conf::vocab32_t StateMachine::VOCAB_GET_ENCODER_POSITION = yarp::os::createVocab('g','e','p','s');

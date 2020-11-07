@@ -3,8 +3,6 @@
 #ifndef __IN_CV_PORT_HPP__
 #define __IN_CV_PORT_HPP__
 
-//#include <stdlib.h>
-
 #include <yarp/os/Bottle.h>
 #include <yarp/os/BufferedPort.h>
 

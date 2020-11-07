@@ -3,8 +3,6 @@
 #ifndef __IN_SR_PORT_HPP__
 #define __IN_SR_PORT_HPP__
 
-//#include <stdlib.h>
-
 #include <yarp/os/PortReader.h>
 
 #include <yarp/dev/ControlBoardInterfaces.h>
@@ -47,7 +45,6 @@ private:
 
     static const yarp::conf::vocab32_t VOCAB_GET_ENCODER_POSITION;
     static const yarp::conf::vocab32_t VOCAB_FAILED;
-    static const yarp::conf::vocab32_t VOCAB_STOP_FOLLOWING;
 };
 
 

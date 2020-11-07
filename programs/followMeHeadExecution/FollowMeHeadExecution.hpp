@@ -14,8 +14,6 @@
 #include "InCvPort.hpp"
 #include "InDialoguePortProcessor.hpp"
 
-#define VOCAB_STOP_FOLLOWING VOCAB4('s','f','o','l')
-
 namespace roboticslab
 {
 
