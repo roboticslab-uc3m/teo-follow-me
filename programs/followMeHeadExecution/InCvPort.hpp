@@ -3,14 +3,12 @@
 #ifndef __IN_CV_PORT_HPP__
 #define __IN_CV_PORT_HPP__
 
-#include <yarp/os/all.h>
-#include <yarp/dev/all.h>
-#include <stdlib.h>
+//#include <stdlib.h>
 
+#include <yarp/os/Bottle.h>
+#include <yarp/os/BufferedPort.h>
 
-/*
-#define VOCAB_FOLLOW_ME VOCAB4('f','o','l','l')
-#define VOCAB_STOP_FOLLOWING VOCAB4('s','f','o','l')*/
+#include <yarp/dev/ControlBoardInterfaces.h>
 
 namespace roboticslab
 {

@@ -3,9 +3,13 @@
 #ifndef __FM_EXECUTION_CORE_HPP__
 #define __FM_EXECUTION_CORE_HPP__
 
-#include <yarp/os/all.h>
-#include <yarp/dev/all.h>
-#include <stdlib.h>
+#include <vector>
+
+#include <yarp/os/RFModule.h>
+#include <yarp/os/RpcServer.h>
+
+#include <yarp/dev/ControlBoardInterfaces.h>
+#include <yarp/dev/PolyDriver.h>
 
 #include "InCvPort.hpp"
 #include "InDialoguePortProcessor.hpp"

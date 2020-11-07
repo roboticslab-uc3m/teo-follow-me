@@ -3,8 +3,13 @@
 #ifndef __FOLLOW_ME_ARM_SWING_HPP__
 #define __FOLLOW_ME_ARM_SWING_HPP__
 
-#include <yarp/os/all.h>
-#include <yarp/dev/all.h>
+#include <vector>
+
+#include <yarp/os/RFModule.h>
+#include <yarp/os/Thread.h>
+
+#include <yarp/dev/PolyDriver.h>
+#include <yarp/dev/ControlBoardInterfaces.h>
 
 #define DEFAULT_ROBOT "/teo"
 

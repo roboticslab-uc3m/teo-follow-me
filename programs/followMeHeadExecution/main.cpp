@@ -22,8 +22,6 @@
  *
  */
 
-#include <yarp/os/all.h>
-
 #include "FollowMeHeadExecution.hpp"
 
 int main(int argc, char **argv) {

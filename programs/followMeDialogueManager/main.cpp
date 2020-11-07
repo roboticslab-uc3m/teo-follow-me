@@ -24,7 +24,6 @@
 
 #include "FollowMeDialogueManager.hpp"
 
-
 int main(int argc, char **argv) {
 
     yarp::os::ResourceFinder rf;

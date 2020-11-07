@@ -3,9 +3,11 @@
 #ifndef __IN_SR_PORT_HPP__
 #define __IN_SR_PORT_HPP__
 
-#include <yarp/os/all.h>
-#include <yarp/dev/all.h>
-#include <stdlib.h>
+//#include <stdlib.h>
+
+#include <yarp/os/PortReader.h>
+
+#include <yarp/dev/ControlBoardInterfaces.h>
 
 #include "InCvPort.hpp"
 
