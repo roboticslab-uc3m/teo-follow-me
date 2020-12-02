@@ -36,22 +36,27 @@ bool FollowMeArmExecution::configure(yarp::os::ResourceFinder &rf)
     leftArmOptions.put("remote",robot+"/leftArm");
     leftArmOptions.put("local",followMeArmExecutionStr+robot+"/leftArm");
     leftArmDevice.open(leftArmOptions);
-    if(!leftArmDevice.isValid()) {
+    if(!leftArmDevice.isValid())
+    {
         printf("robot leftArm device not available.\n");
         leftArmDevice.close();
         yarp::os::Network::fini();
         return false;
     }
 
-    if (!leftArmDevice.view(leftArmIControlMode) ) { // connecting our device with "control mode" interface, initializing which control mode we want (position)
+    if (!leftArmDevice.view(leftArmIControlMode) )
+    { // connecting our device with "control mode" interface, initializing which control mode we want (position)
         printf("[warning] Problems acquiring leftArmIControlMode interface\n");
         return false;
-    } else printf("[success] Acquired leftArmIControlMode interface\n");
+    }
+    printf("[success] Acquired leftArmIControlMode interface\n");
 
-    if (!leftArmDevice.view(leftArmIPositionControl) ) { // connecting our device with "position control 2" interface (configuring our device: speed, acceleration... and sending joint positions)
+    if (!leftArmDevice.view(leftArmIPositionControl) )
+    { // connecting our device with "position control 2" interface (configuring our device: speed, acceleration... and sending joint positions)
         printf("[warning] Problems acquiring leftArmIPositionControl interface\n");
         return false;
-    } else printf("[success] Acquired leftArmIPositionControl interface\n");
+    }
+    printf("[success] Acquired leftArmIPositionControl interface\n");
 
     // ------ RIGHT ARM -------
     yarp::os::Property rightArmOptions;
@@ -59,30 +64,34 @@ bool FollowMeArmExecution::configure(yarp::os::ResourceFinder &rf)
     rightArmOptions.put("remote",robot+"/rightArm");
     rightArmOptions.put("local",followMeArmExecutionStr+robot+"/rightArm");
     rightArmDevice.open(rightArmOptions);
-    if(!rightArmDevice.isValid()) {
+    if(!rightArmDevice.isValid())
+    {
         printf("robot rightArm device not available.\n");
         rightArmDevice.close();
         yarp::os::Network::fini();
         return false;
     }
 
-    if (!rightArmDevice.view(rightArmIControlMode) ) { // connecting our device with "control mode" interface, initializing which control mode we want (position)
+    if (!rightArmDevice.view(rightArmIControlMode) )
+    { // connecting our device with "control mode" interface, initializing which control mode we want (position)
         printf("[warning] Problems acquiring rightArmIControlMode interface\n");
         return false;
-    } else printf("[success] Acquired rightArmIControlMode interface\n");
-
+    }
+    printf("[success] Acquired rightArmIControlMode interface\n");
 
     if ( ! rightArmDevice.view(rightArmIPositionControl) ) {
         printf("[warning] Problems acquiring rightArmIPositionControl interface\n");
         return false;
-    } else printf("[success] Acquired rightArmIPositionControl interface\n");
+    }
+    printf("[success] Acquired rightArmIPositionControl interface\n");
 
     //-- Set control modes for both arms
 
     int leftArmAxes;
     leftArmIPositionControl->getAxes(&leftArmAxes);
     std::vector<int> leftArmControlModes(leftArmAxes,VOCAB_CM_POSITION);
-    if(! leftArmIControlMode->setControlModes( leftArmControlModes.data() )) {
+    if(! leftArmIControlMode->setControlModes( leftArmControlModes.data() ))
+    {
         printf("[warning] Problems setting position control mode of: left-arm\n");
         return false;
     }
@@ -90,7 +99,8 @@ bool FollowMeArmExecution::configure(yarp::os::ResourceFinder &rf)
     int rightArmAxes;
     rightArmIPositionControl->getAxes(&rightArmAxes);
     std::vector<int> rightArmControlModes(rightArmAxes,VOCAB_CM_POSITION);
-    if(! rightArmIControlMode->setControlModes(rightArmControlModes.data())) {
+    if(! rightArmIControlMode->setControlModes(rightArmControlModes.data()))
+    {
         printf("[warning] Problems setting position control mode of: right-arm\n");
         return false;
     }

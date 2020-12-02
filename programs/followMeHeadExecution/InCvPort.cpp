@@ -7,13 +7,16 @@ namespace roboticslab
 
 /************************************************************************/
 
-void InCvPort::onRead(yarp::os::Bottle& b) {
-    if ( ! follow ) {
+void InCvPort::onRead(yarp::os::Bottle& b)
+{
+    if ( ! follow )
+    {
         iPositionControl->positionMove(0, 0.0);
         iPositionControl->positionMove(1, 0.0);
         return;
     }
-    if (b.size() < 3) return;
+    if (b.size() < 3)
+        return;
 
     double x = b.get(0).asDouble();
     double y = b.get(1).asDouble();

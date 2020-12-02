@@ -19,15 +19,16 @@ namespace roboticslab
  *
  */
 
-
 class InDialoguePortProcessor : public yarp::os::PortReader
 {
 public:
-    void setInCvPortPtr(InCvPort *inCvPortPtr) {
+    void setInCvPortPtr(InCvPort *inCvPortPtr)
+    {
         this->inCvPortPtr = inCvPortPtr;
     }
 
-    void setIEncoders(yarp::dev::IEncoders *iEncoders) {
+    void setIEncoders(yarp::dev::IEncoders *iEncoders)
+    {
         this->iEncoders = iEncoders;
     }
 
@@ -41,7 +42,6 @@ private:
     //-- Robot device
     yarp::dev::IEncoders *iEncoders;
 };
-
 
 } // namespace roboticslab
 

@@ -37,8 +37,6 @@ private:
 
     yarp::dev::IEncoders * iEncoder;
     yarp::dev::IPositionControl *iPositionControl;
-
-
 };
 
 } // namespace roboticslab
