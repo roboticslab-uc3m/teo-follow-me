@@ -5,7 +5,7 @@
  * @ingroup follow-me_programs
  * \defgroup followMeArmExecution followMeArmExecution
  *
- * @brief Creates an instance of teo::FollowMeArmExecution.
+ * @brief Creates an instance of roboticslab::FollowMeArmExecution.
  *
  * @section followMeArmExecution_legal Legal
  *
@@ -33,7 +33,8 @@ int main(int argc, char **argv)
     rf.configure(argc, argv);
 
     roboticslab::FollowMeArmExecution mod;
-    if(rf.check("help")) {
+    if(rf.check("help"))
+    {
         return mod.runModule(rf);
     }
 
@@ -41,10 +42,12 @@ int main(int argc, char **argv)
     printf("%s checking for yarp network... ",argv[0]);
     fflush(stdout);
     yarp::os::Network yarp;
-    if (!yarp.checkNetwork()) {
+    if (!yarp.checkNetwork())
+    {
         fprintf(stderr,"[fail]\n%s found no yarp network (try running \"yarpserver &\"), bye!\n",argv[0]);
         return 1;
-    } else printf("[ok]\n");
+    }
+    printf("[ok]\n");
 
     return mod.runModule(rf);
 }

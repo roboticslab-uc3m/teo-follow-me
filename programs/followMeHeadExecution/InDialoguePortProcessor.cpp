@@ -9,7 +9,8 @@ namespace roboticslab
 
 /************************************************************************/
 
-bool InDialoguePortProcessor::read(yarp::os::ConnectionReader& connection) {
+bool InDialoguePortProcessor::read(yarp::os::ConnectionReader& connection)
+{
     yarp::os::Bottle in, out;
     double encValue;
     bool ok = in.read(connection);
@@ -17,34 +18,34 @@ bool InDialoguePortProcessor::read(yarp::os::ConnectionReader& connection) {
     // -- Gets a way to reply to the message, if possible.
     yarp::os::ConnectionWriter *returnToSender = connection.getWriter();
 
-    switch ( in.get(0).asVocab() ) { //-- b.get(0).asVocab()
-    case VOCAB_FOLLOW_ME:
-        printf("follow\n");
-        inCvPortPtr->setFollow(true);
-        break;
+    switch ( in.get(0).asVocab() )
+    {
+        case VOCAB_FOLLOW_ME:
+            printf("follow\n");
+            inCvPortPtr->setFollow(true);
+            break;
 
-    case VOCAB_STOP_FOLLOWING:
-        printf("stopFollowing\n");
-        inCvPortPtr->setFollow(false);
-        break;
+        case VOCAB_STOP_FOLLOWING:
+            printf("stopFollowing\n");
+            inCvPortPtr->setFollow(false);
+            break;
 
-    case VOCAB_GET_ENCODER_POSITION:
-        if ( ! iEncoders->getEncoder(0, &encValue) )  // 0 es el tilt del cuello (http://robots.uc3m.es/index.php/TEO_Diagrams)
-        {
-            printf("Error: getEncoder failed\n");
-            out.addVocab(VOCAB_FAILED);
+        case VOCAB_GET_ENCODER_POSITION:
+            if ( ! iEncoders->getEncoder(0, &encValue) )  // 0 es el tilt del cuello (http://robots.uc3m.es/index.php/TEO_Diagrams)
+            {
+                printf("Error: getEncoder failed\n");
+                out.addVocab(VOCAB_FAILED);
+                if (returnToSender!=NULL)
+                    out.write(*returnToSender);
+                return true;
+            }
+
+            out.addDouble(encValue);
             if (returnToSender!=NULL)
                 out.write(*returnToSender);
-            return true;
-        }
-
-        out.addDouble(encValue);
-        if (returnToSender!=NULL)
-            out.write(*returnToSender);
-        break;
-
-        return true;
+            break;
     }
+    return true;
 }
 
 /************************************************************************/

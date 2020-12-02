@@ -5,7 +5,7 @@
  * @ingroup follow-me_programs
  * \defgroup followMeDialogueManager followMeDialogueManager
  *
- * @brief Creates an instance of teo::FollowMeDialogueManager.
+ * @brief Creates an instance of roboticslab::FollowMeDialogueManager.
  *
  * @section followMeDialogueManager_legal Legal
  *
@@ -24,8 +24,8 @@
 
 #include "FollowMeDialogueManager.hpp"
 
-int main(int argc, char **argv) {
-
+int main(int argc, char **argv)
+{
     yarp::os::ResourceFinder rf;
     rf.setVerbose(true);
     rf.setDefaultContext("followMeDialogueManager");
@@ -33,7 +33,8 @@ int main(int argc, char **argv) {
     rf.configure(argc, argv);
 
     roboticslab::FollowMeDialogueManager mod;
-    if(rf.check("help")) {
+    if(rf.check("help"))
+    {
         return mod.runModule(rf);
     }
 
@@ -41,10 +42,12 @@ int main(int argc, char **argv) {
     printf("%s checking for yarp network... ",argv[0]);
     fflush(stdout);
     yarp::os::Network yarp;
-    if (!yarp.checkNetwork()) {
+    if (!yarp.checkNetwork())
+    {
         fprintf(stderr,"[fail]\n%s found no yarp network (try running \"yarpserver &\"), bye!\n",argv[0]);
-        return -1;
-    } else printf("[ok]\n");
+        return 1;
+    }
+    printf("[ok]\n");
 
     return mod.runModule(rf);
 }

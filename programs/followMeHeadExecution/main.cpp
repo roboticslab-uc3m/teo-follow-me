@@ -5,7 +5,7 @@
  * @ingroup follow-me_programs
  * \defgroup followMeHeadExecution followMeHeadExecution
  *
- * @brief Creates an instance of teo::FollowMeHeadExecution.
+ * @brief Creates an instance of roboticslab::FollowMeHeadExecution.
  *
  * @section followMeHeadExecution_legal Legal
  *
@@ -24,8 +24,8 @@
 
 #include "FollowMeHeadExecution.hpp"
 
-int main(int argc, char **argv) {
-
+int main(int argc, char **argv)
+{
     yarp::os::ResourceFinder rf;
     rf.setVerbose(true);
     rf.setDefaultContext("followMeHeadExecution");
@@ -33,7 +33,8 @@ int main(int argc, char **argv) {
     rf.configure(argc, argv);
 
     roboticslab::FollowMeHeadExecution mod;
-    if(rf.check("help")) {
+    if(rf.check("help"))
+    {
         return mod.runModule(rf);
     }
 
@@ -41,10 +42,12 @@ int main(int argc, char **argv) {
     printf("%s checking for yarp network... ",argv[0]);
     fflush(stdout);
     yarp::os::Network yarp;
-    if (!yarp.checkNetwork()) {
+    if (!yarp.checkNetwork())
+    {
         fprintf(stderr,"[fail]\n%s found no yarp network (try running \"yarpserver &\"), bye!\n",argv[0]);
         return 1;
-    } else printf("[ok]\n");
+    }
+    printf("[ok]\n");
 
     return mod.runModule(rf);
 }
