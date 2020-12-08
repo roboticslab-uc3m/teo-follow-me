@@ -50,26 +50,29 @@ bool FollowMeDialogueManager::configure(yarp::os::ResourceFinder &rf) {
     stateMachine.setOutSrecPort(&outSrecPort);
     stateMachine.setInSrPort(&inSrPort);
 
-    if(microState) {
-        while(1) {
-            if(outSrecPort.getOutputCount() > 0) break;
+    if(microState)
+    {
+        while(0 == outSrecPort.getOutputCount())
+        {
+            if(isStopping())
+                return false;
             printf("Waiting for \"/followMeDialogueManager/speechRecognition/rpc:c\" to be connected to something...\n");
             yarp::os::Time::delay(0.5);
         }
     }
 
-    while(1) {
-        if(outTtsPort.getOutputCount() > 0) break;
+    while(0 == outTtsPort.getOutputCount())
+    {
+        if(isStopping())
+            return false;
         printf("Waiting for \"/followMeDialogueManager/tts/rpc:c\" to be connected to something...\n");
         yarp::os::Time::delay(0.5);
     }
-
 
     //--------------------------
     // cleaning yarp bottles
     bTtsOut.clear();
     bSpRecOut.clear();
-
 
     bTtsOut.addString("setLanguage");
     bSpRecOut.addString("setDictionary");
@@ -78,7 +81,7 @@ bool FollowMeDialogueManager::configure(yarp::os::ResourceFinder &rf) {
     if( language == "english" )
     {
         bTtsOut.addString("mb-en1");
-        bSpRecOut.addString(language );
+        bSpRecOut.addString(language);
     }
     else if ( language == "spanish" )
     {
@@ -99,25 +102,28 @@ bool FollowMeDialogueManager::configure(yarp::os::ResourceFinder &rf) {
     stateMachine.setLanguage(language);
     stateMachine.setSpeakLanguage(language);
 
-
     stateMachine.start();
     return true;
 }
 
 /************************************************************************/
-double FollowMeDialogueManager::getPeriod() {
+
+double FollowMeDialogueManager::getPeriod()
+{
     return 2.0;  // Fixed, in seconds, the slow thread that calls updateModule below
 }
 
 /************************************************************************/
-bool FollowMeDialogueManager::updateModule() {
+bool FollowMeDialogueManager::updateModule()
+{
     printf("StateMachine in state [%d]. FollowMeDialogueManager alive...\n", stateMachine.getMachineState());
     return true;
 }
 
 /************************************************************************/
 
-bool FollowMeDialogueManager::interruptModule() {
+bool FollowMeDialogueManager::interruptModule()
+{
     printf("FollowMeDialogueManager closing...\n");
     outCmdHeadPort.interrupt();
     outCmdArmPort.interrupt();
