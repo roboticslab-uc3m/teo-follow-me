@@ -2,7 +2,7 @@
 <name>follow-me_english_App</name>
     <module>
         <name>followMeDialogueManager</name>
-        <parameters>--language english</parameters>
+        <parameters>--language english --micro off</parameters>
         <node>localhost</node>
     </module>
 
