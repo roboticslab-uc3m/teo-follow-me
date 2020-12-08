@@ -38,21 +38,21 @@ bool FollowMeDialogueManager::configure(yarp::os::ResourceFinder &rf) {
 
 
     //-----------------OPEN LOCAL PORTS------------//
-    outCmdHeadPort.open("/followMeDialogueManager/head/rpc:c");
-    outCmdArmPort.open("/followMeDialogueManager/arms/rpc:c");
-    outTtsPort.open("/followMeDialogueManager/tts/rpc:c");
-    outSrecPort.open("/followMeDialogueManager/speechRecognition/rpc:c"); // -- setDictionary (client)
-    inSrPort.open("/followMeDialogueManager/speechRecognition/speech:i"); // -- words (input)
+    headExecutionClient.open("/followMeDialogueManager/head/rpc:c");
+    armExecutionClient.open("/followMeDialogueManager/arms/rpc:c");
+    ttsClient.open("/followMeDialogueManager/tts/rpc:c");
+    asrConfigClient.open("/followMeDialogueManager/speechRecognition/rpc:c"); // -- setDictionary (client)
+    inAsrPort.open("/followMeDialogueManager/speechRecognition/speech:i"); // -- words (input)
 
-    stateMachine.setOutCmdHeadPort(&outCmdHeadPort);
-    stateMachine.setOutCmdArmPort(&outCmdArmPort);
-    stateMachine.setOutTtsPort(&outTtsPort);
-    stateMachine.setOutSrecPort(&outSrecPort);
-    stateMachine.setInSrPort(&inSrPort);
+    stateMachine.setHeadExecutionClient(&headExecutionClient);
+    stateMachine.setArmExecutionClient(&armExecutionClient);
+    stateMachine.setTtsClient(&ttsClient);
+    stateMachine.setAsrConfigClient(&asrConfigClient);
+    stateMachine.setInAsrPort(&inAsrPort);
 
     if(microState)
     {
-        while(0 == outSrecPort.getOutputCount())
+        while(0 == asrConfigClient.getOutputCount())
         {
             if(isStopping())
                 return false;
@@ -61,7 +61,7 @@ bool FollowMeDialogueManager::configure(yarp::os::ResourceFinder &rf) {
         }
     }
 
-    while(0 == outTtsPort.getOutputCount())
+    while(0 == ttsClient.getOutputCount())
     {
         if(isStopping())
             return false;
@@ -94,8 +94,8 @@ bool FollowMeDialogueManager::configure(yarp::os::ResourceFinder &rf) {
         return false;
     }
 
-    outTtsPort.write(bTtsOut);
-    outSrecPort.write(bSpRecOut);
+    ttsClient.write(bTtsOut);
+    asrConfigClient.write(bSpRecOut);
 
     // set functions
     stateMachine.setMicro(microState);
@@ -125,17 +125,17 @@ bool FollowMeDialogueManager::updateModule()
 bool FollowMeDialogueManager::interruptModule()
 {
     printf("FollowMeDialogueManager closing...\n");
-    outCmdHeadPort.interrupt();
-    outCmdArmPort.interrupt();
-    outTtsPort.interrupt();
-    outSrecPort.interrupt();
-    inSrPort.interrupt();
+    headExecutionClient.interrupt();
+    armExecutionClient.interrupt();
+    ttsClient.interrupt();
+    asrConfigClient.interrupt();
+    inAsrPort.interrupt();
     stateMachine.stop();
-    outCmdHeadPort.close();
-    outCmdArmPort.close();
-    outTtsPort.close();
-    outTtsPort.close();
-    inSrPort.close();
+    headExecutionClient.close();
+    armExecutionClient.close();
+    ttsClient.close();
+    ttsClient.close();
+    inAsrPort.close();
     return true;
 }
 

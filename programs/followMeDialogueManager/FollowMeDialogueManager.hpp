@@ -27,11 +27,11 @@ public:
 
 private:
     StateMachine stateMachine;
-    yarp::os::BufferedPort<yarp::os::Bottle> inSrPort;
-    yarp::os::RpcClient outTtsPort;  // Tts port
-    yarp::os::RpcClient outSrecPort; // SpeechRecognition port
-    yarp::os::RpcClient outCmdHeadPort;
-    yarp::os::RpcClient outCmdArmPort;
+    yarp::os::BufferedPort<yarp::os::Bottle> inAsrPort;
+    yarp::os::RpcClient ttsClient; // Tts port
+    yarp::os::RpcClient asrConfigClient; // SpeechRecognition port
+    yarp::os::RpcClient headExecutionClient;
+    yarp::os::RpcClient armExecutionClient;
 
     // bTtsOut     -> to config or send tts commands
     // bSpRecOut   -> to config or send SpeechRecognition commands

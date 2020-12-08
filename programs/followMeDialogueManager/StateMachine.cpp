@@ -29,10 +29,10 @@ void StateMachine::run() {
             ttsSay( okFollow );
             yarp::os::Bottle cmd;
             cmd.addVocab(VOCAB_STATE_SALUTE);
-            outCmdArmPort->write(cmd);
+            armExecutionClient->write(cmd);
             cmd.clear();
             cmd.addVocab(VOCAB_FOLLOW_ME);
-            outCmdHeadPort->write(cmd);
+            headExecutionClient->write(cmd);
         }
 
         if(_machineState == 0) {
@@ -46,7 +46,7 @@ void StateMachine::run() {
             ttsSay( askName );
             yarp::os::Bottle cmd;
             cmd.addVocab(VOCAB_STATE_SALUTE);
-            outCmdArmPort->write(cmd);
+            armExecutionClient->write(cmd);
             _machineState=2;
         }
         else if(_machineState == 2)
@@ -105,7 +105,7 @@ void StateMachine::run() {
             ttsSay( okFollow );
             yarp::os::Bottle cmd;
             cmd.addVocab(VOCAB_FOLLOW_ME);
-            outCmdHeadPort->write(cmd);
+            headExecutionClient->write(cmd);
             _machineState=1;
 
 
@@ -115,8 +115,8 @@ void StateMachine::run() {
             ttsSay( stopFollow );
             yarp::os::Bottle cmd;
             cmd.addVocab(VOCAB_STOP_FOLLOWING);
-            outCmdArmPort->write(cmd);
-            outCmdHeadPort->write(cmd);
+            armExecutionClient->write(cmd);
+            headExecutionClient->write(cmd);
             _machineState=3;
 
         } else {
@@ -134,14 +134,14 @@ void StateMachine::ttsSay(const std::string &sayString) {
     bSpRecOut.clear();
     bSpRecOut.addString("setMic");
     bSpRecOut.addString("mute");
-    outSrecPort->write(bSpRecOut);
+    asrConfigClient->write(bSpRecOut);
 
     // -- speaking
     yarp::os::Bottle bRes;
     bTtsOut.clear();
     bTtsOut.addString("say");
     bTtsOut.addString(sayString);
-    outTtsPort->write(bTtsOut,bRes);
+    ttsClient->write(bTtsOut,bRes);
     printf("[StateMachine] Said: %s [%s]\n", sayString.c_str(), bRes.toString().c_str());
     yarp::os::Time::delay(0.5);
 
@@ -149,7 +149,7 @@ void StateMachine::ttsSay(const std::string &sayString) {
     bSpRecOut.clear();
     bSpRecOut.addString("setMic");
     bSpRecOut.addString("unmute");
-    outSrecPort->write(bSpRecOut);
+    asrConfigClient->write(bSpRecOut);
 
     return;
 }
@@ -183,13 +183,13 @@ std::string StateMachine::asrListenWithPeriodicWave() {
         cmd.clear();
         encValue.clear();
         cmd.addVocab(VOCAB_GET_ENCODER_POSITION);
-        outCmdHeadPort->write(cmd, encValue);
+        headExecutionClient->write(cmd, encValue);
         printf("EncValue -> %f\n", encValue.get(0).asDouble());
 
         if( (encValue.get(0).asDouble() > 10) && (position!='l') ) {
             yarp::os::Bottle cmd;
             cmd.addVocab(VOCAB_STATE_SIGNALIZE_LEFT);
-            outCmdArmPort->write(cmd);
+            armExecutionClient->write(cmd);
             yarp::os::Time::delay(5);
             ttsSay( onTheLeft );
             position = 'l';
@@ -197,7 +197,7 @@ std::string StateMachine::asrListenWithPeriodicWave() {
         else if( (encValue.get(0).asDouble() < -10) && (position!='r') ) {
             yarp::os::Bottle cmd;
             cmd.addVocab(VOCAB_STATE_SIGNALIZE_RIGHT);
-            outCmdArmPort->write(cmd);
+            armExecutionClient->write(cmd);
             yarp::os::Time::delay(5);
             ttsSay( onTheRight );
             position = 'r';
@@ -225,32 +225,32 @@ void StateMachine::setMicro(bool microAct) {
 
 /************************************************************************/
 
-void StateMachine::setInSrPort(yarp::os::BufferedPort<yarp::os::Bottle>* inSrPort) {
+void StateMachine::setInAsrPort(yarp::os::BufferedPort<yarp::os::Bottle>* inSrPort) {
     this->inSrPort = inSrPort;
 }
 
 /************************************************************************/
 
-void StateMachine::setOutCmdHeadPort(yarp::os::RpcClient* outCmdPort) {
-    this->outCmdHeadPort = outCmdPort;
+void StateMachine::setHeadExecutionClient(yarp::os::RpcClient* headExecutionClient) {
+    this->headExecutionClient = headExecutionClient;
 }
 
 /************************************************************************/
 
-void StateMachine::setOutCmdArmPort(yarp::os::RpcClient* outCmdPort) {
-    this->outCmdArmPort = outCmdPort;
+void StateMachine::setArmExecutionClient(yarp::os::RpcClient* armExecutionClient) {
+    this->armExecutionClient = armExecutionClient;
 }
 
 /************************************************************************/
 
-void StateMachine::setOutTtsPort(yarp::os::RpcClient* outTtsPort) {
-    this->outTtsPort = outTtsPort;
+void StateMachine::setTtsClient(yarp::os::RpcClient* ttsClient) {
+    this->ttsClient = ttsClient;
 }
 
 /************************************************************************/
 
-void StateMachine::setOutSrecPort(yarp::os::RpcClient* outSrecPort) {
-    this->outSrecPort = outSrecPort;
+void StateMachine::setAsrConfigClient(yarp::os::RpcClient* asrConfigClient) {
+    this->asrConfigClient = asrConfigClient;
 }
 
 /************************************************************************/

@@ -29,19 +29,19 @@ public:
     void setMicro(bool microAct);
 
     /** Register an input callback port for asr. */
-    void setInSrPort(yarp::os::BufferedPort<yarp::os::Bottle>* inSrPort);
+    void setInAsrPort(yarp::os::BufferedPort<yarp::os::Bottle>* inSrPort);
 
     /** Register an output Port for [HEAD] commands. */
-    void setOutCmdHeadPort(yarp::os::RpcClient* outCmdPort);
+    void setHeadExecutionClient(yarp::os::RpcClient* headExecutionClient);
 
     /** Register an output Port for [ARMS] commands. */
-    void setOutCmdArmPort(yarp::os::RpcClient* outCmdPort);
+    void setArmExecutionClient(yarp::os::RpcClient* armExecutionClient);
 
     /** Register an output Port for tts. */
-    void setOutTtsPort(yarp::os::RpcClient *outTtsPort);
+    void setTtsClient(yarp::os::RpcClient *ttsClient);
 
     /** Register an output Port to configure Speech Recognition. */
-    void setOutSrecPort(yarp::os::RpcClient* outSrecPort);
+    void setAsrConfigClient(yarp::os::RpcClient* asrConfigClient);
 
     /** set language in speechRecognition port */
     bool setLanguage(std::string language);
@@ -53,11 +53,11 @@ private:
 
     yarp::os::BufferedPort<yarp::os::Bottle> *inSrPort;
 
-    yarp::os::RpcClient *outCmdHeadPort;
-    yarp::os::RpcClient *outCmdArmPort;
+    yarp::os::RpcClient *headExecutionClient;
+    yarp::os::RpcClient *armExecutionClient;
 
-    yarp::os::RpcClient *outTtsPort;
-    yarp::os::RpcClient *outSrecPort;
+    yarp::os::RpcClient *ttsClient;
+    yarp::os::RpcClient *asrConfigClient;
 
     std::string _inStrState1;
 
