@@ -29,7 +29,7 @@ public:
     void setMicro(bool microAct);
 
     /** Register an input callback port for asr. */
-    void setInAsrPort(yarp::os::BufferedPort<yarp::os::Bottle>* inSrPort);
+    void setInAsrPort(yarp::os::BufferedPort<yarp::os::Bottle>* inAsrPort);
 
     /** Register an output Port for [HEAD] commands. */
     void setHeadExecutionClient(yarp::os::RpcClient* headExecutionClient);
@@ -51,7 +51,7 @@ public:
 
 private:
 
-    yarp::os::BufferedPort<yarp::os::Bottle> *inSrPort;
+    yarp::os::BufferedPort<yarp::os::Bottle> *inAsrPort;
 
     yarp::os::RpcClient *headExecutionClient;
     yarp::os::RpcClient *armExecutionClient;

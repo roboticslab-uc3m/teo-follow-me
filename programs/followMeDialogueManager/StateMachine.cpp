@@ -158,7 +158,7 @@ void StateMachine::ttsSay(const std::string &sayString) {
 
 std::string StateMachine::asrListen()
 {
-    yarp::os::Bottle* bIn = inSrPort->read(true);  // shouldWait
+    yarp::os::Bottle* bIn = inAsrPort->read(true);  // shouldWait
     printf("[StateMachine] Listened: %s\n", bIn->toString().c_str());
     return bIn->get(0).asString();
 }
@@ -170,7 +170,7 @@ std::string StateMachine::asrListenWithPeriodicWave() {
 
     while( true ) // read loop
     {
-        yarp::os::Bottle* bIn = inSrPort->read(false);  //-- IMPORTANT: should not wait
+        yarp::os::Bottle* bIn = inAsrPort->read(false);  //-- IMPORTANT: should not wait
         //-- If we read something, we return it immediately
         if ( bIn != NULL)
         {
@@ -225,8 +225,8 @@ void StateMachine::setMicro(bool microAct) {
 
 /************************************************************************/
 
-void StateMachine::setInAsrPort(yarp::os::BufferedPort<yarp::os::Bottle>* inSrPort) {
-    this->inSrPort = inSrPort;
+void StateMachine::setInAsrPort(yarp::os::BufferedPort<yarp::os::Bottle>* inAsrPort) {
+    this->inAsrPort = inAsrPort;
 }
 
 /************************************************************************/
