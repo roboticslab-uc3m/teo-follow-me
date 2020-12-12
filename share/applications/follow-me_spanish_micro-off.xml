@@ -27,30 +27,30 @@
     </connection>
 
     <module>
-        <name>haarDetection</name>
-        <parameters>--RGBDRemote /xtion</parameters>
+        <name>rgbdDetection</name>
+        <parameters>--RGBDRemote /teo/xtion --detector HaarDetector</parameters>
         <node>/head</node>
     </module>
 
     <connection>
-        <from>/haarDetection/state:o</from>
+        <from>/rgbdDetection/state:o</from>
         <to>/followMeHeadExecution/cv/state:i</to>
     </connection>
 
     <module>
         <name>yarpview</name>
-        <parameters>--name /yarpview/haarDetection/img:i</parameters>
+        <parameters>--name /yarpview/rgbdDetection/img:i</parameters>
         <node>localhost</node>
     </module>
 
     <connection>
-        <from>/haarDetection/img:o</from>
-        <to>/yarpview/haarDetection/img:i</to>
+        <from>/rgbdDetection/img:o</from>
+        <to>/yarpview/rgbdDetection/img:i</to>
     </connection>  
 
     <connection>
         <from>/followMeDialogueManager/tts/rpc:c</from>
-        <to>/tts/rpc:s</to>
+        <to>/teo/tts/rpc:s</to>
     </connection>
 
 
