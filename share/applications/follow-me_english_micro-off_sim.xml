@@ -28,7 +28,7 @@
 
     <module>
         <name>rgbdDetection</name>
-        <parameters>--RGBDRemote /teoSim/xtion --detector HaarDetector</parameters>
+        <parameters>--RGBDRemote /teoSim --detector HaarDetector</parameters>
         <node>/head</node>
     </module>
 
