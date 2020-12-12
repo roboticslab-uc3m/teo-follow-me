@@ -1,0 +1,57 @@
+<application>
+<name>follow-me_english_micro-off_sim</name>
+    <module>
+        <name>followMeDialogueManager</name>
+        <parameters>--language english --micro off</parameters>
+        <node>localhost</node>
+    </module>
+
+    <module>
+        <name>followMeHeadExecution</name>
+        <node>localhost</node>
+    </module>
+
+    <module>
+        <name>followMeArmExecution</name>
+        <node>localhost</node>
+    </module>
+
+    <connection>
+        <from>/followMeDialogueManager/head/rpc:c</from>
+        <to>/followMeHeadExecution/dialogueManager/rpc:s</to>
+    </connection>
+
+    <connection>
+        <from>/followMeDialogueManager/arms/rpc:c</from>
+        <to>/followMeArmExecution/dialogueManager/rpc:s</to>
+    </connection>
+
+    <module>
+        <name>rgbdDetection</name>
+        <parameters>--RGBDRemote /teoSim/xtion --detector HaarDetector</parameters>
+        <node>/head</node>
+    </module>
+
+    <connection>
+        <from>/rgbdDetection/state:o</from>
+        <to>/followMeHeadExecution/cv/state:i</to>
+    </connection>
+
+    <module>
+        <name>yarpview</name>
+        <parameters>--name /yarpview/rgbdDetection/img:i</parameters>
+        <node>localhost</node>
+    </module>
+
+    <connection>
+        <from>/rgbdDetection/img:o</from>
+        <to>/yarpview/rgbdDetection/img:i</to>
+    </connection>
+
+    <connection>
+        <from>/followMeDialogueManager/tts/rpc:c</from>
+        <to>/teo/tts/rpc:s</to>
+    </connection>
+
+</application>
+
