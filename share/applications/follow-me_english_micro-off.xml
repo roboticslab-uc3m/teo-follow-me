@@ -1,5 +1,5 @@
 <application>
-<name>follow-me_english_App</name>
+<name>follow-me_english_micro-off</name>
     <module>
         <name>followMeDialogueManager</name>
         <parameters>--language english --micro off</parameters>
@@ -28,7 +28,7 @@
 
     <module>
         <name>haarDetection</name>
-        <parameters>--RGBDRemote /xtion </parameters>
+        <parameters>--RGBDRemote /xtion</parameters>
         <node>/head</node>
     </module>
 
