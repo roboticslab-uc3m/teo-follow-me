@@ -184,9 +184,10 @@ std::string StateMachine::asrListenWithPeriodicWave() {
         encValue.clear();
         cmd.addVocab(VOCAB_GET_ENCODER_POSITION);
         headExecutionClient->write(cmd, encValue);
-        printf("EncValue -> %f\n", encValue.get(0).asDouble());
+        //printf("EncValue -> %f\n", encValue.get(0).asDouble());
 
-        if( (encValue.get(0).asDouble() > 10) && (position!='l') ) {
+        if( (encValue.get(0).asDouble() > 10) && (position!='l') )
+        {
             yarp::os::Bottle cmd;
             cmd.addVocab(VOCAB_STATE_SIGNALIZE_LEFT);
             armExecutionClient->write(cmd);
@@ -194,7 +195,8 @@ std::string StateMachine::asrListenWithPeriodicWave() {
             ttsSay( onTheLeft );
             position = 'l';
         }
-        else if( (encValue.get(0).asDouble() < -10) && (position!='r') ) {
+        else if( (encValue.get(0).asDouble() < -10) && (position!='r') )
+        {
             yarp::os::Bottle cmd;
             cmd.addVocab(VOCAB_STATE_SIGNALIZE_RIGHT);
             armExecutionClient->write(cmd);
@@ -202,7 +204,8 @@ std::string StateMachine::asrListenWithPeriodicWave() {
             ttsSay( onTheRight );
             position = 'r';
         }
-        else if( (encValue.get(0).asDouble() > -3) && (encValue.get(0).asDouble() < 3) && (position!='c') ) {
+        else if( (encValue.get(0).asDouble() > -3) && (encValue.get(0).asDouble() < 3) && (position!='c') )
+        {
             ttsSay( onTheCenter );
             position = 'c';
         }
@@ -213,67 +216,76 @@ std::string StateMachine::asrListenWithPeriodicWave() {
 
 /************************************************************************/
 
-int StateMachine::getMachineState() {
+int StateMachine::getMachineState()
+{
     return _machineState;
 }
 
 /************************************************************************/
 
-void StateMachine::setMicro(bool microAct) {
+void StateMachine::setMicro(bool microAct)
+{
     this->microAct = microAct;
 }
 
 /************************************************************************/
 
-void StateMachine::setInAsrPort(yarp::os::BufferedPort<yarp::os::Bottle>* inAsrPort) {
+void StateMachine::setInAsrPort(yarp::os::BufferedPort<yarp::os::Bottle>* inAsrPort)
+{
     this->inAsrPort = inAsrPort;
 }
 
 /************************************************************************/
 
-void StateMachine::setHeadExecutionClient(yarp::os::RpcClient* headExecutionClient) {
+void StateMachine::setHeadExecutionClient(yarp::os::RpcClient* headExecutionClient)
+{
     this->headExecutionClient = headExecutionClient;
 }
 
 /************************************************************************/
 
-void StateMachine::setArmExecutionClient(yarp::os::RpcClient* armExecutionClient) {
+void StateMachine::setArmExecutionClient(yarp::os::RpcClient* armExecutionClient)
+{
     this->armExecutionClient = armExecutionClient;
 }
 
 /************************************************************************/
 
-void StateMachine::setTtsClient(yarp::os::RpcClient* ttsClient) {
+void StateMachine::setTtsClient(yarp::os::RpcClient* ttsClient)
+{
     this->ttsClient = ttsClient;
 }
 
 /************************************************************************/
 
-void StateMachine::setAsrConfigClient(yarp::os::RpcClient* asrConfigClient) {
+void StateMachine::setAsrConfigClient(yarp::os::RpcClient* asrConfigClient)
+{
     this->asrConfigClient = asrConfigClient;
 }
 
 /************************************************************************/
+
 bool StateMachine::setLanguage(std::string language)
 {
     _language = language;
+
     if("english" == language)
     {
         //-- recognition sentences
-        hiTeo = std::string ("hi teo");
-        followMe = std::string ("follow me");
-        myNameIs = std::string ("my name is");
-        stopFollowing = std::string ("stop following");
+        hiTeo = "hi teo";
+        followMe = "follow me";
+        myNameIs = "my name is";
+        stopFollowing = "stop following";
 
         return true;
     }
     else if("spanish" == language)
     {
         //-- frases de reconociomiento
-        hiTeo = std::string ("hola teo");
-        followMe = std::string ("sigueme");
-        myNameIs = std::string ("me llamo");
-        stopFollowing = std::string ("para teo");
+        hiTeo = "hola teo";
+        followMe = "sigueme";
+        myNameIs = "me llamo";
+        stopFollowing = "para teo";
 
         return true;
     }
@@ -286,42 +298,42 @@ bool StateMachine::setLanguage(std::string language)
 
 /************************************************************************/
 
-bool StateMachine::setSpeakLanguage(std::string language) {
-
+bool StateMachine::setSpeakLanguage(std::string language)
+{
     if("english" == language)
     {
         //-- speak sentences
-        presentation1 = std::string("Follow me, demostration started");
-        presentation2 = std::string("Hello. My name is TEO. I am, a humanoid robot, of Carlos tercero, university.");
-        presentation3 = std::string("Now, I will follow you. Please, tell me");
-        askName = std::string("Could you tell me your name");
-        answer1 = std::string("Is, a beatifull name. I love it");
-        answer2 = std::string("Is, a wonderfull name. My human creator, has the same name");
-        answer3 = std::string("My parents, didn't want to baptize me, with that name.");
-        notUnderstand = std::string("Sorry, I don't understand");
-        okFollow = std::string("Okay, I will follow you");
-        stopFollow = std::string("Okay, I will stop following you. See you later");
-        onTheRight = std::string("You are, on my, right");
-        onTheLeft = std::string("You are, on my, left");
-        onTheCenter = std::string("You are, on the, center");
+        presentation1 = "Follow me, demostration started";
+        presentation2 = "Hello. My name is TEO. I am, a humanoid robot, of Carlos tercero, university.";
+        presentation3 = "Now, I will follow you. Please, tell me";
+        askName = "Could you tell me your name";
+        answer1 = "Is, a beatifull name. I love it";
+        answer2 = "Is, a wonderfull name. My human creator, has the same name";
+        answer3 = "My parents, didn't want to baptize me, with that name.";
+        notUnderstand = "Sorry, I don't understand";
+        okFollow = "Okay, I will follow you";
+        stopFollow = "Okay, I will stop following you. See you later";
+        onTheRight = "You are, on my, right";
+        onTheLeft = "You are, on my, left";
+        onTheCenter = "You are, on the, center";
         return true;
     }
     else if("spanish" == language)
     {
         //-- speak sentences
-        presentation1 = std::string("Demostración de detección de caras iniciada");
-        presentation2 = std::string("Hola. Me yamo Teo, y soy un grobot humanoide diseñado por ingenieros de la universidad carlos tercero");
-        presentation3 = std::string("Por favor, dime qué quieres que haga");
-        askName = std::string("Podrías decirme tu nombre");
-        answer1 = std::string("Uuooooo ouu, que nombre más bonito. Me encanta");
-        answer2 = std::string("Que gran nombre. Mi creador humano se yama igual");
-        answer3 = std::string("Mis padres no quisieron bauuutizarme con ese nombre. Malditos.");
-        notUnderstand = std::string("Lo siento. No te he entendido");
-        okFollow = std::string("Vale. Voy, a comenzar a seguirte");
-        stopFollow = std::string("De acuerdo. Voy, a dejar de seguirte. Hasta pronto.");
-        onTheRight = std::string("Ahora, estás, a mi derecha");
-        onTheLeft = std::string("Ahora, estás, a mi izquierda");
-        onTheCenter = std::string("Ahora, estás, en el centro");
+        presentation1 = "Demostración de detección de caras iniciada";
+        presentation2 = "Hola. Me yamo Teo, y soy un grobot humanoide diseñado por ingenieros de la universidad carlos tercero";
+        presentation3 = "Por favor, dime qué quieres que haga";
+        askName = "Podrías decirme tu nombre";
+        answer1 = "Uuooooo ouu, que nombre más bonito. Me encanta";
+        answer2 = "Que gran nombre. Mi creador humano se yama igual";
+        answer3 = "Mis padres no quisieron bauuutizarme con ese nombre. Malditos.";
+        notUnderstand = "Lo siento. No te he entendido";
+        okFollow = "Vale. Voy, a comenzar a seguirte";
+        stopFollow = "De acuerdo. Voy, a dejar de seguirte. Hasta pronto.";
+        onTheRight = "Ahora, estás, a mi derecha";
+        onTheLeft = "Ahora, estás, a mi izquierda";
+        onTheCenter = "Ahora, estás, en el centro";
         return true;
     }
     else
