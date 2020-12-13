@@ -11,8 +11,6 @@
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 
-#define DEFAULT_ROBOT "/teo"
-
 namespace roboticslab
 {
 
@@ -59,6 +57,8 @@ private:
     void run() override;
 
     static const yarp::conf::vocab32_t VOCAB_STATE_ARM_SWINGING;
+
+    static const std::string defaultRobot;
 };
 
 } // namespace roboticslab

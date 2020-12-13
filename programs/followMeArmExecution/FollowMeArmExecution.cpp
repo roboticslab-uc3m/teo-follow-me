@@ -9,18 +9,20 @@ namespace roboticslab
 
 /************************************************************************/
 
-const yarp::conf::vocab32_t FollowMeArmExecution::VOCAB_STATE_ARM_SWINGING  = yarp::os::createVocab('s','w','i','n');
+const yarp::conf::vocab32_t FollowMeArmExecution::VOCAB_STATE_ARM_SWINGING = yarp::os::createVocab('s','w','i','n');
+
+const std::string FollowMeArmExecution::defaultRobot = "/teo";
 
 /************************************************************************/
 
 bool FollowMeArmExecution::configure(yarp::os::ResourceFinder &rf)
 {
-    std::string robot = rf.check("robot",yarp::os::Value(DEFAULT_ROBOT),"name of /robot to be used").asString();
+    std::string robot = rf.check("robot",yarp::os::Value(defaultRobot),"name of /robot to be used").asString();
 
     printf("--------------------------------------------------------------\n");
     printf("FollowMeArmExecution options:\n");
     printf("\t--help (this help)\t--from [file.ini]\t--context [path]\n");
-    printf("\t--robot: %s [%s]\n",robot.c_str(),DEFAULT_ROBOT);
+    printf("\t--robot: %s [%s]\n",robot.c_str(), defaultRobot.c_str());
     printf("--------------------------------------------------------------\n");
 
     state = VOCAB_STATE_ARM_SWINGING;

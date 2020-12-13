@@ -7,39 +7,49 @@ namespace roboticslab
 
 /************************************************************************/
 
+const std::string FollowMeHeadExecution::defaultRobot = "/teo";
+
+/************************************************************************/
+
 bool FollowMeHeadExecution::configure(yarp::os::ResourceFinder &rf)
 {
-    std::string robot = rf.check("robot",yarp::os::Value(DEFAULT_ROBOT),"name of /robot to be used").asString();
+    std::string robot = rf.check("robot",yarp::os::Value(defaultRobot),"name of /robot to be used").asString();
 
     printf("--------------------------------------------------------------\n");
     printf("FollowMeHeadExecution options:\n");
     printf("\t--help (this help)\t--from [file.ini]\t--context [path]\n");
-    printf("\t--robot: %s [%s]\n",robot.c_str(),DEFAULT_ROBOT);
+    printf("\t--robot: %s [%s]\n",robot.c_str(),defaultRobot.c_str());
     printf("--------------------------------------------------------------\n");
 
-    //
+    std::string followMeHeadExecutionStr("/followMeHeadExecution");
+
     yarp::os::Property headOptions;
     headOptions.put("device","remote_controlboard");
-    headOptions.put("local","/followMeHeadExecution/head");
     headOptions.put("remote",robot+"/head");
+    headOptions.put("local",followMeHeadExecutionStr+robot+"/head");
     headDevice.open(headOptions);
-    if( ! headDevice.isValid() ) {
+    if( ! headDevice.isValid() )
+    {
         printf("head remote_controlboard instantiation not worked.\n");
         return false;
     }
 
-    if (!headDevice.view(headIControlMode) ) { // connecting our device with "control mode" interface, initializing which control mode we want (position)
+    if (!headDevice.view(headIControlMode) ) // connecting our device with "control mode" interface, initializing which control mode we want (position)
+    {
         printf("[warning] Problems acquiring headIControlMode interface\n");
         return false;
-    } else printf("[success] Acquired headIControlMode interface\n");
+    }
+    printf("[success] Acquired headIControlMode interface\n");
 
-
-    if (!headDevice.view(headIPositionControl) ) { // connecting our device with "position control 2" interface (configuring our device: speed, acceleration... and sending joint positions)
+    if (!headDevice.view(headIPositionControl) ) // connecting our device with "position control 2" interface (configuring our device: speed, acceleration... and sending joint positions)
+    {
         printf("[warning] Problems acquiring headIPositionControl interface\n");
         return false;
-    } else printf("[success] Acquired headIPositionControl interface\n");
+    }
+    printf("[success] Acquired headIPositionControl interface\n");
 
-    if( ! headDevice.view(iEncoders) ) {
+    if( ! headDevice.view(iEncoders) )
+    {
         printf("view(iEncoders) not worked.\n");
         return false;
     }
@@ -48,7 +58,8 @@ bool FollowMeHeadExecution::configure(yarp::os::ResourceFinder &rf)
     int headAxes;
     headIPositionControl->getAxes(&headAxes);
     std::vector<int> headControlModes(headAxes,VOCAB_CM_POSITION);
-    if(! headIControlMode->setControlModes( headControlModes.data() )) {
+    if(! headIControlMode->setControlModes( headControlModes.data() ))
+    {
         printf("[warning] Problems setting position control mode of: head\n");
         return false;
     }
@@ -57,18 +68,17 @@ bool FollowMeHeadExecution::configure(yarp::os::ResourceFinder &rf)
     std::vector<double> speed(2, 30);
     std::vector<double> acc(2, 30);
 
-
-    if(!headIPositionControl->setRefSpeeds(speed.data())) {
+    if(!headIPositionControl->setRefSpeeds(speed.data()))
+    {
         printf("[ERROR] Problems setting reference speed on head joints.\n");
         return false;
     }
 
-
-    if(!headIPositionControl->setRefAccelerations(acc.data())) {
+    if(!headIPositionControl->setRefAccelerations(acc.data()))
+    {
         printf("[ERROR] Problems setting reference acc on head joints.\n");
         return false;
     }
-
 
     inCvPort.setIPositionControl(headIPositionControl);
     inDialoguePortProcessor.setIEncoders(iEncoders);
@@ -84,19 +94,23 @@ bool FollowMeHeadExecution::configure(yarp::os::ResourceFinder &rf)
 }
 
 /************************************************************************/
-double FollowMeHeadExecution::getPeriod() {
+
+double FollowMeHeadExecution::getPeriod()
+{
     return 2.0;  // Fixed, in seconds, the slow thread that calls updateModule below
 }
 
 /************************************************************************/
-bool FollowMeHeadExecution::updateModule() {
+bool FollowMeHeadExecution::updateModule()
+{
     //printf("StateMachine in state [%d]. FollowMeHeadExecution alive...\n", stateMachine.getMachineState());
     return true;
 }
 
 /************************************************************************/
 
-bool FollowMeHeadExecution::interruptModule() {
+bool FollowMeHeadExecution::interruptModule()
+{
     printf("FollowMeHeadExecution closing...\n");
     inCvPort.disableCallback();
     inCvPort.interrupt();

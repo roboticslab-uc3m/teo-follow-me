@@ -14,8 +14,6 @@
 #include "InCvPort.hpp"
 #include "InDialoguePortProcessor.hpp"
 
-#define DEFAULT_ROBOT "/teo"
-
 namespace roboticslab
 {
 
@@ -48,6 +46,8 @@ private:
     bool interruptModule() override;
     double getPeriod() override;
     bool updateModule() override;
+
+    static const std::string defaultRobot;
 };
 
 } // namespace roboticslab
