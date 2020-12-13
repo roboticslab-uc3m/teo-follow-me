@@ -304,9 +304,7 @@ bool StateMachine::setSpeakLanguage(std::string language) {
         onTheRight = std::string("You are, on my, right");
         onTheLeft = std::string("You are, on my, left");
         onTheCenter = std::string("You are, on the, center");
-
         return true;
-
     }
     else if("spanish" == language)
     {
@@ -324,6 +322,7 @@ bool StateMachine::setSpeakLanguage(std::string language) {
         onTheRight = std::string("Ahora, estás, a mi derecha");
         onTheLeft = std::string("Ahora, estás, a mi izquierda");
         onTheCenter = std::string("Ahora, estás, en el centro");
+        return true;
     }
     else
     {
