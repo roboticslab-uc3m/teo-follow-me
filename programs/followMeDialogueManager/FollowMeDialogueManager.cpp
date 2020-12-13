@@ -19,8 +19,10 @@ bool FollowMeDialogueManager::configure(yarp::os::ResourceFinder &rf) {
     printf("\t--micro (default: \"%s\")\n",micro.c_str());
     printf("--------------------------------------------------------------\n");
 
-    if(micro == "on") microOn = true;
-    else if(micro == "off") microOn = false;
+    if(micro == "on")
+        microOn = true;
+    else if(micro == "off")
+        microOn = false;
     else
     {
         printf("You need to specify if you want to use microphone or not in this demo\n. Please use '--micro on' or '--micro off'\n");
@@ -28,8 +30,8 @@ bool FollowMeDialogueManager::configure(yarp::os::ResourceFinder &rf) {
     }
 
     //-----------------OPEN LOCAL PORTS------------//
-    headExecutionClient.open("/followMeDialogueManager/head/rpc:c");
     armExecutionClient.open("/followMeDialogueManager/arms/rpc:c");
+    headExecutionClient.open("/followMeDialogueManager/head/rpc:c");
     ttsClient.open("/followMeDialogueManager/tts/rpc:c");
     asrConfigClient.open("/followMeDialogueManager/speechRecognition/rpc:c"); // -- setDictionary (client)
     inAsrPort.open("/followMeDialogueManager/speechRecognition/speech:i"); // -- words (input)
@@ -56,6 +58,22 @@ bool FollowMeDialogueManager::configure(yarp::os::ResourceFinder &rf) {
         if(isStopping())
             return false;
         printf("Waiting for \"/followMeDialogueManager/tts/rpc:c\" to be connected to TTS...\n");
+        yarp::os::Time::delay(0.5);
+    }
+
+    while(0 == armExecutionClient.getOutputCount())
+    {
+        if(isStopping())
+            return false;
+        printf("Waiting for \"/followMeDialogueManager/arms/rpc:c\" to be connected to arm execution...\n");
+        yarp::os::Time::delay(0.5);
+    }
+
+    while(0 == headExecutionClient.getOutputCount())
+    {
+        if(isStopping())
+            return false;
+        printf("Waiting for \"/followMeDialogueManager/head/rpc:c\" to be connected to head execution...\n");
         yarp::os::Time::delay(0.5);
     }
 
