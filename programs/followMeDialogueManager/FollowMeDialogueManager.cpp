@@ -28,14 +28,13 @@ bool FollowMeDialogueManager::configure(yarp::os::ResourceFinder &rf) {
         ::exit(1);
     }
 
-    if(micro == "on") microState = true;
-    else if(micro == "off") microState = false;
+    if(micro == "on") microOn = true;
+    else if(micro == "off") microOn = false;
     else
     {
         printf("You need to specify if you want to use microphone or not in this demo\n. Please use '--micro on' or '--micro off'\n");
         return false;
     }
-
 
     //-----------------OPEN LOCAL PORTS------------//
     headExecutionClient.open("/followMeDialogueManager/head/rpc:c");
@@ -50,7 +49,7 @@ bool FollowMeDialogueManager::configure(yarp::os::ResourceFinder &rf) {
     stateMachine.setAsrConfigClient(&asrConfigClient);
     stateMachine.setInAsrPort(&inAsrPort);
 
-    if(microState)
+    if(microOn)
     {
         while(0 == asrConfigClient.getOutputCount())
         {
@@ -70,7 +69,7 @@ bool FollowMeDialogueManager::configure(yarp::os::ResourceFinder &rf) {
     }
 
     //--------------------------
-    // cleaning yarp bottles
+    // clearing yarp bottles
     bTtsOut.clear();
     bSpRecOut.clear();
 
@@ -98,7 +97,7 @@ bool FollowMeDialogueManager::configure(yarp::os::ResourceFinder &rf) {
     asrConfigClient.write(bSpRecOut);
 
     // set functions
-    stateMachine.setMicro(microState);
+    stateMachine.setMicro(microOn);
     stateMachine.setLanguage(language);
     stateMachine.setSpeakLanguage(language);
 

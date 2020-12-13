@@ -42,7 +42,7 @@ private:
     bool updateModule();
 
     // micro (on/off) to give speaking orders to TEO
-    bool microState;
+    bool microOn;
     void setMicro(bool microAct);
 };
 
