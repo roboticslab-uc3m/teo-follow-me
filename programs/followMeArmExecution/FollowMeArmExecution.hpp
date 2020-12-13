@@ -40,6 +40,7 @@ private:
 
     /** Phase of arm swing movement */
     bool phase;
+    double armSpeed;
 
     /** Arm Joints Move And Wait */
     bool armJointsMoveAndWait(std::vector<double>& leftArmQ, std::vector<double>& rightArmQ);
@@ -59,6 +60,7 @@ private:
     static const yarp::conf::vocab32_t VOCAB_STATE_ARM_SWINGING;
 
     static const std::string defaultRobot;
+    static const double defaultArmSpeed;
 };
 
 } // namespace roboticslab

@@ -12,17 +12,20 @@ namespace roboticslab
 const yarp::conf::vocab32_t FollowMeArmExecution::VOCAB_STATE_ARM_SWINGING = yarp::os::createVocab('s','w','i','n');
 
 const std::string FollowMeArmExecution::defaultRobot = "/teo";
+const double FollowMeArmExecution::defaultArmSpeed = 30.0;
 
 /************************************************************************/
 
 bool FollowMeArmExecution::configure(yarp::os::ResourceFinder &rf)
 {
     std::string robot = rf.check("robot",yarp::os::Value(defaultRobot),"name of /robot to be used").asString();
+    armSpeed = rf.check("armSpeed",yarp::os::Value(defaultArmSpeed),"arm speed").asDouble();
 
     printf("--------------------------------------------------------------\n");
     printf("FollowMeArmExecution options:\n");
     printf("\t--help (this help)\t--from [file.ini]\t--context [path]\n");
     printf("\t--robot: %s [%s]\n",robot.c_str(), defaultRobot.c_str());
+    printf("\t--armSpeed: %f [%f]\n",armSpeed, defaultArmSpeed);
     printf("--------------------------------------------------------------\n");
 
     state = VOCAB_STATE_ARM_SWINGING;
@@ -43,15 +46,15 @@ bool FollowMeArmExecution::configure(yarp::os::ResourceFinder &rf)
         return false;
     }
 
-    if (!leftArmDevice.view(leftArmIControlMode) )
-    { // connecting our device with "control mode" interface, initializing which control mode we want (position)
+    if (!leftArmDevice.view(leftArmIControlMode) ) // connecting our device with "control mode" interface, initializing which control mode we want (position)
+    {
         printf("[warning] Problems acquiring leftArmIControlMode interface\n");
         return false;
     }
     printf("[success] Acquired leftArmIControlMode interface\n");
 
-    if (!leftArmDevice.view(leftArmIPositionControl) )
-    { // connecting our device with "position control 2" interface (configuring our device: speed, acceleration... and sending joint positions)
+    if (!leftArmDevice.view(leftArmIPositionControl) ) // connecting our device with "position control 2" interface (configuring our device: speed, acceleration... and sending joint positions)
+    {
         printf("[warning] Problems acquiring leftArmIPositionControl interface\n");
         return false;
     }
@@ -71,14 +74,15 @@ bool FollowMeArmExecution::configure(yarp::os::ResourceFinder &rf)
         return false;
     }
 
-    if (!rightArmDevice.view(rightArmIControlMode) )
-    { // connecting our device with "control mode" interface, initializing which control mode we want (position)
+    if (!rightArmDevice.view(rightArmIControlMode) ) // connecting our device with "control mode" interface, initializing which control mode we want (position)
+    {
         printf("[warning] Problems acquiring rightArmIControlMode interface\n");
         return false;
     }
     printf("[success] Acquired rightArmIControlMode interface\n");
 
-    if ( ! rightArmDevice.view(rightArmIPositionControl) ) {
+    if ( ! rightArmDevice.view(rightArmIPositionControl) )
+    {
         printf("[warning] Problems acquiring rightArmIPositionControl interface\n");
         return false;
     }
@@ -146,7 +150,7 @@ bool FollowMeArmExecution::armJointsMoveAndWait(std::vector<double>& leftArmQ, s
     int armAxes;
     rightArmIPositionControl->getAxes(&armAxes); // number of axes is the same in both arms
 
-    std::vector<double> armSpeeds(armAxes,30.0);
+    std::vector<double> armSpeeds(armAxes,armSpeed);
     std::vector<double> armAccelerations(armAxes,30.0);
 
     rightArmIPositionControl->setRefSpeeds(armSpeeds.data());

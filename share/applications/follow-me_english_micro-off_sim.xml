@@ -14,7 +14,7 @@
 
     <module>
         <name>followMeArmExecution</name>
-        <parameters>--robot /teoSim</parameters>
+        <parameters>--robot /teoSim --armSpeed 10.0</parameters>
         <node>localhost</node>
     </module>
 
