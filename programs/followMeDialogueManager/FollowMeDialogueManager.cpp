@@ -13,20 +13,11 @@ bool FollowMeDialogueManager::configure(yarp::os::ResourceFinder &rf) {
     std::string micro = rf.check("micro",yarp::os::Value(DEFAULT_MICRO),"use or not microphone").asString();
 
     printf("--------------------------------------------------------------\n");
-    if (rf.check("help")) {
-        printf("FollowMeDialogueManager options:\n");
-        printf("\t--help (this help)\t--from [file.ini]\t--context [path]\n");
-        printf("\t--language (default: \"%s\")\n",language.c_str());
-        printf("\t--micro (default: \"%s\")\n",micro.c_str());
-        //printf("\t--file (default: \"%s\")\n",fileName.c_str());
-    }
-    //if (rf.check("file")) fileName = rf.find("file").asString();
-    //printf("FollowMeDialogueManager using file: %s\n",fileName.c_str());
-
+    printf("FollowMeDialogueManager options:\n");
+    printf("\t--help (this help)\t--from [file.ini]\t--context [path]\n");
+    printf("\t--language (default: \"%s\")\n",language.c_str());
+    printf("\t--micro (default: \"%s\")\n",micro.c_str());
     printf("--------------------------------------------------------------\n");
-    if(rf.check("help")) {
-        ::exit(1);
-    }
 
     if(micro == "on") microOn = true;
     else if(micro == "off") microOn = false;
