@@ -90,6 +90,14 @@ bool FollowMeHeadExecution::configure(yarp::os::ResourceFinder &rf)
     inDialoguePort.open("/followMeHeadExecution/dialogueManager/rpc:s");
     inCvPort.open("/followMeHeadExecution/cv/state:i");
 
+    while(0 == inCvPort.getInputCount())
+    {
+        if(isStopping())
+            return false;
+        printf("Waiting for \"/followMeHeadExecution/cv/state:i\" to be connected to vision...\n");
+        yarp::os::Time::delay(0.5);
+    }
+
     return true;
 }
 
