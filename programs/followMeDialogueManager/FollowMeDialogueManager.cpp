@@ -56,7 +56,7 @@ bool FollowMeDialogueManager::configure(yarp::os::ResourceFinder &rf) {
         {
             if(isStopping())
                 return false;
-            printf("Waiting for \"/followMeDialogueManager/speechRecognition/rpc:c\" to be connected to something...\n");
+            printf("Waiting for \"/followMeDialogueManager/speechRecognition/rpc:c\" to be connected to ASR to configure it...\n");
             yarp::os::Time::delay(0.5);
         }
     }
@@ -65,7 +65,7 @@ bool FollowMeDialogueManager::configure(yarp::os::ResourceFinder &rf) {
     {
         if(isStopping())
             return false;
-        printf("Waiting for \"/followMeDialogueManager/tts/rpc:c\" to be connected to something...\n");
+        printf("Waiting for \"/followMeDialogueManager/tts/rpc:c\" to be connected to TTS...\n");
         yarp::os::Time::delay(0.5);
     }
 
