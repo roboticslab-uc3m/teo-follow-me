@@ -52,7 +52,7 @@
 
     <connection>
         <from>/followMeDialogueManager/tts/rpc:c</from>
-        <to>/teo/tts/rpc:s</to>
+        <to>/teoSim/tts/rpc:s</to>
     </connection>
 
 </application>
