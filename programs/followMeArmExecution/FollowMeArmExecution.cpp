@@ -18,13 +18,10 @@ bool FollowMeArmExecution::configure(yarp::os::ResourceFinder &rf)
     std::string robot = rf.check("robot",yarp::os::Value(DEFAULT_ROBOT),"name of /robot to be used").asString();
 
     printf("--------------------------------------------------------------\n");
-    if (rf.check("help"))
-    {
-        printf("FollowMeArmExecution options:\n");
-        printf("\t--help (this help)\t--from [file.ini]\t--context [path]\n");
-        printf("\t--robot: %s [%s]\n",robot.c_str(),DEFAULT_ROBOT);
-        ::exit(0);
-    }
+    printf("FollowMeArmExecution options:\n");
+    printf("\t--help (this help)\t--from [file.ini]\t--context [path]\n");
+    printf("\t--robot: %s [%s]\n",robot.c_str(),DEFAULT_ROBOT);
+    printf("--------------------------------------------------------------\n");
 
     state = VOCAB_STATE_ARM_SWINGING;
 

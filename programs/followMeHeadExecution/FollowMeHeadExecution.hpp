@@ -14,6 +14,8 @@
 #include "InCvPort.hpp"
 #include "InDialoguePortProcessor.hpp"
 
+#define DEFAULT_ROBOT "/teo"
+
 namespace roboticslab
 {
 

@@ -13,33 +13,25 @@ bool FollowMeDialogueManager::configure(yarp::os::ResourceFinder &rf) {
     std::string micro = rf.check("micro",yarp::os::Value(DEFAULT_MICRO),"use or not microphone").asString();
 
     printf("--------------------------------------------------------------\n");
-    if (rf.check("help")) {
-        printf("FollowMeDialogueManager options:\n");
-        printf("\t--help (this help)\t--from [file.ini]\t--context [path]\n");
-        printf("\t--language (default: \"%s\")\n",language.c_str());
-        printf("\t--micro (default: \"%s\")\n",micro.c_str());
-        //printf("\t--file (default: \"%s\")\n",fileName.c_str());
-    }
-    //if (rf.check("file")) fileName = rf.find("file").asString();
-    //printf("FollowMeDialogueManager using file: %s\n",fileName.c_str());
-
+    printf("FollowMeDialogueManager options:\n");
+    printf("\t--help (this help)\t--from [file.ini]\t--context [path]\n");
+    printf("\t--language (default: \"%s\")\n",language.c_str());
+    printf("\t--micro (default: \"%s\")\n",micro.c_str());
     printf("--------------------------------------------------------------\n");
-    if(rf.check("help")) {
-        ::exit(1);
-    }
 
-    if(micro == "on") microState = true;
-    else if(micro == "off") microState = false;
+    if(micro == "on")
+        microOn = true;
+    else if(micro == "off")
+        microOn = false;
     else
     {
         printf("You need to specify if you want to use microphone or not in this demo\n. Please use '--micro on' or '--micro off'\n");
         return false;
     }
 
-
     //-----------------OPEN LOCAL PORTS------------//
-    headExecutionClient.open("/followMeDialogueManager/head/rpc:c");
     armExecutionClient.open("/followMeDialogueManager/arms/rpc:c");
+    headExecutionClient.open("/followMeDialogueManager/head/rpc:c");
     ttsClient.open("/followMeDialogueManager/tts/rpc:c");
     asrConfigClient.open("/followMeDialogueManager/speechRecognition/rpc:c"); // -- setDictionary (client)
     inAsrPort.open("/followMeDialogueManager/speechRecognition/speech:i"); // -- words (input)
@@ -50,13 +42,13 @@ bool FollowMeDialogueManager::configure(yarp::os::ResourceFinder &rf) {
     stateMachine.setAsrConfigClient(&asrConfigClient);
     stateMachine.setInAsrPort(&inAsrPort);
 
-    if(microState)
+    if(microOn)
     {
         while(0 == asrConfigClient.getOutputCount())
         {
             if(isStopping())
                 return false;
-            printf("Waiting for \"/followMeDialogueManager/speechRecognition/rpc:c\" to be connected to something...\n");
+            printf("Waiting for \"/followMeDialogueManager/speechRecognition/rpc:c\" to be connected to ASR to configure it...\n");
             yarp::os::Time::delay(0.5);
         }
     }
@@ -65,12 +57,28 @@ bool FollowMeDialogueManager::configure(yarp::os::ResourceFinder &rf) {
     {
         if(isStopping())
             return false;
-        printf("Waiting for \"/followMeDialogueManager/tts/rpc:c\" to be connected to something...\n");
+        printf("Waiting for \"/followMeDialogueManager/tts/rpc:c\" to be connected to TTS...\n");
+        yarp::os::Time::delay(0.5);
+    }
+
+    while(0 == armExecutionClient.getOutputCount())
+    {
+        if(isStopping())
+            return false;
+        printf("Waiting for \"/followMeDialogueManager/arms/rpc:c\" to be connected to arm execution...\n");
+        yarp::os::Time::delay(0.5);
+    }
+
+    while(0 == headExecutionClient.getOutputCount())
+    {
+        if(isStopping())
+            return false;
+        printf("Waiting for \"/followMeDialogueManager/head/rpc:c\" to be connected to head execution...\n");
         yarp::os::Time::delay(0.5);
     }
 
     //--------------------------
-    // cleaning yarp bottles
+    // clearing yarp bottles
     bTtsOut.clear();
     bSpRecOut.clear();
 
@@ -98,7 +106,7 @@ bool FollowMeDialogueManager::configure(yarp::os::ResourceFinder &rf) {
     asrConfigClient.write(bSpRecOut);
 
     // set functions
-    stateMachine.setMicro(microState);
+    stateMachine.setMicro(microOn);
     stateMachine.setLanguage(language);
     stateMachine.setSpeakLanguage(language);
 

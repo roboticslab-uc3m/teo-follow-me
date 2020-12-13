@@ -7,29 +7,21 @@ namespace roboticslab
 
 /************************************************************************/
 
-bool FollowMeHeadExecution::configure(yarp::os::ResourceFinder &rf) {
-
-    //std::string fileName(DEFAULT_FILE_NAME);
-
-    printf("--------------------------------------------------------------\n");
-    if (rf.check("help")) {
-        printf("FollowMeHeadExecution options:\n");
-        printf("\t--help (this help)\t--from [file.ini]\t--context [path]\n");
-        //printf("\t--file (default: \"%s\")\n",fileName.c_str());
-    }
-    //if (rf.check("file")) fileName = rf.find("file").asString();
-    //printf("FollowMeHeadExecution using file: %s\n",fileName.c_str());
+bool FollowMeHeadExecution::configure(yarp::os::ResourceFinder &rf)
+{
+    std::string robot = rf.check("robot",yarp::os::Value(DEFAULT_ROBOT),"name of /robot to be used").asString();
 
     printf("--------------------------------------------------------------\n");
-    if(rf.check("help")) {
-        ::exit(1);
-    }
+    printf("FollowMeHeadExecution options:\n");
+    printf("\t--help (this help)\t--from [file.ini]\t--context [path]\n");
+    printf("\t--robot: %s [%s]\n",robot.c_str(),DEFAULT_ROBOT);
+    printf("--------------------------------------------------------------\n");
 
     //
     yarp::os::Property headOptions;
     headOptions.put("device","remote_controlboard");
     headOptions.put("local","/followMeHeadExecution/head");
-    headOptions.put("remote","/teo/head");
+    headOptions.put("remote",robot+"/head");
     headDevice.open(headOptions);
     if( ! headDevice.isValid() ) {
         printf("head remote_controlboard instantiation not worked.\n");
