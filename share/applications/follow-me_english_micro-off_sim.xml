@@ -8,11 +8,13 @@
 
     <module>
         <name>followMeHeadExecution</name>
+        <parameters>--robot /teoSim</parameters>
         <node>localhost</node>
     </module>
 
     <module>
         <name>followMeArmExecution</name>
+        <parameters>--robot /teoSim</parameters>
         <node>localhost</node>
     </module>
 
