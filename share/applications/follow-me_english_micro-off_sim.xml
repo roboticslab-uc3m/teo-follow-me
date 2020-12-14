@@ -35,19 +35,19 @@
     </module>
 
     <connection>
-        <from>/rgbdDetection/state:o</from>
+        <from>/rgbdDetection/teoSim/state:o</from>
         <to>/followMeHeadExecution/cv/state:i</to>
     </connection>
 
     <module>
         <name>yarpview</name>
-        <parameters>--name /yarpview/rgbdDetection/img:i</parameters>
+        <parameters>--name /yarpview/rgbdDetection/teoSim/img:i</parameters>
         <node>localhost</node>
     </module>
 
     <connection>
-        <from>/rgbdDetection/img:o</from>
-        <to>/yarpview/rgbdDetection/img:i</to>
+        <from>/rgbdDetection/teoSim/img:o</from>
+        <to>/yarpview/rgbdDetection/teoSim/img:i</to>
     </connection>
 
     <connection>
