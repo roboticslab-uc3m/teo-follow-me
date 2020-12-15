@@ -14,7 +14,7 @@ How to run the demo: [Spanish guide](http://robots.uc3m.es/index.php/Procedimien
 
 ## Installation
 
-Installation instructions for installing from source can be found [here]( /doc/follow-me-install.md ).
+Installation instructions for installing from source can be found [here](/doc/follow-me-install.md).
 
 ## Contributing
 
@@ -32,7 +32,7 @@ Installation instructions for installing from source can be found [here]( /doc/f
 5. Create a new Pull Request
 
 ## Follow-me app program and connection diagram
-![follow-me app program and connection diagram](doc/fig/follow-me-app.png)
+![follow-me app program and connection diagram](doc/fig/follow-me-app.svg)
 
 
 ## Follow-me dialogue manager state machine diagram
