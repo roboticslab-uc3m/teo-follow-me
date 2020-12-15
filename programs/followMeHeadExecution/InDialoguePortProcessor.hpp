@@ -13,9 +13,9 @@ namespace roboticslab
 {
 
 /**
- * @ingroup followMeExecutionCore
+ * @ingroup followMeHeadExecution
  *
- * @brief Input port of speech recognition data.
+ * @brief Input port of cv recognition data.
  *
  */
 
@@ -39,7 +39,7 @@ private:
     //-- Cv Port
     InCvPort* inCvPortPtr;
 
-    //-- Robot device
+    //-- Robot encoders
     yarp::dev::IEncoders *iEncoders;
 };
 

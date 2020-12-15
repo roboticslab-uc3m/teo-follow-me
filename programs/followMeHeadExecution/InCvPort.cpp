@@ -15,19 +15,34 @@ void InCvPort::onRead(yarp::os::Bottle& b)
         iPositionControl->positionMove(1, 0.0);
         return;
     }
-    if (b.size() < 3)
-        return;
 
-    double x = b.get(0).asDouble();
-    double y = b.get(1).asDouble();
-    double z = b.get(2).asDouble();
-    printf("%f %f %f\n",x,y,z);
+    //printf("InCvPort got %zu elems [%s]\n", b.size(), b.toString().c_str());
+
+    if(b.size() < 1)
+    {
+        printf("InCvPort review yor protocol! (b.size() is %zu < 1)\n", b.size());
+        return;
+    }
+
+    if(!b.get(0).isDict())
+    {
+        printf("InCvPort review yor protocol! (!b.get(0).isDict())\n");
+        return;
+    }
+
+    yarp::os::Property* detectedObject = b.get(0).asDict();
+    double x = detectedObject->find("mmX").asDouble();
+    double y = detectedObject->find("mmY").asDouble();
+    double z = detectedObject->find("mmZ").asDouble();
+    printf("InCvPort detectedObjects[0]: %f %f %f\n", x, y, z);
+
+    // X -> Head joint 0
     if( x > 0.30 ) iPositionControl->relativeMove(0, 2);
     if( x < -0.30 ) iPositionControl->relativeMove(0, -2);
-    //
+
+    // Y -> Head joint 1
     if( y > 0.30 ) iPositionControl->relativeMove(1, 2);
     if( y < -0.30 ) iPositionControl->relativeMove(1, -2);
-
 }
 
 /************************************************************************/
