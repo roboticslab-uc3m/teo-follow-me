@@ -8,11 +8,13 @@
 
     <module>
         <name>followMeHeadExecution</name>
+        <parameters>--robot /teo</parameters>
         <node>localhost</node>
     </module>
 
     <module>
         <name>followMeArmExecution</name>
+        <parameters>--robot /teo --armSpeed 30.0</parameters>
         <node>localhost</node>
     </module>
 
@@ -33,7 +35,7 @@
     </module>
 
     <connection>
-        <from>/rgbdDetection/state:o</from>
+        <from>/rgbdDetection/teo/xtion/state:o</from>
         <to>/followMeHeadExecution/cv/state:i</to>
     </connection>
 
@@ -44,8 +46,8 @@
     </module>
 
     <connection>
-        <from>/rgbdDetection/img:o</from>
-        <to>/yarpview/rgbdDetection/img:i</to>
+        <from>/rgbdDetection/teo/xtion/img:o</from>
+        <to>/yarpview/rgbdDetection/teo/xtion/img:i</to>
     </connection>
 
     <connection>
