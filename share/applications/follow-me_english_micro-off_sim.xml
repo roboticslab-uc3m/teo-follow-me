@@ -31,7 +31,7 @@
     <module>
         <name>rgbdDetection</name>
         <parameters>--RGBDRemote /teoSim --detector HaarDetector</parameters>
-        <node>/head</node>
+        <node>localhost</node>
     </module>
 
     <connection>
