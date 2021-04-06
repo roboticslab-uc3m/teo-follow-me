@@ -2,10 +2,7 @@
 
 A robotic face following and arm waving demo.
 
-Link to Doxygen generated documentation: http://robots.uc3m.es/dox-follow-me
-
 How to run the demo: [Spanish guide](http://robots.uc3m.es/index.php/Procedimiento_Demos)
-
 
 <p align="center">
     <img src="doc/fig/follow-me-big.png" alt="follow-me-big image"/>
@@ -14,7 +11,7 @@ How to run the demo: [Spanish guide](http://robots.uc3m.es/index.php/Procedimien
 
 ## Installation
 
-Installation instructions for installing from source can be found [here](/doc/follow-me-install.md).
+Installation instructions for installing from source can be found [here](doc/follow-me-install.md).
 
 ## Contributing
 
@@ -34,15 +31,13 @@ Installation instructions for installing from source can be found [here](/doc/fo
 ## Follow-me app program and connection diagram
 ![follow-me app program and connection diagram](doc/fig/follow-me-app.svg)
 
-
 ## Follow-me dialogue manager state machine diagram
 ![follow-me dialogue manager state machine diagram](doc/fig/follow-me-state-machine.png)
 
-
 ## Status
 
-[![Build Status (Linux)](https://travis-ci.com/roboticslab-uc3m/follow-me.svg?branch=master)](https://travis-ci.com/roboticslab-uc3m/follow-me)
-
+[![CI (Linux)](https://github.com/roboticslab-uc3m/follow-me/workflows/Continuous%20Integration/badge.svg)](https://github.com/roboticslab-uc3m/follow-me/actions)
+ 
 [![Coverage Status](https://coveralls.io/repos/roboticslab-uc3m/follow-me/badge.svg)](https://coveralls.io/r/roboticslab-uc3m/follow-me)
 
 [![Issues](https://img.shields.io/github/issues/roboticslab-uc3m/follow-me.svg?label=Issues)](https://github.com/roboticslab-uc3m/follow-me/issues)
