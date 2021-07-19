@@ -2,7 +2,7 @@
 # CopyPolicy: released under the terms of the LGPLv2.1, see LICENSE at project root.
 # URL: https://github.com/roboticslab-uc3m/follow-me
 
-cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.12)
 
 project(FOLLOW_ME LANGUAGES CXX)
 
@@ -43,7 +43,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake
 
 # Hard dependencies.
 find_package(YCM 0.11 REQUIRED)
-find_package(YARP 3.3 REQUIRED COMPONENTS os dev)
+find_package(YARP 3.4 REQUIRED COMPONENTS os dev)
 
 # Configure installation paths for YARP resources.
 yarp_configure_external_installation(roboticslab-follow-me)
