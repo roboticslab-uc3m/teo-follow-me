@@ -161,8 +161,7 @@
       <ellipse stroke-linecap="butt" transform="matrix(1,0,0,1,-71.8719,-876.6096)" clip-path="url(#clipPath2)" fill="none" image-rendering="auto" rx="106.5911" cx="186.463" ry="28.6877" cy="913.2973" stroke-miterlimit="1.45"/>
     </g>
     <g text-rendering="geometricPrecision" stroke-miterlimit="1.45" shape-rendering="geometricPrecision" font-family="sans-serif" transform="matrix(1,0,0,1,1059,-127)" stroke-linecap="butt">
-      <text x="161.9093" xml:space="preserve" y="910.4672" clip-path="url(#clipPath2)" stroke="none">yarpdev</text>
-      <text x="138.9494" xml:space="preserve" y="924.4359" clip-path="url(#clipPath2)" stroke="none">--device Espeak</text>
+      <text x="144.9494" xml:space="preserve" y="917.4515" clip-path="url(#clipPath2)" stroke="none">espeakServer</text>
     </g>
     <g text-rendering="geometricPrecision" shape-rendering="geometricPrecision" transform="matrix(5.3398,0,0,5.3398,-22.1533,449.6698)" image-rendering="optimizeQuality">
       <image x="0" y="0" clip-path="url(#clipPath10)" width="276" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAARQAAAAtCAYAAABvcpSoAAABdElEQVR42u3d247C&#10;IBQF0F6o///JvkjSmF7Hw4iwVrIzTzolDXsaHGEYAAAAAAAAAOCyUUS6THiRTCLS&#10;bcboMplfSSLSVfLcDymVaVUki4h0mRTxpJKfTtLOLxCRdpPn+uP1cy5RKOtHIBFp&#10;N6l0oeQymax6izSdraWOPPdDCmW9QBP+MRJQ3b+I5FJZoub+e6HM0R8hAVWXyhz5&#10;MKFQQKEoFEChAAoFUCgKBVAogEIBFIpCAYVSolBCvnEIKBSFAgpFoQB1FwqgUD4u&#10;lI+/vgwoFJ/ygEKxhgLUXSg2WII+ymS9wZItIEUkfAvIYptU//dBQ0eb6R69Zus9&#10;ajg4ae/654Px/sJYrt6bmnP33py97ttjmU6ue2/8KbpQhsExGiK9H6MRWijjsH3Q&#10;17cHd+Valp33qO1mbV3z2ThrHUsLf3ju3ptUwfy4MgfuzJsiB329L844ilSkz2NI&#10;i5xvvLc2ISIOS/9TsYhIfwEAAAAAAKBZTweNKZSjsnotAAAAAElFTkSuQmCC" height="45" preserveAspectRatio="none"/>
