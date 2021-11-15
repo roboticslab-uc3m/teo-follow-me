@@ -1,4 +1,3 @@
-
 /**
 @brief The main, catch-all namespace for TEO.
  */
@@ -28,6 +27,3 @@ namespace roboticslab {}
  *
  * @brief follow-me examples.
  */
-
-
-

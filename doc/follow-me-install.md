@@ -1,10 +1,9 @@
 ## Follow-me demonstration: Installation from Source Code
 
 First install the dependencies:
-- [Install CMake](https://github.com/roboticslab-uc3m/installation-guides/blob/master/install-cmake.md)
-- [Install YARP](https://github.com/roboticslab-uc3m/installation-guides/blob/master/install-yarp.md)
-- [Install VISION](https://github.com/roboticslab-uc3m/vision/blob/develop/doc/vision-install.md)
-- [Install SPEECH](https://github.com/roboticslab-uc3m/speech/blob/develop/doc/speech-install.md)
+- [Install CMake 3.12+](https://github.com/roboticslab-uc3m/installation-guides/blob/master/install-cmake.md)
+- [Install YCM 0.11+](https://github.com/roboticslab-uc3m/installation-guides/blob/master/install-ycm.md)
+- [Install YARP 3.4+](https://github.com/roboticslab-uc3m/installation-guides/blob/master/install-yarp.md)
 
 ### Install follow-me demo on Ubuntu
 
@@ -19,4 +18,5 @@ make -j$(nproc)  # Compile
 sudo make install  # Install :-)
 cp ../scripts/gnome/follow-me.desktop $HOME/Desktop  # Nice desktop icon. May require some updates to point to path and icon.
 ```
+
 For additional options use `ccmake` instead of `cmake`.
