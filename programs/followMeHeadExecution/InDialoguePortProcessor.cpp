@@ -2,52 +2,69 @@
 
 #include "InDialoguePortProcessor.hpp"
 
+#include <yarp/os/LogStream.h>
+
+#include <yarp/dev/GenericVocabs.h> // VOCAB_FAILED
+
 #include "../FollowMeVocabs.hpp"
 
-namespace roboticslab
+using namespace roboticslab;
+
+bool InDialoguePortProcessor::read(yarp::os::ConnectionReader & connection)
 {
+    yarp::os::Bottle in;
 
-/************************************************************************/
-
-bool InDialoguePortProcessor::read(yarp::os::ConnectionReader& connection)
-{
-    yarp::os::Bottle in, out;
-    double encValue;
-    bool ok = in.read(connection);
-    if (!ok) return false;
-    // -- Gets a way to reply to the message, if possible.
-    yarp::os::ConnectionWriter *returnToSender = connection.getWriter();
-
-    switch ( in.get(0).asVocab() )
+    if (!in.read(connection))
     {
-        case VOCAB_FOLLOW_ME:
-            printf("follow\n");
-            inCvPortPtr->setFollow(true);
-            break;
+        yError() << "Failed to read from connection";
+        return false;
+    }
 
-        case VOCAB_STOP_FOLLOWING:
-            printf("stopFollowing\n");
-            inCvPortPtr->setFollow(false);
-            break;
+    double encValue;
 
-        case VOCAB_GET_ENCODER_POSITION:
-            if ( ! iEncoders->getEncoder(0, &encValue) )  // 0 es el tilt del cuello (http://robots.uc3m.es/index.php/TEO_Diagrams)
+    auto * returnToSender = connection.getWriter();
+
+#if YARP_VERSION_MINOR >= 5
+    switch (in.get(0).asVocab32())
+#else
+    switch (in.get(0).asVocab())
+#endif
+    {
+    case VOCAB_FOLLOW_ME:
+        yInfo() << "follow";
+        inCvPortPtr->setFollow(true);
+        break;
+
+    case VOCAB_STOP_FOLLOWING:
+        yInfo() << "stopFollowing";
+        inCvPortPtr->setFollow(false);
+        break;
+
+    case VOCAB_GET_ENCODER_POSITION:
+        if (!iEncoders->getEncoder(0, &encValue))
+        {
+            yError() << "getEncoder failed";
+            yarp::os::Bottle out = {yarp::os::Value(VOCAB_FAILED, true)};
+
+            if (returnToSender)
             {
-                printf("Error: getEncoder failed\n");
-                out.addVocab(VOCAB_FAILED);
-                if (returnToSender!=NULL)
-                    out.write(*returnToSender);
-                return true;
+                out.write(*returnToSender);
             }
 
-            out.addDouble(encValue);
-            if (returnToSender!=NULL)
+            return false;
+        }
+        else
+        {
+            yarp::os::Bottle out = {yarp::os::Value(encValue)};
+
+            if (returnToSender)
+            {
                 out.write(*returnToSender);
-            break;
+            }
+        }
+
+        break;
     }
+
     return true;
 }
-
-/************************************************************************/
-
-} // namespace roboticslab
