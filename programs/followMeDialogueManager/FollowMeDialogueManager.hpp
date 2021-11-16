@@ -12,6 +12,8 @@
 
 #include <SpeechIDL.h>
 
+#include "FollowMeHeadCommandsIDL.h"
+
 namespace roboticslab
 {
 
@@ -36,7 +38,9 @@ private:
     std::string asrListen();
     std::string asrListenWithPeriodicWave();
 
+    FollowMeHeadCommandsIDL headCommander;
     SpeechIDL speech;
+
     yarp::os::BufferedPort<yarp::os::Bottle> inAsrPort;
     yarp::os::RpcClient ttsClient;
     yarp::os::RpcClient asrConfigClient;

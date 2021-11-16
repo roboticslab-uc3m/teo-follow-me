@@ -3,7 +3,7 @@ if(NOT TARGET ROBOTICSLAB::SpeechIDL AND (NOT DEFINED ENABLE_followMeDialogueMan
 endif()
 
 cmake_dependent_option(ENABLE_followMeDialogueManager "Choose if you want to compile followMeDialogueManager" ON
-                       "TARGET ROBOTICSLAB::SpeechIDL" OFF)
+                       "ENABLE_FollowMeCommandsIDL;TARGET ROBOTICSLAB::SpeechIDL" OFF)
 
 if(ENABLE_followMeDialogueManager)
 
@@ -13,7 +13,8 @@ if(ENABLE_followMeDialogueManager)
 
     target_link_libraries(followMeDialogueManager YARP::YARP_os
                                                   YARP::YARP_init
-                                                  ROBOTICSLAB::SpeechIDL)
+                                                  ROBOTICSLAB::SpeechIDL
+                                                  ROBOTICSLAB::FollowMeCommandsIDL)
 
     install(TARGETS followMeDialogueManager
             DESTINATION ${CMAKE_INSTALL_BINDIR})

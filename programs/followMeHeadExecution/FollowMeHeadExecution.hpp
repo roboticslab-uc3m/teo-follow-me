@@ -3,18 +3,20 @@
 #ifndef __FOLLOW_ME_HEAD_EXECUTION_HPP__
 #define __FOLLOW_ME_HEAD_EXECUTION_HPP__
 
-#include <vector>
+#include <atomic>
 
+#include <yarp/os/Bottle.h>
+#include <yarp/os/BufferedPort.h>
 #include <yarp/os/RFModule.h>
 #include <yarp/os/RpcServer.h>
+#include <yarp/os/TypedReaderCallback.h>
 
 #include <yarp/dev/IControlMode.h>
 #include <yarp/dev/IEncoders.h>
 #include <yarp/dev/IPositionControl.h>
 #include <yarp/dev/PolyDriver.h>
 
-#include "InCvPort.hpp"
-#include "InDialoguePortProcessor.hpp"
+#include "FollowMeHeadCommandsIDL.h"
 
 namespace roboticslab
 {
@@ -23,7 +25,9 @@ namespace roboticslab
  * @ingroup follow-me_programs
  * @brief Head Execution Core.
  */
-class FollowMeHeadExecution : public yarp::os::RFModule
+class FollowMeHeadExecution : public yarp::os::RFModule,
+                              public yarp::os::TypedReaderCallback<yarp::os::Bottle>,
+                              public FollowMeHeadCommandsIDL
 {
 public:
     ~FollowMeHeadExecution()
@@ -35,17 +39,23 @@ public:
     double getPeriod() override;
     bool updateModule() override;
 
-private:
-    //-- Rpc port, server for retrieving encoder position (reply position port), etc.
-    yarp::os::RpcServer inDialoguePort;
-    InDialoguePortProcessor inDialoguePortProcessor;
-    InCvPort inCvPort;
+    void onRead(yarp::os::Bottle & bot) override;
 
-    /** Head Device */
+    void enableFollowing() override;
+    void disableFollowing() override;
+    double getOrientationAngle() override;
+    bool stop() override;
+
+private:
+    yarp::os::RpcServer serverPort;
+    yarp::os::BufferedPort<yarp::os::Bottle> detectionPort;
+
     yarp::dev::PolyDriver headDevice;
-    yarp::dev::IControlMode * headIControlMode;
+    yarp::dev::IControlMode * iControlMode;
     yarp::dev::IEncoders * iEncoders;
-    yarp::dev::IPositionControl * headIPositionControl;
+    yarp::dev::IPositionControl * iPositionControl;
+
+    std::atomic_bool isFollowing {false};
 };
 
 } // namespace roboticslab

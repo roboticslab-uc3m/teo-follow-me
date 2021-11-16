@@ -2,9 +2,12 @@
 
 #include "FollowMeHeadExecution.hpp"
 
+#include <cmath> // std::abs, std::copysign
+
+#include <vector>
+
 #include <yarp/os/LogStream.h>
 #include <yarp/os/Property.h>
-#include <yarp/os/SystemClock.h>
 
 using namespace roboticslab;
 
@@ -12,6 +15,8 @@ constexpr auto DEFAULT_ROBOT = "/teo";
 constexpr auto DEFAULT_PREFIX = "/followMeHeadExecution";
 constexpr auto DEFAULT_REF_SPEED = 30.0;
 constexpr auto DEFAULT_REF_ACCELERATION = 30.0;
+constexpr auto DETECTION_DEADBAND = 0.3; // [mm]
+constexpr auto RELATIVE_INCREMENT = 2.0; // [deg]
 
 bool FollowMeHeadExecution::configure(yarp::os::ResourceFinder &rf)
 {
@@ -37,94 +42,151 @@ bool FollowMeHeadExecution::configure(yarp::os::ResourceFinder &rf)
         return false;
     }
 
-    if (!headDevice.view(headIControlMode) || !headDevice.view(iEncoders) || !headDevice.view(headIPositionControl))
+    if (!headDevice.view(iControlMode) || !headDevice.view(iEncoders) || !headDevice.view(iPositionControl))
     {
         yError() << "Failed to view head device interfaces";
         return false;
     }
 
-    //-- Set control mode
-
-    int headAxes;
-    headIPositionControl->getAxes(&headAxes);
-
-    if (!headIControlMode->setControlModes(std::vector<int>(headAxes, VOCAB_CM_POSITION).data()))
+    if (!iControlMode->setControlModes(std::vector<int>(2, VOCAB_CM_POSITION).data()))
     {
         yError() << "Failed to set position control mode";
         return false;
     }
 
-    // -- Configure reference speeds and accelerations
-
-    if (!headIPositionControl->setRefSpeeds(std::vector<double>(headAxes, DEFAULT_REF_SPEED).data()))
+    if (!iPositionControl->setRefSpeeds(std::vector<double>(2, DEFAULT_REF_SPEED).data()))
     {
         yError() << "Failed to set reference speeds";
         return false;
     }
 
-    if (!headIPositionControl->setRefAccelerations(std::vector<double>(headAxes, DEFAULT_REF_ACCELERATION).data()))
+    if (!iPositionControl->setRefAccelerations(std::vector<double>(2, DEFAULT_REF_ACCELERATION).data()))
     {
         yError() << "Failed to set reference accelerations";
         return false;
     }
 
-    inCvPort.setIPositionControl(headIPositionControl);
-    inDialoguePortProcessor.setIEncoders(iEncoders);
-
-    //-----------------OPEN LOCAL PORTS------------//
-
-    inDialoguePortProcessor.setInCvPortPtr(&inCvPort);
-    inCvPort.useCallback();
-    inDialoguePort.setReader(inDialoguePortProcessor);
-
-    if (!inDialoguePort.open(DEFAULT_PREFIX + std::string("/dialogueManager/rpc:s")))
+    if (!serverPort.open(DEFAULT_PREFIX + std::string("/dialogueManager/rpc:s")))
     {
-        yError() << "Failed to open inDialoguePort" << inDialoguePort.getName();
+        yError() << "Failed to open dialogue server port" << serverPort.getName();
         return false;
     }
 
-    if (!inCvPort.open(DEFAULT_PREFIX + std::string("/cv/state:i")))
+    if (!detectionPort.open(DEFAULT_PREFIX + std::string("/cv/state:i")))
     {
-        yError() << "Failed to open inCvPort" << inCvPort.getName();
+        yError() << "Failed to open detection client port" << detectionPort.getName();
         return false;
     }
 
-    while (inCvPort.getInputCount() == 0)
-    {
-        if (isStopping())
-        {
-            return false;
-        }
-
-        yInfo() << "Waiting for" << inCvPort.getName() << "to be connected to vision...";
-        yarp::os::SystemClock::delaySystem(0.5);
-    }
+    yarp::os::Wire::yarp().attachAsServer(serverPort);
+    detectionPort.useCallback(*this);
 
     return true;
 }
 
 double FollowMeHeadExecution::getPeriod()
 {
-    return 2.0; // [s]
+    return 0.1; // [s]
 }
 
 bool FollowMeHeadExecution::updateModule()
 {
+    if (detectionPort.getInputCount() == 0)
+    {
+        yDebugThrottle(1.0) << "Waiting for" << detectionPort.getName() << "to be connected to vision...";
+    }
+
     return true;
 }
 
 bool FollowMeHeadExecution::interruptModule()
 {
-    inCvPort.disableCallback();
-    inCvPort.interrupt();
-    inDialoguePort.interrupt();
-    return true;
+    serverPort.interrupt();
+    detectionPort.interrupt();
+    return stop();
 }
 
 bool FollowMeHeadExecution::close()
 {
-    inDialoguePort.close();
-    inCvPort.close();
+    serverPort.close();
+    detectionPort.close();
     headDevice.close();
+    return true;
+}
+
+void FollowMeHeadExecution::onRead(yarp::os::Bottle & b)
+{
+    if (!isFollowing)
+    {
+        return;
+    }
+
+    if (b.size() != 3)
+    {
+        yWarning() << "InCvPort protocol error, expected 3 elements, got" << b.size();
+        return;
+    }
+
+    auto x = b.get(0).asFloat64();
+    auto y = b.get(1).asFloat64();
+    auto z = b.get(2).asFloat64(); // depth, unused
+
+    yDebug() << "Detection port got (x,y,z):" << x << y << z;
+
+    if (std::abs(x) > DETECTION_DEADBAND || std::abs(y) > DETECTION_DEADBAND)
+    {
+        std::vector<double> target {
+            std::abs(x) > DETECTION_DEADBAND ? std::copysign(RELATIVE_INCREMENT, x) : 0.0,
+            std::abs(y) > DETECTION_DEADBAND ? std::copysign(RELATIVE_INCREMENT, y) : 0.0
+        };
+
+        if (!iPositionControl->relativeMove(target.data()))
+        {
+            yError() << "Failed to move head";
+        }
+    }
+}
+
+void FollowMeHeadExecution::enableFollowing()
+{
+    yInfo() << "Received start following signal";
+    isFollowing = true;
+}
+
+void FollowMeHeadExecution::disableFollowing()
+{
+    yInfo() << "Received stop following signal, moving to home position";
+    isFollowing = false;
+    static const std::vector<double> headZeros(2, 0.0);
+
+    if (!iPositionControl->positionMove(headZeros.data()))
+    {
+        yError() << "Failed to perform homing";
+    }
+}
+
+double FollowMeHeadExecution::getOrientationAngle()
+{
+    double angle = 0.0;
+
+    if (!iEncoders->getEncoder(0, &angle))
+    {
+        yError() << "Failed to get head orientation encoder value";
+    }
+
+    return angle;
+}
+
+bool FollowMeHeadExecution::stop()
+{
+    yInfo() << "Received stop command";
+    isFollowing = false;
+
+    if (!iPositionControl->stop())
+    {
+        yError() << "Failed to stop head";
+        return false;
+    }
+
     return true;
 }

@@ -28,7 +28,7 @@ endif()
 
 # Hard dependencies.
 find_package(YCM 0.11 REQUIRED)
-find_package(YARP 3.4 REQUIRED COMPONENTS os dev)
+find_package(YARP 3.4 REQUIRED COMPONENTS os dev idl_tools)
 
 # Soft dependencies.
 find_package(ROBOTICSLAB_SPEECH QUIET)
@@ -48,6 +48,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
 include(CMakeDependentOption)
 
 # Add main contents.
+add_subdirectory(libraries)
 add_subdirectory(programs)
 add_subdirectory(share)
 
