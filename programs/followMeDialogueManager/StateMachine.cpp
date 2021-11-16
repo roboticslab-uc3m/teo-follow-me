@@ -2,211 +2,191 @@
 
 #include "StateMachine.hpp"
 
+#include <yarp/os/LogStream.h>
+#include <yarp/os/SystemClock.h>
+
 #include "../FollowMeVocabs.hpp"
 
-namespace roboticslab
+using namespace roboticslab;
+
+bool StateMachine::threadInit()
 {
-
-/************************************************************************/
-
-bool StateMachine::threadInit() {
     _machineState = 3;
     sentence = 'a';
     return true;
 }
 
-/************************************************************************/
-
-void StateMachine::run() {
-    ttsSay( presentation1 );
+void StateMachine::run()
+{
+    ttsSay(presentation1);
     bool following = false;
 
-    while(!isStopping()) {
-
+    while (!isStopping())
+    {
         // follow only (no speach)
-        if(!microAct) {
+        if (!microAct)
+        {
             following = true;
-            ttsSay( okFollow );
-            yarp::os::Bottle cmd;
-            cmd.addVocab(VOCAB_STATE_SALUTE);
+            ttsSay(okFollow);
+            yarp::os::Bottle cmd = {yarp::os::Value(VOCAB_STATE_SALUTE, true)};
             armExecutionClient->write(cmd);
-            cmd.clear();
-            cmd.addVocab(VOCAB_FOLLOW_ME);
+            cmd = {yarp::os::Value(VOCAB_FOLLOW_ME, true)};
             headExecutionClient->write(cmd);
         }
 
-        if(_machineState == 0) {
-            ttsSay( presentation2 );
-            ttsSay( presentation3 );
+        if (_machineState == 0)
+        {
+            ttsSay(presentation2);
+            ttsSay(presentation3);
             _machineState = 3;
         }
 
-        if(_machineState == 1)
+        if (_machineState == 1)
         {
-            ttsSay( askName );
-            yarp::os::Bottle cmd;
-            cmd.addVocab(VOCAB_STATE_SALUTE);
+            ttsSay(askName);
+            yarp::os::Bottle cmd = {yarp::os::Value(VOCAB_STATE_SALUTE, true)};
             armExecutionClient->write(cmd);
-            _machineState=2;
+            _machineState = 2;
         }
-        else if(_machineState == 2)
+        else if (_machineState == 2)
         {
-
             std::string inStr = asrListen();
             // Blocking
             _inStrState1 = inStr;
-            if((_inStrState1.find(stopFollowing) != std::string::npos))
-                _machineState = 5;
 
-            else if((_inStrState1.find(myNameIs) != std::string::npos))
+            if (_inStrState1.find(stopFollowing) != std::string::npos)
             {
-
-                switch (sentence) {
+                _machineState = 5;
+            }
+            else if (_inStrState1.find(myNameIs) != std::string::npos)
+            {
+                switch (sentence)
+                {
                 case 'a':
-                    ttsSay( answer1 );
+                    ttsSay(answer1);
                     sentence = 'b';
                     break;
                 case 'b':
-                    ttsSay( answer2 );
+                    ttsSay(answer2);
                     sentence = 'c';
                     break;
                 case 'c':
-                    ttsSay( answer3 );
+                    ttsSay(answer3);
                     sentence = 'a';
                     break;
                 default:
                     break;
                 }
-                _machineState=3;
+
+                _machineState = 3;
             }
             else
             {
-                ttsSay( notUnderstand );
-                _machineState=1;
+                ttsSay(notUnderstand);
+                _machineState = 1;
             }
         }
-        else if(_machineState==3)
+        else if (_machineState == 3)
         {
-
-            std::string inStr;
-            if(following) inStr = asrListenWithPeriodicWave();
-            else inStr = asrListen();
+            std::string inStr = following ? asrListenWithPeriodicWave() : asrListen();
 
             // Blocking
             _inStrState1 = inStr;
-            if( _inStrState1.find(hiTeo) != std::string::npos ) _machineState=0;
-            else if( _inStrState1.find(followMe) != std::string::npos ) _machineState=4;
-            else if ( _inStrState1.find(stopFollowing) != std::string::npos ) _machineState=5;
-            else _machineState=3;
 
-        } else if (_machineState==4) {
-
+            if (_inStrState1.find(hiTeo) != std::string::npos) _machineState = 0;
+            else if (_inStrState1.find(followMe) != std::string::npos) _machineState = 4;
+            else if (_inStrState1.find(stopFollowing) != std::string::npos) _machineState = 5;
+            else _machineState = 3;
+        }
+        else if (_machineState == 4)
+        {
             following = true;
-            ttsSay( okFollow );
-            yarp::os::Bottle cmd;
-            cmd.addVocab(VOCAB_FOLLOW_ME);
+            ttsSay(okFollow);
+            yarp::os::Bottle cmd = {yarp::os::Value(VOCAB_FOLLOW_ME, true)};
             headExecutionClient->write(cmd);
-            _machineState=1;
-
-
-        } else if (_machineState==5) {
-
+            _machineState = 1;
+        }
+        else if (_machineState == 5)
+        {
             following = false;
-            ttsSay( stopFollow );
-            yarp::os::Bottle cmd;
-            cmd.addVocab(VOCAB_STOP_FOLLOWING);
+            ttsSay(stopFollow);
+            yarp::os::Bottle cmd = {yarp::os::Value(VOCAB_STOP_FOLLOWING, true)};
             armExecutionClient->write(cmd);
             headExecutionClient->write(cmd);
-            _machineState=3;
+            _machineState = 3;
 
-        } else {
-            ttsSay( std::string("ANOMALY") );
-            _machineState=1;
+        }
+        else
+        {
+            ttsSay(std::string("ANOMALY"));
+            _machineState = 1;
         }
     }
 }
 
-/************************************************************************/
-
-void StateMachine::ttsSay(const std::string &sayString) {
-
+void StateMachine::ttsSay(const std::string &sayString)
+{
     // -- mute microphone
-    bSpRecOut.clear();
-    bSpRecOut.addString("setMic");
-    bSpRecOut.addString("mute");
+    bSpRecOut = {yarp::os::Value("setMic"), yarp::os::Value("mute")};
     asrConfigClient->write(bSpRecOut);
 
     // -- speaking
-    yarp::os::Bottle bRes;
-    bTtsOut.clear();
-    bTtsOut.addString("say");
-    bTtsOut.addString(sayString);
-    ttsClient->write(bTtsOut,bRes);
-    printf("[StateMachine] Said: %s [%s]\n", sayString.c_str(), bRes.toString().c_str());
-    yarp::os::Time::delay(0.5);
+    yarp::os::Bottle bRes = {yarp::os::Value("say"), yarp::os::Value(sayString)};
+    ttsClient->write(bTtsOut, bRes);
+    yDebug("[StateMachine] Said: %s [%s]", sayString.c_str(), bRes.toString().c_str());
+    yarp::os::SystemClock::delaySystem(0.5);
 
     // -- unmute microphone
-    bSpRecOut.clear();
-    bSpRecOut.addString("setMic");
-    bSpRecOut.addString("unmute");
+    bSpRecOut = {yarp::os::Value("setMic"), yarp::os::Value("unmute")};
     asrConfigClient->write(bSpRecOut);
-
-    return;
 }
-
-/************************************************************************/
 
 std::string StateMachine::asrListen()
 {
-    yarp::os::Bottle* bIn = inAsrPort->read(true);  // shouldWait
-    printf("[StateMachine] Listened: %s\n", bIn->toString().c_str());
+    yarp::os::Bottle * bIn = inAsrPort->read(true); // shouldWait
+    yDebug() << "[StateMachine] Listened:" << bIn->toString();
     return bIn->get(0).asString();
 }
 
-/************************************************************************/
-
-std::string StateMachine::asrListenWithPeriodicWave() {
+std::string StateMachine::asrListenWithPeriodicWave()
+{
     char position = '0'; //-- char position (l = left, c = center, r = right)
 
-    while( true ) // read loop
+    while (true) // read loop
     {
-        yarp::os::Bottle* bIn = inAsrPort->read(false);  //-- IMPORTANT: should not wait
+        yarp::os::Bottle * bIn = inAsrPort->read(false); //-- IMPORTANT: should not wait
+
         //-- If we read something, we return it immediately
-        if ( bIn != NULL)
+        if (!bIn)
         {
-            printf("[StateMachine] Listened: %s\n", bIn->toString().c_str());
+            yDebug() << "[StateMachine] Listened:" << bIn->toString();
             return bIn->get(0).asString();
         }
 
         // It is reading the encoder position all the time
-        yarp::os::Bottle cmd, encValue;
-        cmd.clear();
-        encValue.clear();
-        cmd.addVocab(VOCAB_GET_ENCODER_POSITION);
+        yarp::os::Bottle cmd = {yarp::os::Value(VOCAB_GET_ENCODER_POSITION, true)};
+        yarp::os::Bottle encValue;
         headExecutionClient->write(cmd, encValue);
-        //printf("EncValue -> %f\n", encValue.get(0).asDouble());
 
-        if( (encValue.get(0).asDouble() > 10) && (position!='l') )
+        if (encValue.get(0).asFloat64() > 10.0 && position != 'l')
         {
-            yarp::os::Bottle cmd;
-            cmd.addVocab(VOCAB_STATE_SIGNALIZE_LEFT);
+            cmd = {yarp::os::Value(VOCAB_STATE_SIGNALIZE_LEFT, true)};
             armExecutionClient->write(cmd);
-            yarp::os::Time::delay(5);
-            ttsSay( onTheLeft );
+            yarp::os::SystemClock::delaySystem(5.0);
+            ttsSay(onTheLeft);
             position = 'l';
         }
-        else if( (encValue.get(0).asDouble() < -10) && (position!='r') )
+        else if (encValue.get(0).asFloat64() < -10.0 && position != 'r')
         {
-            yarp::os::Bottle cmd;
-            cmd.addVocab(VOCAB_STATE_SIGNALIZE_RIGHT);
+            cmd = {yarp::os::Value(VOCAB_STATE_SIGNALIZE_RIGHT, true)};
             armExecutionClient->write(cmd);
-            yarp::os::Time::delay(5);
-            ttsSay( onTheRight );
+            yarp::os::SystemClock::delaySystem(5.0);
+            ttsSay(onTheRight);
             position = 'r';
         }
-        else if( (encValue.get(0).asDouble() > -3) && (encValue.get(0).asDouble() < 3) && (position!='c') )
+        else if (encValue.get(0).asFloat64() > -3.0 && encValue.get(0).asFloat64() < 3.0 && position != 'c')
         {
-            ttsSay( onTheCenter );
+            ttsSay(onTheCenter);
             position = 'c';
         }
 
@@ -214,62 +194,46 @@ std::string StateMachine::asrListenWithPeriodicWave() {
     }
 }
 
-/************************************************************************/
-
 int StateMachine::getMachineState()
 {
     return _machineState;
 }
-
-/************************************************************************/
 
 void StateMachine::setMicro(bool microAct)
 {
     this->microAct = microAct;
 }
 
-/************************************************************************/
-
-void StateMachine::setInAsrPort(yarp::os::BufferedPort<yarp::os::Bottle>* inAsrPort)
+void StateMachine::setInAsrPort(yarp::os::BufferedPort<yarp::os::Bottle> * inAsrPort)
 {
     this->inAsrPort = inAsrPort;
 }
 
-/************************************************************************/
-
-void StateMachine::setHeadExecutionClient(yarp::os::RpcClient* headExecutionClient)
+void StateMachine::setHeadExecutionClient(yarp::os::RpcClient * headExecutionClient)
 {
     this->headExecutionClient = headExecutionClient;
 }
 
-/************************************************************************/
-
-void StateMachine::setArmExecutionClient(yarp::os::RpcClient* armExecutionClient)
+void StateMachine::setArmExecutionClient(yarp::os::RpcClient * armExecutionClient)
 {
     this->armExecutionClient = armExecutionClient;
 }
 
-/************************************************************************/
-
-void StateMachine::setTtsClient(yarp::os::RpcClient* ttsClient)
+void StateMachine::setTtsClient(yarp::os::RpcClient * ttsClient)
 {
     this->ttsClient = ttsClient;
 }
 
-/************************************************************************/
-
-void StateMachine::setAsrConfigClient(yarp::os::RpcClient* asrConfigClient)
+void StateMachine::setAsrConfigClient(yarp::os::RpcClient * asrConfigClient)
 {
     this->asrConfigClient = asrConfigClient;
 }
 
-/************************************************************************/
-
-bool StateMachine::setLanguage(std::string language)
+bool StateMachine::setLanguage(const std::string & language)
 {
     _language = language;
 
-    if("english" == language)
+    if (language == "english")
     {
         //-- recognition sentences
         hiTeo = "hi teo";
@@ -279,7 +243,7 @@ bool StateMachine::setLanguage(std::string language)
 
         return true;
     }
-    else if("spanish" == language)
+    else if (language == "spanish")
     {
         //-- frases de reconociomiento
         hiTeo = "hola teo";
@@ -291,16 +255,14 @@ bool StateMachine::setLanguage(std::string language)
     }
     else
     {
-        printf("error! %s????\n",language.c_str());
+        yError() << "Unsupported language:" << language;
         return false;
     }
 }
 
-/************************************************************************/
-
-bool StateMachine::setSpeakLanguage(std::string language)
+bool StateMachine::setSpeakLanguage(const std::string & language)
 {
-    if("english" == language)
+    if (language == "english")
     {
         //-- speak sentences
         presentation1 = "Follow me, demostration started";
@@ -318,7 +280,7 @@ bool StateMachine::setSpeakLanguage(std::string language)
         onTheCenter = "You are, on the, center";
         return true;
     }
-    else if("spanish" == language)
+    else if (language == "spanish")
     {
         //-- speak sentences
         presentation1 = "Demostración de detección de caras iniciada";
@@ -338,9 +300,7 @@ bool StateMachine::setSpeakLanguage(std::string language)
     }
     else
     {
-        printf("error! %s????\n",language.c_str());
+        yError() << "Unsupported language:" << language;
         return false;
     }
 }
-
-} // namespace roboticslab

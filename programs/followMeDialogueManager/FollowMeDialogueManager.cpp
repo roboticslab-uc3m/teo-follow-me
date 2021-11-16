@@ -2,39 +2,74 @@
 
 #include "FollowMeDialogueManager.hpp"
 
-namespace roboticslab
+#include <yarp/os/LogStream.h>
+#include <yarp/os/SystemClock.h>
+
+using namespace roboticslab;
+
+constexpr auto DEFAULT_PREFIX = "/followMeDialogueManager";
+constexpr auto DEFAULT_LANGUAGE = "english";
+constexpr auto DEFAULT_MICRO = "off";
+
+bool FollowMeDialogueManager::configure(yarp::os::ResourceFinder & rf)
 {
+    auto language = rf.check("language", yarp::os::Value(DEFAULT_LANGUAGE), "language to be used").asString();
+    auto micro = rf.check("micro", yarp::os::Value(DEFAULT_MICRO), "use or not microphone").asString();
 
-/************************************************************************/
+    if (rf.check("help"))
+    {
+        yInfo("FollowMeDialogueManager options:");
+        yInfo("\t--help (this help)\t--from [file.ini]\t--context [path]");
+        yInfo("\t--language: %s [%s]", language.c_str(), DEFAULT_LANGUAGE);
+        yInfo("\t--micro: %s [%s]", micro.c_str(), DEFAULT_MICRO);
+        return false;
+    }
 
-bool FollowMeDialogueManager::configure(yarp::os::ResourceFinder &rf) {
-
-    std::string language = rf.check("language",yarp::os::Value(DEFAULT_LANGUAGE),"language to be used").asString();
-    std::string micro = rf.check("micro",yarp::os::Value(DEFAULT_MICRO),"use or not microphone").asString();
-
-    printf("--------------------------------------------------------------\n");
-    printf("FollowMeDialogueManager options:\n");
-    printf("\t--help (this help)\t--from [file.ini]\t--context [path]\n");
-    printf("\t--language (default: \"%s\")\n",language.c_str());
-    printf("\t--micro (default: \"%s\")\n",micro.c_str());
-    printf("--------------------------------------------------------------\n");
-
-    if(micro == "on")
+    if (micro == "on")
+    {
         microOn = true;
-    else if(micro == "off")
+    }
+    else if (micro == "off")
+    {
         microOn = false;
+    }
     else
     {
-        printf("You need to specify if you want to use microphone or not in this demo\n. Please use '--micro on' or '--micro off'\n");
+        yError() << "Invalid --micro value, expected 'on' or 'off', got:" << micro;
         return false;
     }
 
     //-----------------OPEN LOCAL PORTS------------//
-    armExecutionClient.open("/followMeDialogueManager/arms/rpc:c");
-    headExecutionClient.open("/followMeDialogueManager/head/rpc:c");
-    ttsClient.open("/followMeDialogueManager/tts/rpc:c");
-    asrConfigClient.open("/followMeDialogueManager/speechRecognition/rpc:c"); // -- setDictionary (client)
-    inAsrPort.open("/followMeDialogueManager/speechRecognition/speech:i"); // -- words (input)
+
+    if (!armExecutionClient.open(DEFAULT_PREFIX + std::string("/arms/rpc:c")))
+    {
+        yError() << "Failed to open arm execution client port:" << armExecutionClient.getName();
+        return false;
+    }
+
+    if (!headExecutionClient.open(DEFAULT_PREFIX + std::string("/head/rpc:c")))
+    {
+        yError() << "Failed to open head execution client port:" << headExecutionClient.getName();
+        return false;
+    }
+
+    if (!ttsClient.open(DEFAULT_PREFIX + std::string("/tts/rpc:c")))
+    {
+        yError() << "Failed to open tts client port:" << ttsClient.getName();
+        return false;
+    }
+
+    if (!asrConfigClient.open(DEFAULT_PREFIX + std::string("/speechRecognition/rpc:c")))
+    {
+        yError() << "Failed to open asr config client port:" << asrConfigClient.getName();
+        return false;
+    }
+
+    if (!inAsrPort.open(DEFAULT_PREFIX + std::string("/speechRecognition/speech:i")))
+    {
+        yError() << "Failed to open inAsrPort" << inAsrPort.getName();
+        return false;
+    }
 
     stateMachine.setHeadExecutionClient(&headExecutionClient);
     stateMachine.setArmExecutionClient(&armExecutionClient);
@@ -42,63 +77,70 @@ bool FollowMeDialogueManager::configure(yarp::os::ResourceFinder &rf) {
     stateMachine.setAsrConfigClient(&asrConfigClient);
     stateMachine.setInAsrPort(&inAsrPort);
 
-    if(microOn)
+    if (microOn)
     {
-        while(0 == asrConfigClient.getOutputCount())
+        while (asrConfigClient.getOutputCount() == 0)
         {
-            if(isStopping())
+            if (isStopping())
+            {
                 return false;
-            printf("Waiting for \"/followMeDialogueManager/speechRecognition/rpc:c\" to be connected to ASR to configure it...\n");
-            yarp::os::Time::delay(0.5);
+            }
+
+            yInfo() << "Waiting for" << asrConfigClient.getName() << "to be connected to ASR to configure it...";
+            yarp::os::SystemClock::delaySystem(0.5);
         }
     }
 
-    while(0 == ttsClient.getOutputCount())
+    while (ttsClient.getOutputCount() == 0)
     {
-        if(isStopping())
+        if (isStopping())
+        {
             return false;
-        printf("Waiting for \"/followMeDialogueManager/tts/rpc:c\" to be connected to TTS...\n");
-        yarp::os::Time::delay(0.5);
+        }
+
+        yInfo() << "Waiting for" << ttsClient.getName() << "to be connected to TTS to configure it...";
+        yarp::os::SystemClock::delaySystem(0.5);
     }
 
-    while(0 == armExecutionClient.getOutputCount())
+    while (armExecutionClient.getOutputCount() == 0)
     {
-        if(isStopping())
+        if (isStopping())
+        {
             return false;
-        printf("Waiting for \"/followMeDialogueManager/arms/rpc:c\" to be connected to arm execution...\n");
-        yarp::os::Time::delay(0.5);
+        }
+
+        yInfo() << "Waiting for" << armExecutionClient.getName() << "to be connected to ArmExecution to configure it...";
+        yarp::os::SystemClock::delaySystem(0.5);
     }
 
-    while(0 == headExecutionClient.getOutputCount())
+    while (headExecutionClient.getOutputCount() == 0)
     {
-        if(isStopping())
+        if (isStopping())
+        {
             return false;
-        printf("Waiting for \"/followMeDialogueManager/head/rpc:c\" to be connected to head execution...\n");
-        yarp::os::Time::delay(0.5);
-    }
+        }
 
-    //--------------------------
-    // clearing yarp bottles
-    bTtsOut.clear();
-    bSpRecOut.clear();
+        yInfo() << "Waiting for" << headExecutionClient.getName() << "to be connected to HeadExecution to configure it...";
+        yarp::os::SystemClock::delaySystem(0.5);
+    }
 
     bTtsOut.addString("setLanguage");
     bSpRecOut.addString("setDictionary");
     bSpRecOut.addString("follow-me");
 
-    if( language == "english" )
+    if (language == "english")
     {
         bTtsOut.addString("mb-en1");
         bSpRecOut.addString(language);
     }
-    else if ( language == "spanish" )
+    else if (language == "spanish")
     {
         bTtsOut.addString("mb-es1");
-        bSpRecOut.addString(language); // -- cambiar a "language" cuando tengamos reconocimiento en español
+        bSpRecOut.addString(language);
     }
     else
     {
-        printf("Language not found. Please use '--language english' or '--language spanish'");
+        yError() << "Language not found, please use '--language english' or '--language spanish', got:" << language;
         return false;
     }
 
@@ -110,35 +152,33 @@ bool FollowMeDialogueManager::configure(yarp::os::ResourceFinder &rf) {
     stateMachine.setLanguage(language);
     stateMachine.setSpeakLanguage(language);
 
-    stateMachine.start();
-    return true;
+    return stateMachine.start();
 }
-
-/************************************************************************/
 
 double FollowMeDialogueManager::getPeriod()
 {
-    return 2.0;  // Fixed, in seconds, the slow thread that calls updateModule below
+    return 2.0; // [s]
 }
 
-/************************************************************************/
 bool FollowMeDialogueManager::updateModule()
 {
-    printf("StateMachine in state [%d]. FollowMeDialogueManager alive...\n", stateMachine.getMachineState());
+    yInfo() << "StateMachine in state" << stateMachine.getMachineState();
     return true;
 }
 
-/************************************************************************/
-
 bool FollowMeDialogueManager::interruptModule()
 {
-    printf("FollowMeDialogueManager closing...\n");
     headExecutionClient.interrupt();
     armExecutionClient.interrupt();
     ttsClient.interrupt();
     asrConfigClient.interrupt();
     inAsrPort.interrupt();
     stateMachine.stop();
+    return true;
+}
+
+bool FollowMeDialogueManager::close()
+{
     headExecutionClient.close();
     armExecutionClient.close();
     ttsClient.close();
@@ -146,7 +186,3 @@ bool FollowMeDialogueManager::interruptModule()
     inAsrPort.close();
     return true;
 }
-
-/************************************************************************/
-
-} // namespace roboticslab

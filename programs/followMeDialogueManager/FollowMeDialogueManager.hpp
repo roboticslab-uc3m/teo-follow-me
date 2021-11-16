@@ -1,7 +1,7 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-#ifndef __FM_DIALOGUE_MANAGER_HPP__
-#define __FM_DIALOGUE_MANAGER_HPP__
+#ifndef __FOLLOW_ME_DIALOGUE_MANAGER_HPP__
+#define __FOLLOW_ME_DIALOGUE_MANAGER_HPP__
 
 #include <yarp/os/Bottle.h>
 #include <yarp/os/RFModule.h>
@@ -9,21 +9,24 @@
 
 #include "StateMachine.hpp"
 
-#define DEFAULT_LANGUAGE "english"
-#define DEFAULT_MICRO "off"
-
 namespace roboticslab
 {
 
 /**
  * @ingroup follow-me_programs
- *
  * @brief Dialogue Manager.
  */
 class FollowMeDialogueManager : public yarp::os::RFModule
 {
 public:
-    bool configure(yarp::os::ResourceFinder &rf) override;
+    ~FollowMeDialogueManager()
+    { close(); }
+
+    bool configure(yarp::os::ResourceFinder & rf) override;
+    bool close() override;
+    bool interruptModule() override;
+    double getPeriod() override;
+    bool updateModule() override;
 
 private:
     StateMachine stateMachine;
@@ -37,10 +40,6 @@ private:
     // bSpRecOut   -> to config or send SpeechRecognition commands
     yarp::os::Bottle bTtsOut, bSpRecOut;
 
-    bool interruptModule();
-    double getPeriod();
-    bool updateModule();
-
     // micro (on/off) to give speaking orders to TEO
     bool microOn;
     void setMicro(bool microAct);
@@ -48,4 +47,4 @@ private:
 
 } // namespace roboticslab
 
-#endif  // __FM_DIALOGUE_MANAGER_HPP__
+#endif // __FOLLOW_ME_DIALOGUE_MANAGER_HPP__

@@ -1,63 +1,61 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-#ifndef __STATE_MACHINE__
-#define __STATE_MACHINE__
+#ifndef __STATE_MACHINE_HPP__
+#define __STATE_MACHINE_HPP__
 
+#include <string>
+
+#include <yarp/os/Bottle.h>
 #include <yarp/os/BufferedPort.h>
-#include <yarp/os/Port.h>
 #include <yarp/os/RpcClient.h>
-#include <yarp/os/Time.h>
-
-#include <yarp/dev/PolyDriver.h>
-#include <yarp/dev/CartesianControl.h>
-#include <yarp/dev/ControlBoardInterfaces.h>
+#include <yarp/os/Thread.h>
 
 namespace roboticslab
 {
 
 /**
  * @ingroup followMeDialogueManager
- *
  * @brief implements a specific state machine for followMeDialogueManager.
  */
 class StateMachine : public yarp::os::Thread
 {
 public:
+    bool threadInit() override;
+    void run() override;
+
     int getMachineState();
 
     /** Micro On/Off **/
     void setMicro(bool microAct);
 
     /** Register an input callback port for asr. */
-    void setInAsrPort(yarp::os::BufferedPort<yarp::os::Bottle>* inAsrPort);
+    void setInAsrPort(yarp::os::BufferedPort<yarp::os::Bottle> * inAsrPort);
 
     /** Register an output Port for [HEAD] commands. */
-    void setHeadExecutionClient(yarp::os::RpcClient* headExecutionClient);
+    void setHeadExecutionClient(yarp::os::RpcClient * headExecutionClient);
 
     /** Register an output Port for [ARMS] commands. */
-    void setArmExecutionClient(yarp::os::RpcClient* armExecutionClient);
+    void setArmExecutionClient(yarp::os::RpcClient * armExecutionClient);
 
     /** Register an output Port for tts. */
-    void setTtsClient(yarp::os::RpcClient *ttsClient);
+    void setTtsClient(yarp::os::RpcClient * ttsClient);
 
     /** Register an output Port to configure Speech Recognition. */
-    void setAsrConfigClient(yarp::os::RpcClient* asrConfigClient);
+    void setAsrConfigClient(yarp::os::RpcClient * asrConfigClient);
 
     /** set language in speechRecognition port */
-    bool setLanguage(std::string language);
+    bool setLanguage(const std::string & language);
 
     /** set language for speaking */
-    bool setSpeakLanguage(std::string language);
+    bool setSpeakLanguage(const std::string & language);
 
 private:
+    yarp::os::BufferedPort<yarp::os::Bottle> * inAsrPort;
 
-    yarp::os::BufferedPort<yarp::os::Bottle> *inAsrPort;
-
-    yarp::os::RpcClient *headExecutionClient;
-    yarp::os::RpcClient *armExecutionClient;
-
-    yarp::os::RpcClient *ttsClient;
-    yarp::os::RpcClient *asrConfigClient;
+    yarp::os::RpcClient * headExecutionClient;
+    yarp::os::RpcClient * armExecutionClient;
+    yarp::os::RpcClient * ttsClient;
+    yarp::os::RpcClient * asrConfigClient;
 
     std::string _inStrState1;
 
@@ -72,6 +70,7 @@ private:
     std::string followMe;
     std::string myNameIs;
     std::string stopFollowing;
+
     // output variables
     std::string presentation1;
     std::string presentation2;
@@ -91,15 +90,11 @@ private:
     // bSpRecOut   -> to config or send SpeechRecognition commands
     yarp::os::Bottle bTtsOut, bSpRecOut;
 
-
-    void ttsSay(const std::string& sayString);
+    void ttsSay(const std::string & sayString);
     std::string asrListen();
     std::string asrListenWithPeriodicWave();
-
-    bool threadInit() override;
-    void run() override;
 };
 
 } // namespace roboticslab
 
-#endif
+#endif // __STATE_MACHINE_HPP__
