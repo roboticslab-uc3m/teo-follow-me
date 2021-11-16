@@ -5,7 +5,58 @@
 #include <yarp/os/LogStream.h>
 #include <yarp/os/SystemClock.h>
 
+#include "../FollowMeVocabs.hpp"
+
 using namespace roboticslab;
+
+namespace
+{
+    const std::unordered_map<std::string, std::string> englishSentences = {
+        {"presentation1", "Follow me, demostration started."},
+        {"presentation2", "Hello. My name is TEO. I am, a humanoid robot, of Carlos tercero, university."},
+        {"presentation3", "Now, I will follow you. Please, tell me."},
+        {"askName", "Could you tell me your name."},
+        {"answer1", "Is, a beatifull name. I love it."},
+        {"answer2", "Is, a wonderfull name. My human creator, has the same name."},
+        {"answer3", "My parents, didn't want to baptize me, with that name."},
+        {"notUnderstand", "Sorry, I don't understand."},
+        {"okFollow", "Okay, I will follow you."},
+        {"stopFollow", "Okay, I will stop following you. See you later."},
+        {"onTheRight", "You are, on my, right."},
+        {"onTheLeft", "You are, on my, left."},
+        {"onTheCenter", "You are, on the, center."},
+    };
+
+    const std::unordered_map<std::string, std::string> englishCommands = {
+        {"hiTeo", "hi teo"},
+        {"followMe", "follow me"},
+        {"myNameIs", "my name is"},
+        {"stopFollowing", "stop following"},
+    };
+
+    const std::unordered_map<std::string, std::string> spanishSentences = {
+        {"presentation1", "Demostración de detección de caras iniciada."},
+        {"presentation2", "Hola. Me yamo Teo, y soy un grobot humanoide diseñado por ingenieros de la universidad carlos tercero."},
+        {"presentation3", "Por favor, dime qué quieres que haga."},
+        {"askName", "Podrías decirme tu nombre."},
+        {"answer1", "Uuooooo ouu, que nombre más bonito. Me encanta."},
+        {"answer2", "Que gran nombre. Mi creador humano se yama igual."},
+        {"answer3", "Mis padres no quisieron bauuutizarme con ese nombre. Malditos."},
+        {"notUnderstand", "Lo siento. No te he entendido."},
+        {"okFollow", "Vale. Voy, a comenzar a seguirte."},
+        {"stopFollow", "De acuerdo. Voy, a dejar de seguirte. Hasta pronto."},
+        {"onTheRight", "Ahora, estás, a mi derecha."},
+        {"onTheLeft", "Ahora, estás, a mi izquierda."},
+        {"onTheCenter", "Ahora, estás, en el centro."},
+    };
+
+    const std::unordered_map<std::string, std::string> spanishCommands = {
+        {"hiTeo", "hola teo"},
+        {"followMe", "sigueme"},
+        {"myNameIs", "me llamo"},
+        {"stopFollowing", "para teo"},
+    };
+}
 
 constexpr auto DEFAULT_PREFIX = "/followMeDialogueManager";
 constexpr auto DEFAULT_LANGUAGE = "english";
@@ -73,12 +124,6 @@ bool FollowMeDialogueManager::configure(yarp::os::ResourceFinder & rf)
 
     speech.yarp().attachAsClient(ttsClient);
 
-    stateMachine.setHeadExecutionClient(&headExecutionClient);
-    stateMachine.setArmExecutionClient(&armExecutionClient);
-    stateMachine.setTtsClient(&speech);
-    stateMachine.setAsrConfigClient(&asrConfigClient);
-    stateMachine.setInAsrPort(&inAsrPort);
-
     if (microOn)
     {
         while (asrConfigClient.getOutputCount() == 0)
@@ -133,11 +178,15 @@ bool FollowMeDialogueManager::configure(yarp::os::ResourceFinder & rf)
     {
         voice = "mb-en1";
         bSpRecOut.addString(language);
+        sentences = englishSentences;
+        voiceCommands = englishCommands;
     }
     else if (language == "spanish")
     {
         voice = "mb-es1";
         bSpRecOut.addString(language);
+        sentences = spanishSentences;
+        voiceCommands = spanishCommands;
     }
     else
     {
@@ -153,22 +202,118 @@ bool FollowMeDialogueManager::configure(yarp::os::ResourceFinder & rf)
 
     asrConfigClient.write(bSpRecOut);
 
-    // set functions
-    stateMachine.setMicro(microOn);
-    stateMachine.setLanguage(language);
-    stateMachine.setSpeakLanguage(language);
+    ttsSay(sentences["presentation1"]);
 
-    return stateMachine.start();
+    return true;
 }
 
 double FollowMeDialogueManager::getPeriod()
 {
-    return 2.0; // [s]
+    return 0.1; // [s]
 }
 
 bool FollowMeDialogueManager::updateModule()
 {
-    yInfo() << "StateMachine in state" << stateMachine.getMachineState();
+    yInfoThrottle(2.0) << "StateMachine in state" << machineState;
+
+    // follow only (no speech)
+    if (!microOn)
+    {
+        isFollowing = true;
+        ttsSay(sentences["okFollow"]);
+        yarp::os::Bottle cmd = {yarp::os::Value(VOCAB_STATE_SALUTE, true)};
+        armExecutionClient.write(cmd);
+        cmd = {yarp::os::Value(VOCAB_FOLLOW_ME, true)};
+        headExecutionClient.write(cmd);
+    }
+
+    if (machineState == 0)
+    {
+        ttsSay(sentences["presentation2"]);
+        ttsSay(sentences["presentation3"]);
+        machineState = 3;
+    }
+
+    if (machineState == 1)
+    {
+        ttsSay(sentences["askName"]);
+        yarp::os::Bottle cmd = {yarp::os::Value(VOCAB_STATE_SALUTE, true)};
+        armExecutionClient.write(cmd);
+        machineState = 2;
+    }
+    else if (machineState == 2)
+    {
+        std::string inStr = asrListen();
+        // Blocking
+        _inStrState1 = inStr;
+
+        if (_inStrState1.find(voiceCommands["stopFollowing"]) != std::string::npos)
+        {
+            machineState = 5;
+        }
+        else if (_inStrState1.find(voiceCommands["myNameIs"]) != std::string::npos)
+        {
+            switch (sentence)
+            {
+            case 'a':
+                ttsSay(sentences["answer1"]);
+                sentence = 'b';
+                break;
+            case 'b':
+                ttsSay(sentences["answer2"]);
+                sentence = 'c';
+                break;
+            case 'c':
+                ttsSay(sentences["answer3"]);
+                sentence = 'a';
+                break;
+            default:
+                break;
+            }
+
+            machineState = 3;
+        }
+        else
+        {
+            ttsSay(sentences["notUnderstand"]);
+            machineState = 1;
+        }
+    }
+    else if (machineState == 3)
+    {
+        std::string inStr = isFollowing ? asrListenWithPeriodicWave() : asrListen();
+
+        // Blocking
+        _inStrState1 = inStr;
+
+        if (_inStrState1.find(voiceCommands["hiTeo"]) != std::string::npos) machineState = 0;
+        else if (_inStrState1.find(voiceCommands["followMe"]) != std::string::npos) machineState = 4;
+        else if (_inStrState1.find(voiceCommands["stopFollowing"]) != std::string::npos) machineState = 5;
+        else machineState = 3;
+    }
+    else if (machineState == 4)
+    {
+        isFollowing = true;
+        ttsSay(sentences["okFollow"]);
+        yarp::os::Bottle cmd = {yarp::os::Value(VOCAB_FOLLOW_ME, true)};
+        headExecutionClient.write(cmd);
+        machineState = 1;
+    }
+    else if (machineState == 5)
+    {
+        isFollowing = false;
+        ttsSay(sentences["stopFollow"]);
+        yarp::os::Bottle cmd = {yarp::os::Value(VOCAB_STOP_FOLLOWING, true)};
+        armExecutionClient.write(cmd);
+        headExecutionClient.write(cmd);
+        machineState = 3;
+    }
+    else
+    {
+        ttsSay("ANOMALY");
+        machineState = 1;
+    }
+
     return true;
 }
 
@@ -179,7 +324,6 @@ bool FollowMeDialogueManager::interruptModule()
     ttsClient.interrupt();
     asrConfigClient.interrupt();
     inAsrPort.interrupt();
-    stateMachine.stop();
     return true;
 }
 
@@ -191,4 +335,82 @@ bool FollowMeDialogueManager::close()
     ttsClient.close();
     inAsrPort.close();
     return true;
+}
+
+void FollowMeDialogueManager::ttsSay(const std::string & sayString)
+{
+    // -- mute microphone
+    yarp::os::Bottle bSpRecOut = {yarp::os::Value("setMic"), yarp::os::Value("mute")};
+    asrConfigClient.write(bSpRecOut);
+
+    // -- speaking
+    yarp::os::Bottle bRes = {yarp::os::Value("say"), yarp::os::Value(sayString)};
+
+    if (!speech.say(sayString))
+    {
+        yWarning() << "StateMachine::ttsSay() failed to say:" << sayString;
+    }
+    else
+    {
+        yDebug() << "StateMachine::ttsSay() said:" << sayString;
+    }
+
+    yarp::os::SystemClock::delaySystem(0.5);
+
+    // -- unmute microphone
+    bSpRecOut = {yarp::os::Value("setMic"), yarp::os::Value("unmute")};
+    asrConfigClient.write(bSpRecOut);
+}
+
+std::string FollowMeDialogueManager::asrListen()
+{
+    yarp::os::Bottle * bIn = inAsrPort.read(true); // shouldWait
+    yDebug() << "[FollowMeDialogueManager] Listened:" << bIn->toString();
+    return bIn->get(0).asString();
+}
+
+std::string FollowMeDialogueManager::asrListenWithPeriodicWave()
+{
+    char position = '0'; //-- char position (l = left, c = center, r = right)
+
+    while (true) // read loop
+    {
+        yarp::os::Bottle * bIn = inAsrPort.read(false); //-- IMPORTANT: should not wait
+
+        //-- If we read something, we return it immediately
+        if (!bIn)
+        {
+            yDebug() << "[StateMachine] Listened:" << bIn->toString();
+            return bIn->get(0).asString();
+        }
+
+        // It is reading the encoder position all the time
+        yarp::os::Bottle cmd = {yarp::os::Value(VOCAB_GET_ENCODER_POSITION, true)};
+        yarp::os::Bottle encValue;
+        headExecutionClient.write(cmd, encValue);
+
+        if (encValue.get(0).asFloat64() > 10.0 && position != 'l')
+        {
+            cmd = {yarp::os::Value(VOCAB_STATE_SIGNALIZE_LEFT, true)};
+            armExecutionClient.write(cmd);
+            yarp::os::SystemClock::delaySystem(5.0);
+            ttsSay(sentences["onTheLeft"]);
+            position = 'l';
+        }
+        else if (encValue.get(0).asFloat64() < -10.0 && position != 'r')
+        {
+            cmd = {yarp::os::Value(VOCAB_STATE_SIGNALIZE_RIGHT, true)};
+            armExecutionClient.write(cmd);
+            yarp::os::SystemClock::delaySystem(5.0);
+            ttsSay(sentences["onTheRight"]);
+            position = 'r';
+        }
+        else if (encValue.get(0).asFloat64() > -3.0 && encValue.get(0).asFloat64() < 3.0 && position != 'c')
+        {
+            ttsSay(sentences["onTheCenter"]);
+            position = 'c';
+        }
+
+        //-- ...to finally continue the read loop.
+    }
 }

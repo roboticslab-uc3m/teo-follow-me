@@ -9,9 +9,7 @@ if(ENABLE_followMeDialogueManager)
 
     add_executable(followMeDialogueManager main.cpp
                                            FollowMeDialogueManager.hpp
-                                           FollowMeDialogueManager.cpp
-                                           StateMachine.hpp
-                                           StateMachine.cpp)
+                                           FollowMeDialogueManager.cpp)
 
     target_link_libraries(followMeDialogueManager YARP::YARP_os
                                                   YARP::YARP_init
