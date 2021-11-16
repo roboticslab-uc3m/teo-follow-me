@@ -30,6 +30,9 @@ endif()
 find_package(YCM 0.11 REQUIRED)
 find_package(YARP 3.4 REQUIRED COMPONENTS os dev)
 
+# Soft dependencies.
+find_package(ROBOTICSLAB_SPEECH QUIET)
+
 # Configure installation paths for YARP resources.
 yarp_configure_external_installation(follow-me)
 

@@ -71,9 +71,11 @@ bool FollowMeDialogueManager::configure(yarp::os::ResourceFinder & rf)
         return false;
     }
 
+    speech.yarp().attachAsClient(ttsClient);
+
     stateMachine.setHeadExecutionClient(&headExecutionClient);
     stateMachine.setArmExecutionClient(&armExecutionClient);
-    stateMachine.setTtsClient(&ttsClient);
+    stateMachine.setTtsClient(&speech);
     stateMachine.setAsrConfigClient(&asrConfigClient);
     stateMachine.setInAsrPort(&inAsrPort);
 
@@ -124,18 +126,17 @@ bool FollowMeDialogueManager::configure(yarp::os::ResourceFinder & rf)
         yarp::os::SystemClock::delaySystem(0.5);
     }
 
-    bTtsOut.addString("setLanguage");
-    bSpRecOut.addString("setDictionary");
-    bSpRecOut.addString("follow-me");
+    std::string voice;
+    yarp::os::Bottle bSpRecOut = {yarp::os::Value("setDictionary"), yarp::os::Value("follow-me")};
 
     if (language == "english")
     {
-        bTtsOut.addString("mb-en1");
+        voice = "mb-en1";
         bSpRecOut.addString(language);
     }
     else if (language == "spanish")
     {
-        bTtsOut.addString("mb-es1");
+        voice = "mb-es1";
         bSpRecOut.addString(language);
     }
     else
@@ -144,7 +145,12 @@ bool FollowMeDialogueManager::configure(yarp::os::ResourceFinder & rf)
         return false;
     }
 
-    ttsClient.write(bTtsOut);
+    if (!speech.setLanguage(voice))
+    {
+        yError() << "Failed to set TTS voice to" << voice;
+        return false;
+    }
+
     asrConfigClient.write(bSpRecOut);
 
     // set functions

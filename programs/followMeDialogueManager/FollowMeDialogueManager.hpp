@@ -7,6 +7,8 @@
 #include <yarp/os/RFModule.h>
 #include <yarp/os/RpcClient.h>
 
+#include <SpeechIDL.h>
+
 #include "StateMachine.hpp"
 
 namespace roboticslab
@@ -29,16 +31,13 @@ public:
     bool updateModule() override;
 
 private:
+    SpeechIDL speech;
     StateMachine stateMachine;
     yarp::os::BufferedPort<yarp::os::Bottle> inAsrPort;
     yarp::os::RpcClient ttsClient;
     yarp::os::RpcClient asrConfigClient;
     yarp::os::RpcClient headExecutionClient;
     yarp::os::RpcClient armExecutionClient;
-
-    // bTtsOut     -> to config or send tts commands
-    // bSpRecOut   -> to config or send SpeechRecognition commands
-    yarp::os::Bottle bTtsOut, bSpRecOut;
 
     // micro (on/off) to give speaking orders to TEO
     bool microOn;

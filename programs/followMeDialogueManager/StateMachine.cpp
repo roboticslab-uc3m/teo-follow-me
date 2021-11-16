@@ -132,8 +132,16 @@ void StateMachine::ttsSay(const std::string &sayString)
 
     // -- speaking
     yarp::os::Bottle bRes = {yarp::os::Value("say"), yarp::os::Value(sayString)};
-    ttsClient->write(bTtsOut, bRes);
-    yDebug("[StateMachine] Said: %s [%s]", sayString.c_str(), bRes.toString().c_str());
+
+    if (!speech->say(sayString))
+    {
+        yWarning() << "StateMachine::ttsSay() failed to say:" << sayString;
+    }
+    else
+    {
+        yDebug() << "StateMachine::ttsSay() said:" << sayString;
+    }
+
     yarp::os::SystemClock::delaySystem(0.5);
 
     // -- unmute microphone
@@ -219,9 +227,9 @@ void StateMachine::setArmExecutionClient(yarp::os::RpcClient * armExecutionClien
     this->armExecutionClient = armExecutionClient;
 }
 
-void StateMachine::setTtsClient(yarp::os::RpcClient * ttsClient)
+void StateMachine::setTtsClient(SpeechIDL * speech)
 {
-    this->ttsClient = ttsClient;
+    this->speech = speech;
 }
 
 void StateMachine::setAsrConfigClient(yarp::os::RpcClient * asrConfigClient)

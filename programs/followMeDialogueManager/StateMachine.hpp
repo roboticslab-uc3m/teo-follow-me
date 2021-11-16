@@ -10,6 +10,8 @@
 #include <yarp/os/RpcClient.h>
 #include <yarp/os/Thread.h>
 
+#include <SpeechIDL.h>
+
 namespace roboticslab
 {
 
@@ -38,7 +40,7 @@ public:
     void setArmExecutionClient(yarp::os::RpcClient * armExecutionClient);
 
     /** Register an output Port for tts. */
-    void setTtsClient(yarp::os::RpcClient * ttsClient);
+    void setTtsClient(SpeechIDL * speech);
 
     /** Register an output Port to configure Speech Recognition. */
     void setAsrConfigClient(yarp::os::RpcClient * asrConfigClient);
@@ -52,9 +54,10 @@ public:
 private:
     yarp::os::BufferedPort<yarp::os::Bottle> * inAsrPort;
 
+    SpeechIDL * speech;
+
     yarp::os::RpcClient * headExecutionClient;
     yarp::os::RpcClient * armExecutionClient;
-    yarp::os::RpcClient * ttsClient;
     yarp::os::RpcClient * asrConfigClient;
 
     std::string _inStrState1;
