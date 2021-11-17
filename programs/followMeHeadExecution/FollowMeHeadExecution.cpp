@@ -131,8 +131,6 @@ void FollowMeHeadExecution::onRead(yarp::os::Bottle & b)
     auto y = b.get(1).asFloat64();
     auto z = b.get(2).asFloat64(); // depth, unused
 
-    yDebug() << "Detection port got (x,y,z):" << x << y << z;
-
     if (std::abs(x) > DETECTION_DEADBAND || std::abs(y) > DETECTION_DEADBAND)
     {
         std::vector<double> target {
@@ -140,10 +138,16 @@ void FollowMeHeadExecution::onRead(yarp::os::Bottle & b)
             std::abs(y) > DETECTION_DEADBAND ? std::copysign(RELATIVE_INCREMENT, y) : 0.0
         };
 
+        yDebug() << "Detection port got:" << x << y << z << "|| performing relative motion:" << target;
+
         if (!iPositionControl->relativeMove(target.data()))
         {
             yError() << "Failed to move head";
         }
+    }
+    else
+    {
+        yDebug() << "Detection port got (x,y,z):" << x << y << z;
     }
 }
 
