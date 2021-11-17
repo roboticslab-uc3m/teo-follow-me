@@ -2,24 +2,11 @@
 
 #include "FollowMeArmExecution.hpp"
 
-#include <yarp/conf/version.h>
-
 #include <yarp/os/LogStream.h>
 #include <yarp/os/Property.h>
-#include <yarp/os/SystemClock.h>
-#include <yarp/os/Vocab.h>
-
-#include "../FollowMeVocabs.hpp"
 
 using namespace roboticslab;
 
-#if YARP_VERSION_MINOR >= 5
-constexpr auto VOCAB_STATE_ARM_SWINGING = yarp::os::createVocab32('s','w','i','n');
-constexpr auto VOCAB_STATE_REST = yarp::os::createVocab32('r','e','s','t');
-#else
-constexpr auto VOCAB_STATE_ARM_SWINGING = yarp::os::createVocab('s','w','i','n');
-constexpr auto VOCAB_STATE_REST = yarp::os::createVocab('r','e','s','t');
-#endif
 constexpr auto DEFAULT_ROBOT = "/teo";
 constexpr auto DEFAULT_PREFIX = "/followMeArmExecution";
 constexpr auto DEFAULT_REF_SPEED = 30.0;
@@ -125,30 +112,25 @@ bool FollowMeArmExecution::configure(yarp::os::ResourceFinder & rf)
         return false;
     }
 
-    if (!inDialogPort.open(DEFAULT_PREFIX + std::string("/dialogueManager/rpc:s")))
+    if (!serverPort.open(DEFAULT_PREFIX + std::string("/dialogueManager/rpc:s")))
     {
-        yError() << "Failed to open dialogue manager port" << inDialogPort.getName();
+        yError() << "Failed to open dialogue manager port" << serverPort.getName();
         return false;
     }
 
-    inDialogPort.setReader(*this);
-
-    state = VOCAB_STATE_REST;
-    phase = false;
-
-    return yarp::os::Thread::start();
+    yarp::os::Wire::yarp().attachAsServer(serverPort);
+    return true;
 }
 
 bool FollowMeArmExecution::interruptModule()
 {
-    yarp::os::Thread::stop();
-    inDialogPort.interrupt();
-    return true;
+    serverPort.interrupt();
+    return stop();
 }
 
 bool FollowMeArmExecution::close()
 {
-    inDialogPort.close();
+    serverPort.close();
     leftArmDevice.close();
     rightArmDevice.close();
     return true;
@@ -156,208 +138,171 @@ bool FollowMeArmExecution::close()
 
 double FollowMeArmExecution::getPeriod()
 {
-    return 4.0; // [s]
+    return 0.1; // [s]
 }
 
 bool FollowMeArmExecution::updateModule()
 {
-    return true;
-}
+    bool isMotionDone = checkMotionDone();
+    std::unique_lock<std::mutex> lock(actionMutex);
 
-bool FollowMeArmExecution::armJointsMoveAndWait(const std::vector<double> & leftArmQ, const std::vector<double> & rightArmQ)
-{
-    if (!leftArmIPositionControl->positionMove(leftArmQ.data()))
+    yDebugThrottle(1.0) << "Current action:" << getStateDescription(currentState);
+
+    if (hasNewSetpoints || (isMotionDone && !currentSetpoints.empty()))
     {
-        yError() << "Failed to move left arm joints";
-        return false;
-    }
+        auto setpoints = currentSetpoints.front();
+        currentSetpoints.pop_front();
+        hasNewSetpoints = false;
+        lock.unlock();
 
-    if (!rightArmIPositionControl->positionMove(rightArmQ.data()))
-    {
-        yError() << "Failed to move right arm joints";
-        return false;
-    }
-
-    bool leftArmMotionDone = false;
-
-    while (!leftArmMotionDone)
-    {
-        yarp::os::SystemClock::delaySystem(0.1);
-        leftArmIPositionControl->checkMotionDone(&leftArmMotionDone);
-    }
-
-    bool rightArmMotionDone = false;
-
-    while (!rightArmMotionDone)
-    {
-        yarp::os::SystemClock::delaySystem(0.1);
-        rightArmIPositionControl->checkMotionDone(&rightArmMotionDone);
-    }
-
-    return true;
-}
-
-bool FollowMeArmExecution::read(yarp::os::ConnectionReader & connection)
-{
-    yarp::os::Bottle b;
-
-    if (!b.read(connection))
-    {
-        yError() << "Failed to read bottle from dialogue manager";
-        return false;
-    }
-
-    yDebug() << "Got:" << b.toString();
-
-#if YARP_VERSION_MINOR >= 5
-    switch (b.get(0).asVocab32())
-#else
-    switch (b.get(0).asVocab())
-#endif
-    {
-    case VOCAB_FOLLOW_ME:
-    case VOCAB_STATE_SALUTE:
-        state = VOCAB_STATE_SALUTE;
-        break;
-    case VOCAB_STOP_FOLLOWING:
-        state = VOCAB_STOP_FOLLOWING;
-        break;
-    case VOCAB_STATE_SIGNALIZE_LEFT:
-        state = VOCAB_STATE_SIGNALIZE_LEFT;
-        break;
-    case VOCAB_STATE_SIGNALIZE_RIGHT:
-        state = VOCAB_STATE_SIGNALIZE_RIGHT;
-        break;
-    }
-
-    return true;
-}
-
-void FollowMeArmExecution::run()
-{
-    static const std::vector<double> armZeros(6, 0.0);
-
-    while (!yarp::os::Thread::isStopping())
-    {
-        switch (state)
+        if (!leftArmIPositionControl->positionMove(std::get<0>(setpoints).data()))
         {
-        case VOCAB_STATE_ARM_SWINGING:
-            if (phase)
-            {
-                yInfo() << "Phase: true";
-                auto leftArmQ = armZeros;
-                leftArmQ[0] = 20.0;
-                leftArmQ[1] = 5.0;
-                auto rightArmQ = armZeros;
-                rightArmQ[0] = -20.0;
-                rightArmQ[1] = -5.0;
-                armJointsMoveAndWait(leftArmQ, rightArmQ);
-                phase = false;
-            }
-            else
-            {
-                yInfo() << "Phase: false";
-                auto leftArmQ = armZeros;
-                leftArmQ[0] = -20.0;
-                leftArmQ[1] = 5.0;
-                auto rightArmQ = armZeros;
-                rightArmQ[0] = 20.0;
-                rightArmQ[1] = -5.0;
-                armJointsMoveAndWait(leftArmQ,rightArmQ);
-                phase = true;
-            }
-            break;
-
-        case VOCAB_STATE_SALUTE:
-            yInfo() << "Saluting";
-            {
-                auto leftArmQ = armZeros;
-                auto rightArmQ = armZeros;
-                leftArmQ[1] = 4.0; // Tray safety position
-                rightArmQ[0] = -45.0;
-                rightArmQ[2] = -20.0;
-                rightArmQ[3] = -80.0;
-                armJointsMoveAndWait(leftArmQ, rightArmQ);
-            }
-            {
-                auto leftArmQ = armZeros;
-                auto rightArmQ = armZeros;
-                leftArmQ[1] = 4.0; // Tray safety position
-                rightArmQ[0] = -45.0;
-                rightArmQ[2] = -20.0;
-                rightArmQ[3] = -80.0;
-                armJointsMoveAndWait(leftArmQ, rightArmQ);
-            }
-            {
-                auto leftArmQ = armZeros;
-                auto rightArmQ = armZeros;
-                leftArmQ[1] = 4.0; // Tray safety position
-                rightArmQ[0] = -45.0;
-                rightArmQ[2] = -20.0;
-                rightArmQ[3] = -80.0;
-                armJointsMoveAndWait(leftArmQ, rightArmQ);
-            }
-            state = VOCAB_STATE_ARM_SWINGING;
-            break;
-
-        case VOCAB_STATE_SIGNALIZE_LEFT:
-            yInfo() << "Signaling left";
-            {
-                auto leftArmQ = {-50.0, 20.0, -10.0, -70.0, -20.0, -40.0};
-                auto rightArmQ = armZeros;
-                armJointsMoveAndWait(leftArmQ, rightArmQ);
-            }
-            {
-                auto leftArmQ = {-50.0, 20.0, -10.0, -70.0, -20.0, 0.0};
-                auto rightArmQ = armZeros;
-                armJointsMoveAndWait(leftArmQ, rightArmQ);
-            }
-            state = VOCAB_STATE_ARM_SWINGING;
-            break;
-
-        case VOCAB_STATE_SIGNALIZE_RIGHT:
-            yInfo() << "Signaling right";
-            {
-                auto leftArmQ = armZeros;
-                auto rightArmQ = {-50.0, -20.0, 10.0, -70.0, 20.0, -40.0};
-                leftArmQ[1] = 4.0; // Tray safety position
-                armJointsMoveAndWait(leftArmQ, rightArmQ);
-            }
-            {
-                auto leftArmQ = armZeros;
-                auto rightArmQ = {-50.0, -20.0, 10.0, -70.0, 20.0, 0.0};
-                leftArmQ[1] = 4.0; // Tray safety position
-                armJointsMoveAndWait(leftArmQ, rightArmQ);
-            }
-            state = VOCAB_STATE_ARM_SWINGING;
-            break;
-
-        case VOCAB_STOP_FOLLOWING:
-            yInfo() << "Stopping following";
-            {
-                auto leftArmQ = armZeros;
-                auto rightArmQ = armZeros;
-                leftArmQ[1] = 4.0; // Tray safety position
-                armJointsMoveAndWait(leftArmQ, rightArmQ);
-            }
-            state = VOCAB_STATE_REST;
-            break;
-
-        case VOCAB_STATE_REST:
-            // do nothing, just sit and wait
-            yInfo() << "Resting";
-            break;
-
-        default:
-#if YARP_VERSION_MINOR >= 5
-            yWarning() << "Bad state:" << yarp::os::Vocab32::decode(state);
-#else
-            yWarning() << "Bad state:" << yarp::os::Vocab::decode(state);
-#endif
-            state = VOCAB_STATE_REST;
-            break;
+            yWarning() << "Failed to send new setpoints to left arm";
         }
 
-        yarp::os::SystemClock::delaySystem(0.1);
+        if (!rightArmIPositionControl->positionMove(std::get<1>(setpoints).data()))
+        {
+            yWarning() << "Failed to send new setpoints to right arm";
+        }
+    }
+    else if (!hasNewSetpoints && isMotionDone && currentSetpoints.empty())
+    {
+        // motion done and no more points to send
+
+        switch (currentState)
+        {
+        case state::GREET:
+        case state::SIGNAL_LEFT:
+        case state::SIGNAL_RIGHT:
+        case state::SWING:
+            lock.unlock(); // avoid deadlock due to the next call
+            enableArmSwinging(); // send moar points!
+            break;
+        case state::HOMING:
+            currentState = state::REST;
+            break;
+        case state::REST:
+            // just stay calm
+            break;
+        }
+    }
+
+    return true;
+}
+
+void FollowMeArmExecution::doGreet()
+{
+    registerSetpoints(state::GREET, {
+        {armZeros, {-45.0, 0.0, -20.0, -80.0, 0.0, 0.0}},
+    });
+}
+
+void FollowMeArmExecution::doSignalLeft()
+{
+    registerSetpoints(state::SIGNAL_LEFT, {
+        {{-50.0, 20.0, -10.0, -70.0, -20.0, -40.0}, armZeros},
+        {{-50.0, 20.0, -10.0, -70.0, -20.0, 0.0}, armZeros},
+    });
+}
+
+void FollowMeArmExecution::doSignalRight()
+{
+    registerSetpoints(state::SIGNAL_RIGHT, {
+        {armZeros, {-50.0, 20.0, -10.0, -70.0, -20.0, -40.0}},
+        {armZeros, {-50.0, 20.0, -10.0, -70.0, -20.0, 0.0}},
+    });
+}
+
+void FollowMeArmExecution::enableArmSwinging()
+{
+    registerSetpoints(state::SWING, {
+        {{20.0, 5.0, 0.0, 0.0, 0.0, 0.0}, {-20.0, -5.0, 0.0, 0.0, 0.0, 0.0}},
+        {{-20.0, 5.0, 0.0, 0.0, 0.0, 0.0}, {20.0, -5.0, 0.0, 0.0, 0.0, 0.0}},
+    });
+}
+
+void FollowMeArmExecution::disableArmSwinging()
+{
+    registerSetpoints(state::HOMING, {
+        {armZeros, armZeros}
+    });
+}
+
+bool FollowMeArmExecution::stop()
+{
+    yInfo() << "Received stop command";
+
+    {
+        std::lock_guard<std::mutex> lock(actionMutex);
+        currentState = state::REST;
+        currentSetpoints.clear();
+        hasNewSetpoints = false;
+    }
+
+    bool ok = true;
+
+    if (!leftArmIPositionControl->stop())
+    {
+        yError() << "Failed to stop left arm";
+        ok = false;
+    }
+
+    if (!rightArmIPositionControl->stop())
+    {
+        yError() << "Failed to stop right arm";
+        ok = false;
+    }
+
+    return ok;
+}
+
+void FollowMeArmExecution::registerSetpoints(state newState, std::initializer_list<setpoints_t> setpoints)
+{
+    yInfo() << "Registered new action:" << getStateDescription(newState);
+
+    std::lock_guard<std::mutex> lock(actionMutex);
+    currentState = newState;
+    currentSetpoints.clear();
+    currentSetpoints.insert(currentSetpoints.end(), setpoints);
+    hasNewSetpoints = true;
+}
+
+bool FollowMeArmExecution::checkMotionDone()
+{
+    bool leftArmDone = true;
+
+    if (!leftArmIPositionControl->checkMotionDone(&leftArmDone))
+    {
+        yWarning() << "Unable to check motion state of left arm";
+    }
+
+    bool rightArmDone = true;
+
+    if (!rightArmIPositionControl->checkMotionDone(&rightArmDone))
+    {
+        yWarning() << "Unable to check motion state of right arm";
+    }
+
+    return leftArmDone && rightArmDone;
+}
+
+std::string FollowMeArmExecution::getStateDescription(state s)
+{
+    switch (s)
+    {
+        case state::GREET:
+            return "greet";
+        case state::SIGNAL_LEFT:
+            return "signal left";
+        case state::SIGNAL_RIGHT:
+            return "signal right";
+        case state::SWING:
+            return "swinging arms";
+        case state::HOMING:
+            return "homing";
+        case state::REST:
+            return "none";
+        default:
+            return "unknown";
     }
 }

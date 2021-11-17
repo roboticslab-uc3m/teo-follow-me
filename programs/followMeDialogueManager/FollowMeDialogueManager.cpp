@@ -5,8 +5,6 @@
 #include <yarp/os/LogStream.h>
 #include <yarp/os/SystemClock.h>
 
-#include "../FollowMeVocabs.hpp"
-
 using namespace roboticslab;
 
 namespace
@@ -122,8 +120,9 @@ bool FollowMeDialogueManager::configure(yarp::os::ResourceFinder & rf)
         return false;
     }
 
-    speech.yarp().attachAsClient(ttsClient);
+    armCommander.yarp().attachAsClient(armExecutionClient);
     headCommander.yarp().attachAsClient(headExecutionClient);
+    speech.yarp().attachAsClient(ttsClient);
 
     if (microOn)
     {
@@ -222,8 +221,7 @@ bool FollowMeDialogueManager::updateModule()
     {
         isFollowing = true;
         ttsSay(sentences["okFollow"]);
-        yarp::os::Bottle cmd = {yarp::os::Value(VOCAB_STATE_SALUTE, true)};
-        armExecutionClient.write(cmd);
+        armCommander.doGreet();
         headCommander.enableFollowing();
     }
 
@@ -237,8 +235,7 @@ bool FollowMeDialogueManager::updateModule()
     if (machineState == 1)
     {
         ttsSay(sentences["askName"]);
-        yarp::os::Bottle cmd = {yarp::os::Value(VOCAB_STATE_SALUTE, true)};
-        armExecutionClient.write(cmd);
+        armCommander.doGreet();
         machineState = 2;
     }
     else if (machineState == 2)
@@ -302,8 +299,7 @@ bool FollowMeDialogueManager::updateModule()
     {
         isFollowing = false;
         ttsSay(sentences["stopFollow"]);
-        yarp::os::Bottle cmd = {yarp::os::Value(VOCAB_STOP_FOLLOWING, true)};
-        armExecutionClient.write(cmd);
+        armCommander.disableArmSwinging();
         headCommander.disableFollowing();
         machineState = 3;
     }
@@ -388,16 +384,14 @@ std::string FollowMeDialogueManager::asrListenWithPeriodicWave()
 
         if (encValue > 10.0 && position != 'l')
         {
-            yarp::os::Bottle cmd = {yarp::os::Value(VOCAB_STATE_SIGNALIZE_LEFT, true)};
-            armExecutionClient.write(cmd);
+            armCommander.doSignalLeft();
             yarp::os::SystemClock::delaySystem(5.0);
             ttsSay(sentences["onTheLeft"]);
             position = 'l';
         }
         else if (encValue < -10.0 && position != 'r')
         {
-            yarp::os::Bottle cmd = {yarp::os::Value(VOCAB_STATE_SIGNALIZE_RIGHT, true)};
-            armExecutionClient.write(cmd);
+            armCommander.doSignalRight();
             yarp::os::SystemClock::delaySystem(5.0);
             ttsSay(sentences["onTheRight"]);
             position = 'r';

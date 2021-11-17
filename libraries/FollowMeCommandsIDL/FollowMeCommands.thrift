@@ -10,4 +10,10 @@ service FollowMeHeadCommandsIDL
 
 service FollowMeArmCommandsIDL
 {
+    oneway void doGreet();
+    oneway void doSignalLeft();
+    oneway void doSignalRight();
+    oneway void enableArmSwinging();
+    oneway void disableArmSwinging();
+    bool stop();
 }

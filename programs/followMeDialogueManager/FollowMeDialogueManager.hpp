@@ -13,6 +13,7 @@
 #include <SpeechIDL.h>
 
 #include "FollowMeHeadCommandsIDL.h"
+#include "FollowMeArmCommandsIDL.h"
 
 namespace roboticslab
 {
@@ -38,6 +39,7 @@ private:
     std::string asrListen();
     std::string asrListenWithPeriodicWave();
 
+    FollowMeArmCommandsIDL armCommander;
     FollowMeHeadCommandsIDL headCommander;
     SpeechIDL speech;
 
