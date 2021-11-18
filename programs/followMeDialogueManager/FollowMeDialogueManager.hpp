@@ -10,7 +10,8 @@
 #include <yarp/os/RFModule.h>
 #include <yarp/os/RpcClient.h>
 
-#include <SpeechIDL.h>
+#include <TextToSpeechIDL.h>
+#include <SpeechRecognitionIDL.h>
 
 #include "FollowMeHeadCommandsIDL.h"
 #include "FollowMeArmCommandsIDL.h"
@@ -41,7 +42,8 @@ private:
 
     FollowMeArmCommandsIDL armCommander;
     FollowMeHeadCommandsIDL headCommander;
-    SpeechIDL speech;
+    TextToSpeechIDL tts;
+    SpeechRecognitionIDL asr;
 
     yarp::os::BufferedPort<yarp::os::Bottle> inAsrPort;
     yarp::os::RpcClient ttsClient;

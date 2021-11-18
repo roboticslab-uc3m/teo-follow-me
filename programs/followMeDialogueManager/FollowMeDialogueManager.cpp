@@ -59,6 +59,7 @@ namespace
 constexpr auto DEFAULT_PREFIX = "/followMeDialogueManager";
 constexpr auto DEFAULT_LANGUAGE = "english";
 constexpr auto DEFAULT_MICRO = "off";
+constexpr auto ASR_DICTIONARY = "follow-me";
 
 bool FollowMeDialogueManager::configure(yarp::os::ResourceFinder & rf)
 {
@@ -122,7 +123,8 @@ bool FollowMeDialogueManager::configure(yarp::os::ResourceFinder & rf)
 
     armCommander.yarp().attachAsClient(armExecutionClient);
     headCommander.yarp().attachAsClient(headExecutionClient);
-    speech.yarp().attachAsClient(ttsClient);
+    tts.yarp().attachAsClient(ttsClient);
+    asr.yarp().attachAsClient(asrConfigClient);
 
     if (microOn)
     {
@@ -172,19 +174,19 @@ bool FollowMeDialogueManager::configure(yarp::os::ResourceFinder & rf)
     }
 
     std::string voice;
-    yarp::os::Bottle bSpRecOut = {yarp::os::Value("setDictionary"), yarp::os::Value("follow-me")};
+    std::string langCode;
 
     if (language == "english")
     {
         voice = "mb-en1";
-        bSpRecOut.addString(language);
+        langCode = "en-us";
         sentences = englishSentences;
         voiceCommands = englishCommands;
     }
     else if (language == "spanish")
     {
         voice = "mb-es1";
-        bSpRecOut.addString(language);
+        langCode = "es";
         sentences = spanishSentences;
         voiceCommands = spanishCommands;
     }
@@ -194,13 +196,17 @@ bool FollowMeDialogueManager::configure(yarp::os::ResourceFinder & rf)
         return false;
     }
 
-    if (!speech.setLanguage(voice))
+    if (!tts.setLanguage(voice))
     {
         yError() << "Failed to set TTS voice to" << voice;
         return false;
     }
 
-    asrConfigClient.write(bSpRecOut);
+    if (!asr.setDictionary(ASR_DICTIONARY, langCode))
+    {
+        yError() << "Failed to set ASR dictionary to" << ASR_DICTIONARY << "and language code to" << langCode;
+        return false;
+    }
 
     ttsSay(sentences["presentation1"]);
 
@@ -334,14 +340,12 @@ bool FollowMeDialogueManager::close()
 
 void FollowMeDialogueManager::ttsSay(const std::string & sayString)
 {
-    // -- mute microphone
-    yarp::os::Bottle bSpRecOut = {yarp::os::Value("setMic"), yarp::os::Value("mute")};
-    asrConfigClient.write(bSpRecOut);
+    if (!asr.muteMicrophone())
+    {
+        yWarning() << "Failed to mute microphone";
+    }
 
-    // -- speaking
-    yarp::os::Bottle bRes = {yarp::os::Value("say"), yarp::os::Value(sayString)};
-
-    if (!speech.say(sayString))
+    if (!tts.say(sayString))
     {
         yWarning() << "StateMachine::ttsSay() failed to say:" << sayString;
     }
@@ -352,9 +356,10 @@ void FollowMeDialogueManager::ttsSay(const std::string & sayString)
 
     yarp::os::SystemClock::delaySystem(0.5);
 
-    // -- unmute microphone
-    bSpRecOut = {yarp::os::Value("setMic"), yarp::os::Value("unmute")};
-    asrConfigClient.write(bSpRecOut);
+    if (!asr.unmuteMicrophone())
+    {
+        yWarning() << "Failed to unmute microphone";
+    }
 }
 
 std::string FollowMeDialogueManager::asrListen()
