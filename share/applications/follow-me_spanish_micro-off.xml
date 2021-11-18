@@ -1,8 +1,10 @@
 <application>
-<name>follow-me_spanish_micro-off</name>
+
+    <name>follow-me_spanish_micro-off</name>
+
     <module>
         <name>followMeDialogueManager</name>
-        <parameters>--language spanish --micro off</parameters>
+        <parameters>--language spanish</parameters>
         <node>localhost</node>
     </module>
 
@@ -56,4 +58,3 @@
     </connection>
 
 </application>
-

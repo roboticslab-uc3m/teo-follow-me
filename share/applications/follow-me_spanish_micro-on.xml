@@ -1,8 +1,10 @@
 <application>
-<name>follow-me_spanish_micro-on</name>
+
+    <name>follow-me_spanish_micro-on</name>
+
     <module>
         <name>followMeDialogueManager</name>
-        <parameters>--language spanish --micro on</parameters>
+        <parameters>--language spanish --useMic</parameters>
         <node>localhost</node>
     </module>
 
@@ -57,8 +59,8 @@
 
     <connection>
         <from>/speechRecognition:o</from>
-        <to>/followMeDialogueManager/speechRecognition/speech:i</to>
-    </connection>   
+        <to>/followMeDialogueManager/speechRecognition:i</to>
+    </connection>
 
     <connection>
         <from>/followMeDialogueManager/tts/rpc:c</from>
@@ -66,4 +68,3 @@
     </connection>
 
 </application>
-

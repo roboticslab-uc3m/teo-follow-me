@@ -58,123 +58,65 @@ namespace
 
 constexpr auto DEFAULT_PREFIX = "/followMeDialogueManager";
 constexpr auto DEFAULT_LANGUAGE = "english";
-constexpr auto DEFAULT_MICRO = "off";
+constexpr auto DEFAULT_MICRO = false;
 constexpr auto ASR_DICTIONARY = "follow-me";
+constexpr auto SIGNAL_THRESHOLD = 10.0; // [deg]
+constexpr auto CENTER_THRESHOLD = 3.0; // [deg]
 
 bool FollowMeDialogueManager::configure(yarp::os::ResourceFinder & rf)
 {
     auto language = rf.check("language", yarp::os::Value(DEFAULT_LANGUAGE), "language to be used").asString();
-    auto micro = rf.check("micro", yarp::os::Value(DEFAULT_MICRO), "use or not microphone").asString();
+    usingMic = rf.check("useMic", "enable microphone");
 
     if (rf.check("help"))
     {
         yInfo("FollowMeDialogueManager options:");
         yInfo("\t--help (this help)\t--from [file.ini]\t--context [path]");
         yInfo("\t--language: %s [%s]", language.c_str(), DEFAULT_LANGUAGE);
-        yInfo("\t--micro: %s [%s]", micro.c_str(), DEFAULT_MICRO);
+        yInfo("\t--useMic: %d [%d]", usingMic, DEFAULT_MICRO);
         return false;
     }
-
-    if (micro == "on")
-    {
-        microOn = true;
-    }
-    else if (micro == "off")
-    {
-        microOn = false;
-    }
-    else
-    {
-        yError() << "Invalid --micro value, expected 'on' or 'off', got:" << micro;
-        return false;
-    }
-
-    //-----------------OPEN LOCAL PORTS------------//
 
     if (!armExecutionClient.open(DEFAULT_PREFIX + std::string("/arms/rpc:c")))
     {
-        yError() << "Failed to open arm execution client port:" << armExecutionClient.getName();
+        yError() << "Failed to open arm execution client port" << armExecutionClient.getName();
         return false;
     }
 
     if (!headExecutionClient.open(DEFAULT_PREFIX + std::string("/head/rpc:c")))
     {
-        yError() << "Failed to open head execution client port:" << headExecutionClient.getName();
+        yError() << "Failed to open head execution client port" << headExecutionClient.getName();
         return false;
     }
 
     if (!ttsClient.open(DEFAULT_PREFIX + std::string("/tts/rpc:c")))
     {
-        yError() << "Failed to open tts client port:" << ttsClient.getName();
+        yError() << "Failed to open TTS client port" << ttsClient.getName();
         return false;
     }
 
-    if (!asrConfigClient.open(DEFAULT_PREFIX + std::string("/speechRecognition/rpc:c")))
+    if (usingMic && !asrConfigClient.open(DEFAULT_PREFIX + std::string("/speechRecognition/rpc:c")))
     {
-        yError() << "Failed to open asr config client port:" << asrConfigClient.getName();
+        yError() << "Failed to open ASR config client port" << asrConfigClient.getName();
         return false;
     }
 
-    if (!inAsrPort.open(DEFAULT_PREFIX + std::string("/speechRecognition/speech:i")))
+    if (usingMic && !inAsrPort.open(DEFAULT_PREFIX + std::string("/speechRecognition:i")))
     {
-        yError() << "Failed to open inAsrPort" << inAsrPort.getName();
+        yError() << "Failed to open ASR listener port" << inAsrPort.getName();
         return false;
     }
 
     armCommander.yarp().attachAsClient(armExecutionClient);
     headCommander.yarp().attachAsClient(headExecutionClient);
     tts.yarp().attachAsClient(ttsClient);
-    asr.yarp().attachAsClient(asrConfigClient);
 
-    if (microOn)
+    if (usingMic)
     {
-        while (asrConfigClient.getOutputCount() == 0)
-        {
-            if (isStopping())
-            {
-                return false;
-            }
-
-            yInfo() << "Waiting for" << asrConfigClient.getName() << "to be connected to ASR to configure it...";
-            yarp::os::SystemClock::delaySystem(0.5);
-        }
+        asr.yarp().attachAsClient(asrConfigClient);
     }
 
-    while (ttsClient.getOutputCount() == 0)
-    {
-        if (isStopping())
-        {
-            return false;
-        }
-
-        yInfo() << "Waiting for" << ttsClient.getName() << "to be connected to TTS to configure it...";
-        yarp::os::SystemClock::delaySystem(0.5);
-    }
-
-    while (armExecutionClient.getOutputCount() == 0)
-    {
-        if (isStopping())
-        {
-            return false;
-        }
-
-        yInfo() << "Waiting for" << armExecutionClient.getName() << "to be connected to ArmExecution to configure it...";
-        yarp::os::SystemClock::delaySystem(0.5);
-    }
-
-    while (headExecutionClient.getOutputCount() == 0)
-    {
-        if (isStopping())
-        {
-            return false;
-        }
-
-        yInfo() << "Waiting for" << headExecutionClient.getName() << "to be connected to HeadExecution to configure it...";
-        yarp::os::SystemClock::delaySystem(0.5);
-    }
-
-    std::string voice;
-    std::string langCode;
+    std::string voice, langCode;
 
     if (language == "english")
     {
@@ -192,7 +134,7 @@ bool FollowMeDialogueManager::configure(yarp::os::ResourceFinder & rf)
     }
     else
     {
-        yError() << "Language not found, please use '--language english' or '--language spanish', got:" << language;
+        yError() << "Unsupported language, please use '--language english' or '--language spanish', got:" << language;
         return false;
     }
 
@@ -202,13 +144,11 @@ bool FollowMeDialogueManager::configure(yarp::os::ResourceFinder & rf)
         return false;
     }
 
-    if (!asr.setDictionary(ASR_DICTIONARY, langCode))
+    if (usingMic && !asr.setDictionary(ASR_DICTIONARY, langCode))
     {
         yError() << "Failed to set ASR dictionary to" << ASR_DICTIONARY << "and language code to" << langCode;
         return false;
     }
-
-    ttsSay(sentences["presentation1"]);
 
     return true;
 }
@@ -220,99 +160,42 @@ double FollowMeDialogueManager::getPeriod()
 
 bool FollowMeDialogueManager::updateModule()
 {
-    yInfoThrottle(2.0) << "StateMachine in state" << machineState;
+    constexpr auto throttle = 1.0; // [s]
+    auto connectionState = checkOutputConnections();
 
-    // follow only (no speech)
-    if (!microOn)
+    if (!std::get<0>(connectionState))
     {
-        isFollowing = true;
-        ttsSay(sentences["okFollow"]);
-        armCommander.doGreet();
-        headCommander.enableFollowing();
-    }
-
-    if (machineState == 0)
-    {
-        ttsSay(sentences["presentation2"]);
-        ttsSay(sentences["presentation3"]);
-        machineState = 3;
-    }
-
-    if (machineState == 1)
-    {
-        ttsSay(sentences["askName"]);
-        armCommander.doGreet();
-        machineState = 2;
-    }
-    else if (machineState == 2)
-    {
-        std::string inStr = asrListen();
-        // Blocking
-        _inStrState1 = inStr;
-
-        if (_inStrState1.find(voiceCommands["stopFollowing"]) != std::string::npos)
+        if (yarp::os::Thread::isRunning())
         {
-            machineState = 5;
-        }
-        else if (_inStrState1.find(voiceCommands["myNameIs"]) != std::string::npos)
-        {
-            switch (sentence)
+            yInfo() << "Port" << std::get<1>(connectionState) << "disconnected, forcing presentation stop";
+
+            if (!yarp::os::Thread::stop())
             {
-            case 'a':
-                ttsSay(sentences["answer1"]);
-                sentence = 'b';
-                break;
-            case 'b':
-                ttsSay(sentences["answer2"]);
-                sentence = 'c';
-                break;
-            case 'c':
-                ttsSay(sentences["answer3"]);
-                sentence = 'a';
-                break;
-            default:
-                break;
+                yError() << "Unable to stop presentation thread";
+                return false;
             }
-
-            machineState = 3;
         }
         else
         {
-            ttsSay(sentences["notUnderstand"]);
-            machineState = 1;
+            yInfoThrottle(throttle) << "Waiting for" << std::get<1>(connectionState) << "to be connected to" << std::get<2>(connectionState);
         }
-    }
-    else if (machineState == 3)
-    {
-        std::string inStr = isFollowing ? asrListenWithPeriodicWave() : asrListen();
-
-        // Blocking
-        _inStrState1 = inStr;
-
-        if (_inStrState1.find(voiceCommands["hiTeo"]) != std::string::npos) machineState = 0;
-        else if (_inStrState1.find(voiceCommands["followMe"]) != std::string::npos) machineState = 4;
-        else if (_inStrState1.find(voiceCommands["stopFollowing"]) != std::string::npos) machineState = 5;
-        else machineState = 3;
-    }
-    else if (machineState == 4)
-    {
-        isFollowing = true;
-        ttsSay(sentences["okFollow"]);
-        headCommander.enableFollowing();
-        machineState = 1;
-    }
-    else if (machineState == 5)
-    {
-        isFollowing = false;
-        ttsSay(sentences["stopFollow"]);
-        armCommander.disableArmSwinging();
-        headCommander.disableFollowing();
-        machineState = 3;
     }
     else
     {
-        ttsSay("ANOMALY");
-        machineState = 1;
+        if (yarp::os::Thread::isRunning())
+        {
+            yDebugThrottle(throttle) << "Presentation is running in state" << getStateDescription(machineState);
+        }
+        else
+        {
+            yInfo() << "Starting presentation thread";
+
+            if (!yarp::os::Thread::start())
+            {
+                yError() << "Unable to start presentation thread";
+                return false;
+            }
+        }
     }
 
     return true;
@@ -320,12 +203,21 @@ bool FollowMeDialogueManager::updateModule()
 
 bool FollowMeDialogueManager::interruptModule()
 {
+    headCommander.stop();
+    armCommander.stop();
+    tts.stop();
+
     headExecutionClient.interrupt();
     armExecutionClient.interrupt();
     ttsClient.interrupt();
-    asrConfigClient.interrupt();
-    inAsrPort.interrupt();
-    return true;
+
+    if (usingMic)
+    {
+        asrConfigClient.interrupt();
+        inAsrPort.interrupt();
+    }
+
+    return yarp::os::Thread::stop();
 }
 
 bool FollowMeDialogueManager::close()
@@ -333,80 +225,257 @@ bool FollowMeDialogueManager::close()
     headExecutionClient.close();
     armExecutionClient.close();
     ttsClient.close();
-    ttsClient.close();
-    inAsrPort.close();
+
+    if (usingMic)
+    {
+        asrConfigClient.close();
+        inAsrPort.close();
+    }
+
     return true;
 }
 
-void FollowMeDialogueManager::ttsSay(const std::string & sayString)
+void FollowMeDialogueManager::run()
 {
-    if (!asr.muteMicrophone())
+    ttsSayAndWait(sentences["presentation1"]);
+    bool isFollowing = false;
+
+    enum class answers { ANSWER1, ANSWER2, ANSWER3 };
+    answers answer = answers::ANSWER1;
+
+    std::string listened;
+
+    if (!usingMic)
+    {
+        // override state machine if no mic found, keep lingering until thread is stopped
+        armCommander.doGreet();
+        headCommander.enableFollowing();
+        ttsSayAndWait(sentences["okFollow"]);
+        asrListenAndLinger(); // this will loop indefinitely
+    }
+
+    while (!yarp::os::Thread::isStopping())
+    {
+        switch (machineState)
+        {
+        case state::PRESENTATION:
+            ttsSayAndWait(sentences["presentation2"]);
+            ttsSayAndWait(sentences["presentation3"]);
+            machineState = state::LISTEN;
+            break;
+
+        case state::ASK_NAME:
+            armCommander.doGreet();
+            ttsSayAndWait(sentences["askName"]);
+            machineState = state::DIALOGUE;
+            break;
+
+        case state::DIALOGUE:
+            listened = asrListenAndWait();
+
+            if (listened.find(voiceCommands["stopFollowing"]) != std::string::npos)
+            {
+                machineState = state::STOP_FOLLOWING;
+            }
+            else if (listened.find(voiceCommands["myNameIs"]) != std::string::npos)
+            {
+                switch (answer)
+                {
+                case answers::ANSWER1:
+                    ttsSayAndWait(sentences["answer1"]);
+                    answer = answers::ANSWER2;
+                    break;
+                case answers::ANSWER2:
+                    ttsSayAndWait(sentences["answer2"]);
+                    answer = answers::ANSWER3;
+                    break;
+                case answers::ANSWER3:
+                    ttsSayAndWait(sentences["answer3"]);
+                    answer = answers::ANSWER1;
+                    break;
+                }
+
+                machineState = state::LISTEN;
+            }
+            else
+            {
+                ttsSayAndWait(sentences["notUnderstand"]);
+                machineState = state::ASK_NAME;
+            }
+
+            break;
+
+        case state::LISTEN:
+            listened = isFollowing ? asrListenAndLinger() : asrListenAndWait();
+
+            if (listened.find(voiceCommands["hiTeo"]) != std::string::npos)
+                machineState = state::PRESENTATION;
+            else if (listened.find(voiceCommands["followMe"]) != std::string::npos)
+                machineState = state::FOLLOW;
+            else if (listened.find(voiceCommands["stopFollowing"]) != std::string::npos)
+                machineState = state::STOP_FOLLOWING;
+            else
+                machineState = state::LISTEN;
+
+            break;
+
+        case state::FOLLOW:
+            headCommander.enableFollowing();
+            ttsSayAndWait(sentences["okFollow"]);
+            machineState = state::ASK_NAME;
+            isFollowing = true;
+            break;
+
+        case state::STOP_FOLLOWING:
+            armCommander.disableArmSwinging();
+            headCommander.disableFollowing();
+            ttsSayAndWait(sentences["stopFollow"]);
+            machineState = state::LISTEN;
+            isFollowing = false;
+            break;
+        }
+
+        yarp::os::SystemClock::delaySystem(0.5);
+    }
+}
+
+std::tuple<bool, std::string, std::string> FollowMeDialogueManager::checkOutputConnections()
+{
+    if (armExecutionClient.getOutputCount() == 0)
+    {
+        return {false, armExecutionClient.getName(), "arm execution server"};
+    }
+
+    if (headExecutionClient.getOutputCount() == 0)
+    {
+        return {false, headExecutionClient.getName(), "head execution server"};
+    }
+
+    if (ttsClient.getOutputCount() == 0)
+    {
+        return {false, ttsClient.getName(), "TTS server"};
+    }
+
+    if (usingMic && asrConfigClient.getOutputCount() == 0)
+    {
+        return {false, asrConfigClient.getName(), "ASR config server"};
+    }
+
+    if (usingMic && inAsrPort.getInputCount() == 0)
+    {
+        return {false, inAsrPort.getName(), "ASR listener server"};
+    }
+
+    return {true, {}, {}};
+}
+
+void FollowMeDialogueManager::ttsSayAndWait(const std::string & sayString)
+{
+    if (usingMic && !asr.muteMicrophone())
     {
         yWarning() << "Failed to mute microphone";
     }
 
     if (!tts.say(sayString))
     {
-        yWarning() << "StateMachine::ttsSay() failed to say:" << sayString;
+        yWarning() << "Failed to say:" << sayString;
     }
     else
     {
-        yDebug() << "StateMachine::ttsSay() said:" << sayString;
+        yDebug() << "Now saying:" << sayString;
+
+        do
+        {
+            yarp::os::SystemClock::delaySystem(1.0); // more time due to ASR
+        }
+        while (!yarp::os::Thread::isStopping() && !tts.checkSayDone());
     }
 
-    yarp::os::SystemClock::delaySystem(0.5);
-
-    if (!asr.unmuteMicrophone())
+    if (usingMic && !asr.unmuteMicrophone())
     {
         yWarning() << "Failed to unmute microphone";
     }
 }
 
-std::string FollowMeDialogueManager::asrListen()
+std::string FollowMeDialogueManager::asrListenAndWait()
 {
-    yarp::os::Bottle * bIn = inAsrPort.read(true); // shouldWait
-    yDebug() << "[FollowMeDialogueManager] Listened:" << bIn->toString();
-    return bIn->get(0).asString();
+    const yarp::os::Bottle * b = nullptr;
+
+    while (!yarp::os::Thread::isStopping() && !b)
+    {
+        b = inAsrPort.read(false); // don't block
+        yarp::os::SystemClock::delaySystem(0.1);
+    }
+
+    if (b && b->size() > 0)
+    {
+        auto text = b->get(0).asString();
+        yDebug() << "Listened:" << text;
+        return text;
+    }
+
+    return {};
 }
 
-std::string FollowMeDialogueManager::asrListenWithPeriodicWave()
+std::string FollowMeDialogueManager::asrListenAndLinger()
 {
-    char position = '0'; //-- char position (l = left, c = center, r = right)
+    enum class position { UNKNOWN, LEFT, CENTER, RIGHT };
+    position pos = position::UNKNOWN;
 
-    while (true) // read loop
+    while (!yarp::os::Thread::isStopping())
     {
-        yarp::os::Bottle * bIn = inAsrPort.read(false); //-- IMPORTANT: should not wait
+        const auto * b = inAsrPort.read(false); // don't wait
 
-        //-- If we read something, we return it immediately
-        if (!bIn)
+        if (b && b->size() > 0)
         {
-            yDebug() << "[StateMachine] Listened:" << bIn->toString();
-            return bIn->get(0).asString();
+            auto text = b->get(0).asString();
+            yDebug() << "Listened:" << text;
+            return text; // return as soon as something is heard
         }
 
-        // It is reading the encoder position all the time
         double encValue = headCommander.getOrientationAngle();
 
-        if (encValue > 10.0 && position != 'l')
+        if (encValue > SIGNAL_THRESHOLD && pos != position::LEFT)
         {
             armCommander.doSignalLeft();
-            yarp::os::SystemClock::delaySystem(5.0);
-            ttsSay(sentences["onTheLeft"]);
-            position = 'l';
+            ttsSayAndWait(sentences["onTheLeft"]);
+            pos = position::LEFT;
         }
-        else if (encValue < -10.0 && position != 'r')
+        else if (encValue < -SIGNAL_THRESHOLD && pos != position::RIGHT)
         {
             armCommander.doSignalRight();
-            yarp::os::SystemClock::delaySystem(5.0);
-            ttsSay(sentences["onTheRight"]);
-            position = 'r';
+            ttsSayAndWait(sentences["onTheRight"]);
+            pos = position::RIGHT;
         }
-        else if (encValue > -3.0 && encValue < 3.0 && position != 'c')
+        else if (encValue > -CENTER_THRESHOLD && encValue < CENTER_THRESHOLD && pos != position::CENTER)
         {
-            ttsSay(sentences["onTheCenter"]);
-            position = 'c';
+            ttsSayAndWait(sentences["onTheCenter"]);
+            pos = position::CENTER;
         }
 
-        //-- ...to finally continue the read loop.
+        yarp::os::SystemClock::delaySystem(0.5);
+    }
+
+    return {};
+}
+
+std::string FollowMeDialogueManager::getStateDescription(state s)
+{
+    switch (s)
+    {
+    case state::PRESENTATION:
+        return "presentation";
+    case state::ASK_NAME:
+        return "ask name";
+    case state::DIALOGUE:
+        return "dialogue";
+    case state::LISTEN:
+        return "listen";
+    case state::FOLLOW:
+        return "follow";
+    case state::STOP_FOLLOWING:
+        return "stop following";
+    default:
+        return "unknown";
     }
 }
