@@ -53,7 +53,7 @@ private:
 
     void registerSetpoints(state newState, std::initializer_list<setpoints_t> setpoints);
     bool checkMotionDone();
-    std::string getStateDescription(state s);
+    static std::string getStateDescription(state s);
 
     const setpoints_arm_t armZeros {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 

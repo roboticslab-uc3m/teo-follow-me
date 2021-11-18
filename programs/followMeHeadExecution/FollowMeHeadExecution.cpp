@@ -103,6 +103,7 @@ bool FollowMeHeadExecution::interruptModule()
 {
     serverPort.interrupt();
     detectionPort.interrupt();
+    detectionPort.disableCallback();
     return stop();
 }
 
