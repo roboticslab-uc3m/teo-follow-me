@@ -15,7 +15,7 @@ constexpr auto DEFAULT_ROBOT = "/teo";
 constexpr auto DEFAULT_PREFIX = "/followMeHeadExecution";
 constexpr auto DEFAULT_REF_SPEED = 30.0;
 constexpr auto DEFAULT_REF_ACCELERATION = 30.0;
-constexpr auto DETECTION_DEADBAND = 0.3; // [mm]
+constexpr auto DETECTION_DEADBAND = 0.03; // [m]
 constexpr auto RELATIVE_INCREMENT = 2.0; // [deg]
 
 bool FollowMeHeadExecution::configure(yarp::os::ResourceFinder &rf)
@@ -127,14 +127,18 @@ void FollowMeHeadExecution::onRead(yarp::os::Bottle & b)
         return;
     }
 
-    auto x = b.get(0).asFloat64();
-    auto y = b.get(1).asFloat64();
-    auto z = b.get(2).asFloat64(); // depth, unused
+    auto x = b.get(0).asFloat64(); // [m]
+    auto y = b.get(1).asFloat64(); // [m]
+    auto z = b.get(2).asFloat64(); // [m] (depth, unused)
 
     if (std::abs(x) > DETECTION_DEADBAND || std::abs(y) > DETECTION_DEADBAND)
     {
+        // On the received frame, positive X is to the right, positive Y is down.
+        // First axis (global Z roll) is positive to the left (frame-wise).
+        // Second axis (global Y pitch) is positive down (frame-wise).
+
         std::vector<double> target {
-            std::abs(x) > DETECTION_DEADBAND ? std::copysign(RELATIVE_INCREMENT, x) : 0.0,
+            std::abs(x) > DETECTION_DEADBAND ? std::copysign(RELATIVE_INCREMENT, -x) : 0.0,
             std::abs(y) > DETECTION_DEADBAND ? std::copysign(RELATIVE_INCREMENT, y) : 0.0
         };
 
