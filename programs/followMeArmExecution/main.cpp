@@ -1,53 +1,41 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
 /**
- *
- * @ingroup follow-me_programs
- * \defgroup followMeArmExecution followMeArmExecution
- *
+ * @ingroup teo-follow-me_programs
+ * @defgroup followMeArmExecution followMeArmExecution
  * @brief Creates an instance of roboticslab::FollowMeArmExecution.
- *
- * @section followMeArmExecution_legal Legal
- *
- * Copyright: 2013 (C) Universidad Carlos III de Madrid
- *
- * Author: <a href="http://roboticslab.uc3m.es/roboticslab/persona.php?id_pers=72">Juan G. Victores</a> and <a href="http://roboticslab.uc3m.es/roboticslab/people/r-de-santos">Raul de Santos Rico</a>
- *
- * CopyPolicy: This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License 3.0 or later
- *
- * <hr>
- *
- * This file can be edited at followMeArmExecution
- *
  */
+
+#include <yarp/os/LogStream.h>
+#include <yarp/os/Network.h>
+#include <yarp/os/ResourceFinder.h>
 
 #include "FollowMeArmExecution.hpp"
 
-int main(int argc, char **argv)
+int main(int argc, char * argv[])
 {
     yarp::os::ResourceFinder rf;
-    rf.setVerbose(true);
     rf.setDefaultContext("followMeArmExecution");
     rf.setDefaultConfigFile("followMeArmExecution.ini");
     rf.configure(argc, argv);
 
     roboticslab::FollowMeArmExecution mod;
-    if(rf.check("help"))
+
+    if (rf.check("help"))
     {
         return mod.runModule(rf);
     }
 
-    printf("Run \"%s --help\" for options.\n",argv[0]);
-    printf("%s checking for yarp network... ",argv[0]);
-    fflush(stdout);
+    yInfo("Run \"%s --help\" for options", argv[0]);
+    yInfo("%s checking for yarp network...", argv[0]);
+
     yarp::os::Network yarp;
-    if (!yarp.checkNetwork())
+
+    if (!yarp::os::Network::checkNetwork())
     {
-        fprintf(stderr,"[fail]\n%s found no yarp network (try running \"yarpserver &\"), bye!\n",argv[0]);
+        yError() << argv[0] << "found no yarp network (try running \"yarpserver &\")";
         return 1;
     }
-    printf("[ok]\n");
 
     return mod.runModule(rf);
 }

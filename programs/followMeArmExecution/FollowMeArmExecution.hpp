@@ -1,68 +1,74 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-#ifndef __FOLLOW_ME_ARM_SWING_HPP__
-#define __FOLLOW_ME_ARM_SWING_HPP__
+#ifndef __FOLLOW_ME_ARM_EXECUTION_HPP__
+#define __FOLLOW_ME_ARM_EXECUTION_HPP__
 
-#include <vector>
+#include <array>
+#include <deque>
+#include <initializer_list>
+#include <mutex>
+#include <string>
+#include <tuple>
 
 #include <yarp/os/RFModule.h>
-#include <yarp/os/Thread.h>
 
+#include <yarp/dev/IControlMode.h>
+#include <yarp/dev/IPositionControl.h>
 #include <yarp/dev/PolyDriver.h>
-#include <yarp/dev/ControlBoardInterfaces.h>
+
+#include "FollowMeArmCommandsIDL.h"
 
 namespace roboticslab
 {
 
 /**
- * @ingroup follow-me_programs
- *
+ * @ingroup followMeArmExecution
  * @brief Arm Execution Core.
- *
  */
-class FollowMeArmExecution : public yarp::os::RFModule, public yarp::os::PortReader, public yarp::os::Thread
+class FollowMeArmExecution : public yarp::os::RFModule,
+                             public FollowMeArmCommandsIDL
 {
 public:
-    bool configure(yarp::os::ResourceFinder &rf) override;
+    ~FollowMeArmExecution()
+    { close(); }
 
-private:
+    bool configure(yarp::os::ResourceFinder & rf) override;
+    bool close() override;
     bool interruptModule() override;
     double getPeriod() override;
     bool updateModule() override;
 
-    yarp::dev::PolyDriver leftArmDevice;
-    yarp::dev::IControlMode *leftArmIControlMode;
-    yarp::dev::IPositionControl *leftArmIPositionControl;
+    void doGreet() override;
+    void doSignalLeft() override;
+    void doSignalRight() override;
+    void enableArmSwinging() override;
+    void disableArmSwinging() override;
+    bool stop() override;
 
-    yarp::dev::PolyDriver rightArmDevice;
-    yarp::dev::IControlMode *rightArmIControlMode;
-    yarp::dev::IPositionControl *rightArmIPositionControl;
+private:
+    enum class state { GREET, SIGNAL_LEFT, SIGNAL_RIGHT, SWING, HOMING, REST };
 
-    /** Phase of arm swing movement */
-    bool phase;
-    double armSpeed;
+    using setpoints_arm_t = std::array<double, 6>;
+    using setpoints_t = std::tuple<setpoints_arm_t, setpoints_arm_t>;
 
-    /** Arm Joints Move And Wait */
-    bool armJointsMoveAndWait(std::vector<double>& leftArmQ, std::vector<double>& rightArmQ);
+    void registerSetpoints(state newState, std::initializer_list<setpoints_t> setpoints);
+    bool checkMotionDone();
+    static std::string getStateDescription(state s);
 
-    /** State */
-    int state;
+    const setpoints_arm_t armZeros {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 
-    /** Input port from dialogue manager */
-    yarp::os::RpcServer inDialogPort;
+    std::deque<setpoints_t> currentSetpoints;
+    std::mutex actionMutex;
+    bool hasNewSetpoints {false};
+    state currentState {state::REST};
 
-    /** Treats data received from input port from speech recognition */
-    bool read(yarp::os::ConnectionReader& connection) override;
+    yarp::dev::PolyDriver armsDevice;
+    yarp::dev::IControlMode * armsIControlMode;
+    yarp::dev::IPositionControl * armsIPositionControl;
 
-    /** Thread run */
-    void run() override;
-
-    static const yarp::conf::vocab32_t VOCAB_STATE_ARM_SWINGING;
-
-    static const std::string defaultRobot;
-    static const double defaultArmSpeed;
+    yarp::os::RpcServer serverPort;
 };
 
 } // namespace roboticslab
 
-#endif  // __FOLLOW_ME_ARM_SWING_HPP__
+#endif // __FOLLOW_ME_ARM_EXECUTION_HPP__

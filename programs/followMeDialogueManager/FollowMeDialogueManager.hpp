@@ -1,51 +1,78 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-#ifndef __FM_DIALOGUE_MANAGER_HPP__
-#define __FM_DIALOGUE_MANAGER_HPP__
+#ifndef __FOLLOW_ME_DIALOGUE_MANAGER_HPP__
+#define __FOLLOW_ME_DIALOGUE_MANAGER_HPP__
+
+#include <string>
+#include <tuple>
+#include <unordered_map>
 
 #include <yarp/os/Bottle.h>
+#include <yarp/os/BufferedPort.h>
 #include <yarp/os/RFModule.h>
 #include <yarp/os/RpcClient.h>
+#include <yarp/os/Thread.h>
 
-#include "StateMachine.hpp"
+#include <TextToSpeechIDL.h>
+#include <SpeechRecognitionIDL.h>
 
-#define DEFAULT_LANGUAGE "english"
-#define DEFAULT_MICRO "off"
+#include "FollowMeHeadCommandsIDL.h"
+#include "FollowMeArmCommandsIDL.h"
 
 namespace roboticslab
 {
 
 /**
- * @ingroup follow-me_programs
- *
+ * @ingroup followMeDialogueManager
  * @brief Dialogue Manager.
  */
-class FollowMeDialogueManager : public yarp::os::RFModule
+class FollowMeDialogueManager : public yarp::os::RFModule,
+                                public yarp::os::Thread
 {
 public:
-    bool configure(yarp::os::ResourceFinder &rf) override;
+    enum class state { PRESENTATION, ASK_NAME, DIALOGUE, LISTEN, FOLLOW, STOP_FOLLOWING };
+    enum class sentence { PRESENTATION_1, PRESENTATION_2, PRESENTATION_3, ASK_NAME, ANSWER_1, ANSWER_2, ANSWER_3,
+                          NOT_UNDERSTAND, FOLLOW, STOP_FOLLOWING, ON_THE_RIGHT, ON_THE_LEFT, ON_THE_CENTER };
+    enum class command { HI_TEO, FOLLOW_ME, MY_NAME_IS, STOP_FOLLOWING };
+
+    ~FollowMeDialogueManager()
+    { close(); }
+
+    bool configure(yarp::os::ResourceFinder & rf) override;
+    bool close() override;
+    bool interruptModule() override;
+    double getPeriod() override;
+    bool updateModule() override;
+
+    bool threadInit() override;
+    void run() override;
 
 private:
-    StateMachine stateMachine;
+    std::tuple<bool, std::string, std::string> checkOutputConnections();
+    void ttsSayAndWait(sentence snt);
+    std::string asrListenAndWait();
+    std::string asrListenAndLinger();
+
+    FollowMeArmCommandsIDL armCommander;
+    FollowMeHeadCommandsIDL headCommander;
+    TextToSpeechIDL tts;
+    SpeechRecognitionIDL asr;
+
     yarp::os::BufferedPort<yarp::os::Bottle> inAsrPort;
     yarp::os::RpcClient ttsClient;
     yarp::os::RpcClient asrConfigClient;
     yarp::os::RpcClient headExecutionClient;
     yarp::os::RpcClient armExecutionClient;
 
-    // bTtsOut     -> to config or send tts commands
-    // bSpRecOut   -> to config or send SpeechRecognition commands
-    yarp::os::Bottle bTtsOut, bSpRecOut;
+    std::string voice;
+    std::string langCode;
+    bool usingMic;
+    state machineState {state::LISTEN};
 
-    bool interruptModule();
-    double getPeriod();
-    bool updateModule();
-
-    // micro (on/off) to give speaking orders to TEO
-    bool microOn;
-    void setMicro(bool microAct);
+    std::unordered_map<sentence, std::string> sentences;
+    std::unordered_map<command, std::string> voiceCommands;
 };
 
 } // namespace roboticslab
 
-#endif  // __FM_DIALOGUE_MANAGER_HPP__
+#endif // __FOLLOW_ME_DIALOGUE_MANAGER_HPP__

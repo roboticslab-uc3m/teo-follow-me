@@ -2,349 +2,257 @@
 
 #include "FollowMeArmExecution.hpp"
 
-#include "../FollowMeVocabs.hpp"
+#include <vector>
 
-namespace roboticslab
+#include <yarp/os/LogStream.h>
+#include <yarp/os/Property.h>
+
+using namespace roboticslab;
+
+constexpr auto DEFAULT_ROBOT = "/teo";
+constexpr auto DEFAULT_PREFIX = "/followMeArmExecution";
+constexpr auto DEFAULT_REF_SPEED = 30.0;
+constexpr auto DEFAULT_REF_ACCELERATION = 30.0;
+
+bool FollowMeArmExecution::configure(yarp::os::ResourceFinder & rf)
 {
+    auto robot = rf.check("robot", yarp::os::Value(DEFAULT_ROBOT), "remote robot port prefix").asString();
+    auto armSpeed = rf.check("armSpeed", yarp::os::Value(DEFAULT_REF_SPEED), "arm speed").asFloat64();
 
-/************************************************************************/
-
-const yarp::conf::vocab32_t FollowMeArmExecution::VOCAB_STATE_ARM_SWINGING = yarp::os::createVocab('s','w','i','n');
-
-const std::string FollowMeArmExecution::defaultRobot = "/teo";
-const double FollowMeArmExecution::defaultArmSpeed = 30.0;
-
-/************************************************************************/
-
-bool FollowMeArmExecution::configure(yarp::os::ResourceFinder &rf)
-{
-    std::string robot = rf.check("robot",yarp::os::Value(defaultRobot),"name of /robot to be used").asString();
-    armSpeed = rf.check("armSpeed",yarp::os::Value(defaultArmSpeed),"arm speed").asDouble();
-
-    printf("--------------------------------------------------------------\n");
-    printf("FollowMeArmExecution options:\n");
-    printf("\t--help (this help)\t--from [file.ini]\t--context [path]\n");
-    printf("\t--robot: %s [%s]\n",robot.c_str(), defaultRobot.c_str());
-    printf("\t--armSpeed: %f [%f]\n",armSpeed, defaultArmSpeed);
-    printf("--------------------------------------------------------------\n");
-
-    state = VOCAB_STATE_ARM_SWINGING;
-
-    std::string followMeArmExecutionStr("/followMeArmExecution");
-
-    // ------ LEFT ARM -------
-    yarp::os::Property leftArmOptions;
-    leftArmOptions.put("device","remote_controlboard");
-    leftArmOptions.put("remote",robot+"/leftArm");
-    leftArmOptions.put("local",followMeArmExecutionStr+robot+"/leftArm");
-    leftArmDevice.open(leftArmOptions);
-    if(!leftArmDevice.isValid())
+    if (rf.check("help"))
     {
-        printf("robot leftArm device not available.\n");
-        leftArmDevice.close();
-        yarp::os::Network::fini();
+        yInfo("FollowMeArmExecution options:");
+        yInfo("\t--help (this help)\t--from [file.ini]\t--context [path]");
+        yInfo("\t--robot: %s [%s]", robot.c_str(), DEFAULT_ROBOT);
+        yInfo("\t--armSpeed: %f [%f]", armSpeed, DEFAULT_REF_SPEED);
         return false;
     }
 
-    if (!leftArmDevice.view(leftArmIControlMode) ) // connecting our device with "control mode" interface, initializing which control mode we want (position)
-    {
-        printf("[warning] Problems acquiring leftArmIControlMode interface\n");
-        return false;
-    }
-    printf("[success] Acquired leftArmIControlMode interface\n");
+    yarp::os::Property armsOptions {
+        {"device", yarp::os::Value("remotecontrolboardremapper")},
+        {"localPortPrefix", yarp::os::Value(DEFAULT_PREFIX)}
+    };
 
-    if (!leftArmDevice.view(leftArmIPositionControl) ) // connecting our device with "position control 2" interface (configuring our device: speed, acceleration... and sending joint positions)
-    {
-        printf("[warning] Problems acquiring leftArmIPositionControl interface\n");
-        return false;
-    }
-    printf("[success] Acquired leftArmIPositionControl interface\n");
+    yarp::os::Bottle remotePorts {
+        yarp::os::Value(robot + "/leftArm"),
+        yarp::os::Value(robot + "/rightArm")
+    };
 
-    // ------ RIGHT ARM -------
-    yarp::os::Property rightArmOptions;
-    rightArmOptions.put("device","remote_controlboard");
-    rightArmOptions.put("remote",robot+"/rightArm");
-    rightArmOptions.put("local",followMeArmExecutionStr+robot+"/rightArm");
-    rightArmDevice.open(rightArmOptions);
-    if(!rightArmDevice.isValid())
-    {
-        printf("robot rightArm device not available.\n");
-        rightArmDevice.close();
-        yarp::os::Network::fini();
-        return false;
-    }
+    armsOptions.put("remoteControlBoards", yarp::os::Value::makeList(remotePorts.toString().c_str()));
 
-    if (!rightArmDevice.view(rightArmIControlMode) ) // connecting our device with "control mode" interface, initializing which control mode we want (position)
-    {
-        printf("[warning] Problems acquiring rightArmIControlMode interface\n");
-        return false;
-    }
-    printf("[success] Acquired rightArmIControlMode interface\n");
+    yarp::os::Bottle axesNames {
+        yarp::os::Value("FrontalLeftShoulder"), yarp::os::Value("SagittalLeftShoulder"), yarp::os::Value("AxialLeftShoulder"),
+        yarp::os::Value("FrontalLeftElbow"), yarp::os::Value("AxialLeftWrist"), yarp::os::Value("FrontalLeftWrist"),
+        yarp::os::Value("FrontalRightShoulder"), yarp::os::Value("SagittalRightShoulder"), yarp::os::Value("AxialRightShoulder"),
+        yarp::os::Value("FrontalRightElbow"), yarp::os::Value("AxialRightWrist"), yarp::os::Value("FrontalRightWrist")
+    };
 
-    if ( ! rightArmDevice.view(rightArmIPositionControl) )
-    {
-        printf("[warning] Problems acquiring rightArmIPositionControl interface\n");
-        return false;
-    }
-    printf("[success] Acquired rightArmIPositionControl interface\n");
+    armsOptions.put("axesNames", yarp::os::Value::makeList(axesNames.toString().c_str()));
 
-    //-- Set control modes for both arms
-
-    int leftArmAxes;
-    leftArmIPositionControl->getAxes(&leftArmAxes);
-    std::vector<int> leftArmControlModes(leftArmAxes,VOCAB_CM_POSITION);
-    if(! leftArmIControlMode->setControlModes( leftArmControlModes.data() ))
+    if (!armsDevice.open(armsOptions))
     {
-        printf("[warning] Problems setting position control mode of: left-arm\n");
+        yError() << "Failed to open arms device";
         return false;
     }
 
-    int rightArmAxes;
-    rightArmIPositionControl->getAxes(&rightArmAxes);
-    std::vector<int> rightArmControlModes(rightArmAxes,VOCAB_CM_POSITION);
-    if(! rightArmIControlMode->setControlModes(rightArmControlModes.data()))
+    if (!armsDevice.view(armsIControlMode) || !armsDevice.view(armsIPositionControl))
     {
-        printf("[warning] Problems setting position control mode of: right-arm\n");
+        yError() << "Failed to view arms device interfaces";
         return false;
     }
 
-    phase = false;
+    if (!armsIControlMode->setControlModes(std::vector<int>(axesNames.size(), VOCAB_CM_POSITION).data()))
+    {
+        yError() << "Failed to set position control mode for arms";
+        return false;
+    }
 
-    inDialogPort.open("/followMeArmExecution/dialogueManager/rpc:s");
-    inDialogPort.setReader(*this);  //-- Callback reader: avoid need to call inSrPort.read().
+    if (!armsIPositionControl->setRefSpeeds(std::vector<double>(axesNames.size(), DEFAULT_REF_SPEED).data()))
+    {
+        yError() << "Failed to set reference speeds for arms";
+        return false;
+    }
 
-    return this->start();  //-- Start the thread (calls run).
+    if (!armsIPositionControl->setRefAccelerations(std::vector<double>(axesNames.size(), DEFAULT_REF_ACCELERATION).data()))
+    {
+        yError() << "Failed to set reference accelerations for arms";
+        return false;
+    }
+
+    if (!serverPort.open(DEFAULT_PREFIX + std::string("/dialogueManager/rpc:s")))
+    {
+        yError() << "Failed to open dialogue manager port" << serverPort.getName();
+        return false;
+    }
+
+    yarp::os::Wire::yarp().attachAsServer(serverPort);
+    return true;
 }
-
-/************************************************************************/
 
 bool FollowMeArmExecution::interruptModule()
 {
-    this->stop();
-    inDialogPort.interrupt();
-    leftArmDevice.close();
-    return true;
+    serverPort.interrupt();
+    return stop();
 }
 
-/************************************************************************/
+bool FollowMeArmExecution::close()
+{
+    serverPort.close();
+    armsDevice.close();
+    return true;
+}
 
 double FollowMeArmExecution::getPeriod()
 {
-    return 4.0; // Fixed, in seconds, the slow thread that calls updateModule below
+    return 0.1; // [s]
 }
-
-/************************************************************************/
 
 bool FollowMeArmExecution::updateModule()
 {
-    printf("Entered updateModule...\n");
+    bool isMotionDone = checkMotionDone();
+    std::unique_lock<std::mutex> lock(actionMutex);
 
-    return true;
-}
+    yDebugThrottle(1.0) << "Current action:" << getStateDescription(currentState);
 
-/************************************************************************/
-
-bool FollowMeArmExecution::armJointsMoveAndWait(std::vector<double>& leftArmQ, std::vector<double> &rightArmQ)
-{
-    // -- Configuring Speeds and Accelerations
-    int armAxes;
-    rightArmIPositionControl->getAxes(&armAxes); // number of axes is the same in both arms
-
-    std::vector<double> armSpeeds(armAxes,armSpeed);
-    std::vector<double> armAccelerations(armAxes,30.0);
-
-    rightArmIPositionControl->setRefSpeeds(armSpeeds.data());
-    leftArmIPositionControl->setRefSpeeds(armSpeeds.data());
-    rightArmIPositionControl->setRefAccelerations(armAccelerations.data());
-    leftArmIPositionControl->setRefAccelerations(armAccelerations.data());
-    rightArmIPositionControl->positionMove( rightArmQ.data() );
-    leftArmIPositionControl->positionMove( leftArmQ.data() );
-
-    //printf("Waiting for right arm.");
-    bool doneRight = false;
-    bool doneLeft = false;
-    while((!doneRight)&&(!Thread::isStopping()))
+    if (hasNewSetpoints || (isMotionDone && !currentSetpoints.empty()))
     {
-        rightArmIPositionControl->checkMotionDone(&doneRight);
-        yarp::os::Time::delay(0.1);
-    }
+        auto setpoints = currentSetpoints.front();
+        currentSetpoints.pop_front();
+        hasNewSetpoints = false;
+        lock.unlock();
 
-    while((!doneLeft)&&(!Thread::isStopping()))
-    {
-        leftArmIPositionControl->checkMotionDone(&doneLeft);
-        yarp::os::Time::delay(0.1);
-    }
+        std::vector<double> values;
+        values.insert(values.end(), std::get<0>(setpoints).begin(), std::get<0>(setpoints).end());
+        values.insert(values.end(), std::get<1>(setpoints).begin(), std::get<1>(setpoints).end());
 
-    //printf("\n");
-    return true;
-}
-
-/************************************************************************/
-
-bool FollowMeArmExecution::read(yarp::os::ConnectionReader& connection)
-{
-    yarp::os::Bottle b;
-    b.read(connection);
-    // process data in b
-    printf("[FollowMeArmExecution] Got %s\n", b.toString().c_str());
-    if( (VOCAB_FOLLOW_ME ==b.get(0).asVocab()) || (VOCAB_STATE_SALUTE ==b.get(0).asVocab()) )
-    {
-        state = VOCAB_STATE_SALUTE;
-    }
-    else if (VOCAB_STOP_FOLLOWING ==b.get(0).asVocab())
-        state = VOCAB_STOP_FOLLOWING;
-
-    else if (VOCAB_STATE_SIGNALIZE_RIGHT == b.get(0).asVocab())
-        state = VOCAB_STATE_SIGNALIZE_RIGHT;
-
-    else if (VOCAB_STATE_SIGNALIZE_LEFT == b.get(0).asVocab())
-        state = VOCAB_STATE_SIGNALIZE_LEFT;
-
-    return true;
-}
-
-/************************************************************************/
-
-void FollowMeArmExecution::run()
-{
-    while( !Thread::isStopping() )
-    {
-        switch (state)
+        if (!armsIPositionControl->positionMove(values.data()))
         {
-        case VOCAB_STATE_ARM_SWINGING:
-            if(phase)
-            {
-                printf("Phase: true\n");
-                std::vector<double> leftArmQ(7,0.0);
-                leftArmQ[0] = 20;
-                leftArmQ[1] = 5;
-                std::vector<double> rightArmQ(7,0.0);
-                rightArmQ[1] = -5;
-                rightArmQ[0] = -20;
-                armJointsMoveAndWait(leftArmQ,rightArmQ);
-                phase = false;
-            }
-            else
-            {
-                printf("Phase: false\n");
-                std::vector<double> leftArmQ(7,0.0);
-                leftArmQ[0] = -20;
-                leftArmQ[1] = 5;
-                std::vector<double> rightArmQ(7,0.0);
-                rightArmQ[1] = -5;
-                rightArmQ[0] = 20;
-                armJointsMoveAndWait(leftArmQ,rightArmQ);
-                phase = true;
-            }
-            break;
+            yWarning() << "Failed to send new setpoints to arms";
+        }
+    }
+    else if (!hasNewSetpoints && isMotionDone && currentSetpoints.empty())
+    {
+        // motion done and no more points to send
 
-        case VOCAB_STATE_SALUTE:
-            printf("Salute\n");
-            {
-                std::vector<double> leftArmQ(7,0.0);
-                std::vector<double> rightArmQ(7,0.0);
-                leftArmQ[1] = 4;    // Tray security position
-                rightArmQ[0] = -45;
-                rightArmQ[2] = -20;
-                rightArmQ[3] = -80;
-                armJointsMoveAndWait(leftArmQ,rightArmQ);
-            }
-            {
-                std::vector<double> leftArmQ(7,0.0);
-                std::vector<double> rightArmQ(7,0.0);
-                leftArmQ[1] = 4;    // Tray security position
-                rightArmQ[0] = -45;
-                rightArmQ[2] = -20;
-                rightArmQ[3] = -80;
-                armJointsMoveAndWait(leftArmQ,rightArmQ);
-            }
-            {
-                std::vector<double> leftArmQ(7,0.0);
-                std::vector<double> rightArmQ(7,0.0);
-                leftArmQ[1] = 4;    // Tray security position
-                rightArmQ[0] = -45;
-                rightArmQ[2] = -20;
-                rightArmQ[3] = -80;
-                armJointsMoveAndWait(leftArmQ,rightArmQ);
-            }
-            state = VOCAB_STATE_ARM_SWINGING;
+        switch (currentState)
+        {
+        case state::GREET:
+        case state::SIGNAL_LEFT:
+        case state::SIGNAL_RIGHT:
+        case state::SWING:
+            lock.unlock(); // avoid deadlock due to the next call
+            enableArmSwinging(); // send moar points!
             break;
-
-        case VOCAB_STATE_SIGNALIZE_RIGHT:
-            printf("Signalize right\n");
-            {
-                std::vector<double> leftArmQ(7,0.0);
-                std::vector<double> rightArmQ(7,0.0);
-                leftArmQ[1] = 4;    // Tray security position
-                rightArmQ[0] = -50;
-                rightArmQ[1] = -20;
-                rightArmQ[2] = 10;
-                rightArmQ[3] = -70;
-                rightArmQ[4] = 20;
-                rightArmQ[5] = -40;
-                armJointsMoveAndWait(leftArmQ,rightArmQ);
-            }
-            {
-                std::vector<double> leftArmQ(7,0.0);
-                std::vector<double> rightArmQ(7,0.0);
-                leftArmQ[1] = 4;    // Tray security position
-                rightArmQ[0] = -50;
-                rightArmQ[1] = -20;
-                rightArmQ[2] = 10;
-                rightArmQ[3] = -70;
-                rightArmQ[4] = 20;
-                rightArmQ[5] = 0;
-                armJointsMoveAndWait(leftArmQ,rightArmQ);
-            }
-            state = VOCAB_STATE_ARM_SWINGING;
+        case state::HOMING:
+            currentState = state::REST;
             break;
-
-        case VOCAB_STATE_SIGNALIZE_LEFT:
-            printf("Signalize left\n");
-            {
-                std::vector<double> leftArmQ(7,0.0);
-                std::vector<double> rightArmQ(7,0.0);
-                leftArmQ[0] = -50;
-                leftArmQ[1] = 20;
-                leftArmQ[2] = -10;
-                leftArmQ[3] = -70;
-                leftArmQ[4] = -20;
-                leftArmQ[5] = -40;
-                armJointsMoveAndWait(leftArmQ,rightArmQ);
-            }
-            {
-                std::vector<double> leftArmQ(7,0.0);
-                std::vector<double> rightArmQ(7,0.0);
-                leftArmQ[0] = -50;
-                leftArmQ[1] = 20;
-                leftArmQ[2] = -10;
-                leftArmQ[3] = -70;
-                leftArmQ[4] = -20;
-                leftArmQ[5] = 0;
-                armJointsMoveAndWait(leftArmQ,rightArmQ);
-            }
-            state = VOCAB_STATE_ARM_SWINGING;
-            break;
-
-        case VOCAB_STOP_FOLLOWING:
-            printf("Stop Following\n");
-            {
-                std::vector<double> leftArmQ(7,0.0);
-                std::vector<double> rightArmQ(7,0.0);
-                leftArmQ[1] = 4;    // Tray security position
-                armJointsMoveAndWait(leftArmQ,rightArmQ);
-            }
-            break;
-
-        default:
-            printf("Bad state!\n");
+        case state::REST:
+            // just stay calm
             break;
         }
     }
 
-    return;
+    return true;
 }
 
-/************************************************************************/
+void FollowMeArmExecution::doGreet()
+{
+    registerSetpoints(state::GREET, {
+        {armZeros, {-45.0, 0.0, -20.0, -80.0, 0.0, 0.0}},
+    });
+}
 
-} // namespace roboticslab
+void FollowMeArmExecution::doSignalLeft()
+{
+    registerSetpoints(state::SIGNAL_LEFT, {
+        {{-50.0, 20.0, -10.0, -70.0, -20.0, -40.0}, armZeros},
+        {{-50.0, 20.0, -10.0, -70.0, -20.0, 0.0}, armZeros},
+    });
+}
+
+void FollowMeArmExecution::doSignalRight()
+{
+    registerSetpoints(state::SIGNAL_RIGHT, {
+        {armZeros, {-50.0, 20.0, -10.0, -70.0, -20.0, -40.0}},
+        {armZeros, {-50.0, 20.0, -10.0, -70.0, -20.0, 0.0}},
+    });
+}
+
+void FollowMeArmExecution::enableArmSwinging()
+{
+    registerSetpoints(state::SWING, {
+        {{20.0, 5.0, 0.0, 0.0, 0.0, 0.0}, {-20.0, -5.0, 0.0, 0.0, 0.0, 0.0}},
+        {{-20.0, 5.0, 0.0, 0.0, 0.0, 0.0}, {20.0, -5.0, 0.0, 0.0, 0.0, 0.0}},
+    });
+}
+
+void FollowMeArmExecution::disableArmSwinging()
+{
+    registerSetpoints(state::HOMING, {
+        {armZeros, armZeros}
+    });
+}
+
+bool FollowMeArmExecution::stop()
+{
+    yInfo() << "Received stop command";
+
+    {
+        std::lock_guard<std::mutex> lock(actionMutex);
+        currentState = state::REST;
+        currentSetpoints.clear();
+        hasNewSetpoints = false;
+    }
+
+    if (!armsIPositionControl->stop())
+    {
+        yError() << "Failed to stop arms";
+        return false;
+    }
+
+    return true;
+}
+
+void FollowMeArmExecution::registerSetpoints(state newState, std::initializer_list<setpoints_t> setpoints)
+{
+    yInfo() << "Registered new action:" << getStateDescription(newState);
+
+    std::lock_guard<std::mutex> lock(actionMutex);
+    currentState = newState;
+    currentSetpoints.clear();
+    currentSetpoints.insert(currentSetpoints.end(), setpoints);
+    hasNewSetpoints = true;
+}
+
+bool FollowMeArmExecution::checkMotionDone()
+{
+    bool motionDone = true;
+
+    if (!armsIPositionControl->checkMotionDone(&motionDone))
+    {
+        yWarning() << "Unable to check motion state of arms";
+    }
+
+    return motionDone;
+}
+
+std::string FollowMeArmExecution::getStateDescription(state s)
+{
+    switch (s)
+    {
+        case state::GREET:
+            return "greet";
+        case state::SIGNAL_LEFT:
+            return "signal left";
+        case state::SIGNAL_RIGHT:
+            return "signal right";
+        case state::SWING:
+            return "swinging arms";
+        case state::HOMING:
+            return "homing";
+        case state::REST:
+            return "none";
+        default:
+            return "unknown";
+    }
+}

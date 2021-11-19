@@ -2,132 +2,200 @@
 
 #include "FollowMeHeadExecution.hpp"
 
-namespace roboticslab
-{
+#include <cmath> // std::abs, std::copysign
 
-/************************************************************************/
+#include <vector>
 
-const std::string FollowMeHeadExecution::defaultRobot = "/teo";
+#include <yarp/os/LogStream.h>
+#include <yarp/os/Property.h>
 
-/************************************************************************/
+using namespace roboticslab;
+
+constexpr auto DEFAULT_ROBOT = "/teo";
+constexpr auto DEFAULT_PREFIX = "/followMeHeadExecution";
+constexpr auto DEFAULT_REF_SPEED = 30.0;
+constexpr auto DEFAULT_REF_ACCELERATION = 30.0;
+constexpr auto DETECTION_DEADBAND = 0.03; // [m]
+constexpr auto RELATIVE_INCREMENT = 2.0; // [deg]
 
 bool FollowMeHeadExecution::configure(yarp::os::ResourceFinder &rf)
 {
-    std::string robot = rf.check("robot",yarp::os::Value(defaultRobot),"name of /robot to be used").asString();
+    auto robot = rf.check("robot", yarp::os::Value(DEFAULT_ROBOT), "remote robot port prefix").asString();
 
-    printf("--------------------------------------------------------------\n");
-    printf("FollowMeHeadExecution options:\n");
-    printf("\t--help (this help)\t--from [file.ini]\t--context [path]\n");
-    printf("\t--robot: %s [%s]\n",robot.c_str(),defaultRobot.c_str());
-    printf("--------------------------------------------------------------\n");
-
-    std::string followMeHeadExecutionStr("/followMeHeadExecution");
-
-    yarp::os::Property headOptions;
-    headOptions.put("device","remote_controlboard");
-    headOptions.put("remote",robot+"/head");
-    headOptions.put("local",followMeHeadExecutionStr+robot+"/head");
-    headDevice.open(headOptions);
-    if( ! headDevice.isValid() )
+    if (rf.check("help"))
     {
-        printf("head remote_controlboard instantiation not worked.\n");
+        yInfo("FollowMeHeadExecution options:");
+        yInfo("\t--help (this help)\t--from [file.ini]\t--context [path]");
+        yInfo("\t--robot: %s [%s]", robot.c_str(), DEFAULT_ROBOT);
         return false;
     }
 
-    if (!headDevice.view(headIControlMode) ) // connecting our device with "control mode" interface, initializing which control mode we want (position)
-    {
-        printf("[warning] Problems acquiring headIControlMode interface\n");
-        return false;
-    }
-    printf("[success] Acquired headIControlMode interface\n");
+    yarp::os::Property headOptions {
+        {"device", yarp::os::Value("remote_controlboard")},
+        {"remote", yarp::os::Value(robot + "/head")},
+        {"local", yarp::os::Value(DEFAULT_PREFIX + std::string("/head"))}
+    };
 
-    if (!headDevice.view(headIPositionControl) ) // connecting our device with "position control 2" interface (configuring our device: speed, acceleration... and sending joint positions)
+    if (!headDevice.open(headOptions))
     {
-        printf("[warning] Problems acquiring headIPositionControl interface\n");
-        return false;
-    }
-    printf("[success] Acquired headIPositionControl interface\n");
-
-    if( ! headDevice.view(iEncoders) )
-    {
-        printf("view(iEncoders) not worked.\n");
+        yError() << "Failed to open head device";
         return false;
     }
 
-    //-- Set control mode
-    int headAxes;
-    headIPositionControl->getAxes(&headAxes);
-    std::vector<int> headControlModes(headAxes,VOCAB_CM_POSITION);
-    if(! headIControlMode->setControlModes( headControlModes.data() ))
+    if (!headDevice.view(iControlMode) || !headDevice.view(iEncoders) || !headDevice.view(iPositionControl))
     {
-        printf("[warning] Problems setting position control mode of: head\n");
+        yError() << "Failed to view head device interfaces";
         return false;
     }
 
-    // -- Configure Speed and Acc
-    std::vector<double> speed(2, 30);
-    std::vector<double> acc(2, 30);
-
-    if(!headIPositionControl->setRefSpeeds(speed.data()))
+    if (!iControlMode->setControlModes(std::vector<int>(2, VOCAB_CM_POSITION).data()))
     {
-        printf("[ERROR] Problems setting reference speed on head joints.\n");
+        yError() << "Failed to set position control mode";
         return false;
     }
 
-    if(!headIPositionControl->setRefAccelerations(acc.data()))
+    if (!iPositionControl->setRefSpeeds(std::vector<double>(2, DEFAULT_REF_SPEED).data()))
     {
-        printf("[ERROR] Problems setting reference acc on head joints.\n");
+        yError() << "Failed to set reference speeds";
         return false;
     }
 
-    inCvPort.setIPositionControl(headIPositionControl);
-    inDialoguePortProcessor.setIEncoders(iEncoders);
-
-    //-----------------OPEN LOCAL PORTS------------//
-    inDialoguePortProcessor.setInCvPortPtr(&inCvPort);
-    inCvPort.useCallback();
-    inDialoguePort.setReader(inDialoguePortProcessor);
-    inDialoguePort.open("/followMeHeadExecution/dialogueManager/rpc:s");
-    inCvPort.open("/followMeHeadExecution/cv/state:i");
-
-    while(0 == inCvPort.getInputCount())
+    if (!iPositionControl->setRefAccelerations(std::vector<double>(2, DEFAULT_REF_ACCELERATION).data()))
     {
-        if(isStopping())
-            return false;
-        printf("Waiting for \"/followMeHeadExecution/cv/state:i\" to be connected to vision...\n");
-        yarp::os::Time::delay(0.5);
+        yError() << "Failed to set reference accelerations";
+        return false;
     }
+
+    if (!serverPort.open(DEFAULT_PREFIX + std::string("/dialogueManager/rpc:s")))
+    {
+        yError() << "Failed to open dialogue server port" << serverPort.getName();
+        return false;
+    }
+
+    if (!detectionPort.open(DEFAULT_PREFIX + std::string("/cv/state:i")))
+    {
+        yError() << "Failed to open detection client port" << detectionPort.getName();
+        return false;
+    }
+
+    yarp::os::Wire::yarp().attachAsServer(serverPort);
+    detectionPort.useCallback(*this);
 
     return true;
 }
-
-/************************************************************************/
 
 double FollowMeHeadExecution::getPeriod()
 {
-    return 2.0;  // Fixed, in seconds, the slow thread that calls updateModule below
+    return 0.1; // [s]
 }
 
-/************************************************************************/
 bool FollowMeHeadExecution::updateModule()
 {
-    //printf("StateMachine in state [%d]. FollowMeHeadExecution alive...\n", stateMachine.getMachineState());
+    if (detectionPort.getInputCount() == 0)
+    {
+        yDebugThrottle(1.0) << "Waiting for" << detectionPort.getName() << "to be connected to vision...";
+    }
+
     return true;
 }
-
-/************************************************************************/
 
 bool FollowMeHeadExecution::interruptModule()
 {
-    printf("FollowMeHeadExecution closing...\n");
-    inCvPort.disableCallback();
-    inCvPort.interrupt();
-    inDialoguePort.interrupt();
-    inCvPort.close();
-    inDialoguePort.close();
+    serverPort.interrupt();
+    detectionPort.interrupt();
+    detectionPort.disableCallback();
+    return stop();
+}
+
+bool FollowMeHeadExecution::close()
+{
+    serverPort.close();
+    detectionPort.close();
+    headDevice.close();
     return true;
 }
 
-/************************************************************************/
+void FollowMeHeadExecution::onRead(yarp::os::Bottle & b)
+{
+    if (!isFollowing)
+    {
+        return;
+    }
 
-} // namespace roboticslab
+    if (b.size() != 3)
+    {
+        yWarning() << "InCvPort protocol error, expected 3 elements, got" << b.size();
+        return;
+    }
+
+    auto x = b.get(0).asFloat64(); // [m]
+    auto y = b.get(1).asFloat64(); // [m]
+    auto z = b.get(2).asFloat64(); // [m] (depth, unused)
+
+    if (std::abs(x) > DETECTION_DEADBAND || std::abs(y) > DETECTION_DEADBAND)
+    {
+        // On the received frame, positive X is to the right, positive Y is down.
+        // First axis (global Z roll) is positive to the left (frame-wise).
+        // Second axis (global Y pitch) is positive down (frame-wise).
+
+        std::vector<double> target {
+            std::abs(x) > DETECTION_DEADBAND ? std::copysign(RELATIVE_INCREMENT, -x) : 0.0,
+            std::abs(y) > DETECTION_DEADBAND ? std::copysign(RELATIVE_INCREMENT, y) : 0.0
+        };
+
+        yDebug() << "Detection port got:" << x << y << z << "|| performing relative motion:" << target;
+
+        if (!iPositionControl->relativeMove(target.data()))
+        {
+            yError() << "Failed to move head";
+        }
+    }
+    else
+    {
+        yDebug() << "Detection port got (x,y,z):" << x << y << z;
+    }
+}
+
+void FollowMeHeadExecution::enableFollowing()
+{
+    yInfo() << "Received start following signal";
+    isFollowing = true;
+}
+
+void FollowMeHeadExecution::disableFollowing()
+{
+    yInfo() << "Received stop following signal, moving to home position";
+    isFollowing = false;
+    static const std::vector<double> headZeros(2, 0.0);
+
+    if (!iPositionControl->positionMove(headZeros.data()))
+    {
+        yError() << "Failed to perform homing";
+    }
+}
+
+double FollowMeHeadExecution::getOrientationAngle()
+{
+    double angle = 0.0;
+
+    if (!iEncoders->getEncoder(0, &angle))
+    {
+        yError() << "Failed to get head orientation encoder value";
+    }
+
+    return angle;
+}
+
+bool FollowMeHeadExecution::stop()
+{
+    yInfo() << "Received stop command";
+    isFollowing = false;
+
+    if (!iPositionControl->stop())
+    {
+        yError() << "Failed to stop head";
+        return false;
+    }
+
+    return true;
+}

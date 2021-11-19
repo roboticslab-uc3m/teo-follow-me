@@ -1,8 +1,10 @@
 <application>
-<name>follow-me_spanish_micro-off</name>
+
+    <name>teo-follow-me_english_micro-off</name>
+
     <module>
         <name>followMeDialogueManager</name>
-        <parameters>--language spanish --micro off</parameters>
+        <parameters>--language english</parameters>
         <node>localhost</node>
     </module>
 
@@ -29,31 +31,42 @@
     </connection>
 
     <module>
+        <name>yarpdev</name>
+        <parameters>--context sensors --from asus-xtion.ini</parameters>
+        <node>/head</node>
+    </module>
+
+    <module>
         <name>rgbdDetection</name>
-        <parameters>--RGBDRemote /teo/xtion --detector HaarDetector</parameters>
+        <parameters>--sensorRemote /teo/xtion --detector HaarDetector --period 0.2</parameters>
         <node>/head</node>
     </module>
 
     <connection>
-        <from>/rgbdDetection/teo/xtion/state:o</from>
+        <from>/teo/rgbdDetection/state:o</from>
         <to>/followMeHeadExecution/cv/state:i</to>
     </connection>
 
     <module>
         <name>yarpview</name>
-        <parameters>--name /yarpview/rgbdDetection/teo/xtion/img:i</parameters>
+        <parameters>--name /yarpview/rgbdDetection/img:i</parameters>
         <node>localhost</node>
     </module>
 
     <connection>
-        <from>/rgbdDetection/teo/xtion/img:o</from>
-        <to>/yarpview/rgbdDetection/teo/xtion/img:i</to>
+        <from>/teo/rgbdDetection/img:o</from>
+        <to>/yarpview/rgbdDetection/img:i</to>
     </connection>
+
+    <module>
+        <name>espeakServer</name>
+        <parameters>--name /tts --language mb-en1</parameters>
+        <node>localhost</node>
+    </module>
 
     <connection>
         <from>/followMeDialogueManager/tts/rpc:c</from>
-        <to>/teo/tts/rpc:s</to>
+        <to>/tts/rpc:s</to>
     </connection>
 
 </application>
-

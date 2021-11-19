@@ -4,18 +4,7 @@
 
 cmake_minimum_required(VERSION 3.12)
 
-project(FOLLOW_ME LANGUAGES CXX)
-
-### options: cpp programs
-option(ENABLE_followMeArmSwing "Choose if you want to compile followMeArmSwing" TRUE)
-option(ENABLE_followMeDialogueManager "Choose if you want to compile followMeDialogueManager" TRUE)
-option(ENABLE_followMeExecutionCore "Choose if you want to compile followMeExecutionCore" TRUE)
-
-# Add suffix for debug libraries.
-if(MSVC)
-    message(STATUS "Running on windows")
-    set(CMAKE_DEBUG_POSTFIX "d")
-endif()
+project(TEO_FOLLOW_ME LANGUAGES CXX)
 
 # Let the user specify a configuration (only single-config generators).
 if(NOT CMAKE_CONFIGURATION_TYPES)
@@ -37,20 +26,31 @@ if(NOT CMAKE_CONFIGURATION_TYPES)
     endif()
 endif()
 
-# Pick up our cmake modules.
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake
-                              ${CMAKE_SOURCE_DIR}/cmake/find-modules)
-
 # Hard dependencies.
 find_package(YCM 0.11 REQUIRED)
-find_package(YARP 3.4 REQUIRED COMPONENTS os dev)
+find_package(YARP 3.4 REQUIRED COMPONENTS os dev idl_tools)
+
+# Soft dependencies.
+find_package(ROBOTICSLAB_SPEECH QUIET)
 
 # Configure installation paths for YARP resources.
-yarp_configure_external_installation(roboticslab-follow-me)
+yarp_configure_external_installation(teo-follow-me)
 
-# add main contents
-add_subdirectory(share)
+# Standard installation directories.
+include(GNUInstallDirs)
+
+# Control where libraries and executables are placed during the build.
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
+
+# Create targets if specific requirements are satisfied.
+include(CMakeDependentOption)
+
+# Add main contents.
+add_subdirectory(libraries)
 add_subdirectory(programs)
+add_subdirectory(share)
 
 # Configure and create uninstall target.
 include(AddUninstallTarget)

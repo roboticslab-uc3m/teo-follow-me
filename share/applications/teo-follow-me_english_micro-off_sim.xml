@@ -1,20 +1,22 @@
 <application>
-<name>follow-me_english_micro-off</name>
+
+    <name>teo-follow-me_english_micro-off_sim</name>
+
     <module>
         <name>followMeDialogueManager</name>
-        <parameters>--language english --micro off</parameters>
+        <parameters>--language english</parameters>
         <node>localhost</node>
     </module>
 
     <module>
         <name>followMeHeadExecution</name>
-        <parameters>--robot /teo</parameters>
+        <parameters>--robot /teoSim</parameters>
         <node>localhost</node>
     </module>
 
     <module>
         <name>followMeArmExecution</name>
-        <parameters>--robot /teo --armSpeed 30.0</parameters>
+        <parameters>--robot /teoSim --armSpeed 30.0</parameters>
         <node>localhost</node>
     </module>
 
@@ -30,30 +32,35 @@
 
     <module>
         <name>rgbdDetection</name>
-        <parameters>--RGBDRemote /teo/xtion --detector HaarDetector</parameters>
-        <node>/head</node>
+        <parameters>--sensorRemote /teoSim/camera --detector HaarDetector --period 0.2</parameters>
+        <node>localhost</node>
     </module>
 
     <connection>
-        <from>/rgbdDetection/teo/xtion/state:o</from>
+        <from>/rgbdDetection/state:o</from>
         <to>/followMeHeadExecution/cv/state:i</to>
     </connection>
 
     <module>
         <name>yarpview</name>
-        <parameters>--name /yarpview/rgbdDetection/teo/xtion/img:i</parameters>
+        <parameters>--name /yarpview/rgbdDetection/img:i</parameters>
         <node>localhost</node>
     </module>
 
     <connection>
-        <from>/rgbdDetection/teo/xtion/img:o</from>
-        <to>/yarpview/rgbdDetection/teo/xtion/img:i</to>
+        <from>/rgbdDetection/img:o</from>
+        <to>/yarpview/rgbdDetection/img:i</to>
     </connection>
+
+    <module>
+        <name>espeakServer</name>
+        <parameters>--name /tts --language mb-en1</parameters>
+        <node>localhost</node>
+    </module>
 
     <connection>
         <from>/followMeDialogueManager/tts/rpc:c</from>
-        <to>/teo/tts/rpc:s</to>
+        <to>/tts/rpc:s</to>
     </connection>
 
 </application>
-
