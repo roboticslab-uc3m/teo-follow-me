@@ -9,51 +9,76 @@ using namespace roboticslab;
 
 namespace
 {
-    const std::unordered_map<std::string, std::string> englishSentences = {
-        {"presentation1", "Follow me, demostration started."},
-        {"presentation2", "Hello. My name is TEO. I am, a humanoid robot, of Carlos tercero, university."},
-        {"presentation3", "Now, I will follow you. Please, tell me."},
-        {"askName", "Could you tell me your name."},
-        {"answer1", "Is, a beatifull name. I love it."},
-        {"answer2", "Is, a wonderfull name. My human creator, has the same name."},
-        {"answer3", "My parents, didn't want to baptize me, with that name."},
-        {"notUnderstand", "Sorry, I don't understand."},
-        {"okFollow", "Okay, I will follow you."},
-        {"stopFollow", "Okay, I will stop following you. See you later."},
-        {"onTheRight", "You are, on my, right."},
-        {"onTheLeft", "You are, on my, left."},
-        {"onTheCenter", "You are, on the, center."},
+    using state = FollowMeDialogueManager::state;
+    using snt = FollowMeDialogueManager::sentence;
+    using cmd = FollowMeDialogueManager::command;
+
+    const std::unordered_map<snt, std::string> englishSentences = {
+        {snt::PRESENTATION_1, "Follow me, demostration started."},
+        {snt::PRESENTATION_2, "Hello. My name is TEO. I am, a humanoid robot, of Carlos tercero, university."},
+        {snt::PRESENTATION_3, "Now, I will follow you. Please, tell me."},
+        {snt::ASK_NAME, "Could you tell me your name."},
+        {snt::ANSWER_1, "Is, a beatifull name. I love it."},
+        {snt::ANSWER_2, "Is, a wonderfull name. My human creator, has the same name."},
+        {snt::ANSWER_3, "My parents, didn't want to baptize me, with that name."},
+        {snt::NOT_UNDERSTAND, "Sorry, I don't understand."},
+        {snt::FOLLOW, "Okay, I will follow you."},
+        {snt::STOP_FOLLOWING, "Okay, I will stop following you. See you later."},
+        {snt::ON_THE_RIGHT, "You are, on my, right."},
+        {snt::ON_THE_LEFT, "You are, on my, left."},
+        {snt::ON_THE_CENTER, "You are, on the, center."},
     };
 
-    const std::unordered_map<std::string, std::string> englishCommands = {
-        {"hiTeo", "hi teo"},
-        {"followMe", "follow me"},
-        {"myNameIs", "my name is"},
-        {"stopFollowing", "stop following"},
+    const std::unordered_map<cmd, std::string> englishCommands = {
+        {cmd::HI_TEO, "hi teo"},
+        {cmd::FOLLOW_ME, "follow me"},
+        {cmd::MY_NAME_IS, "my name is"},
+        {cmd::STOP_FOLLOWING, "stop following"},
     };
 
-    const std::unordered_map<std::string, std::string> spanishSentences = {
-        {"presentation1", "Demostración de detección de caras iniciada."},
-        {"presentation2", "Hola. Me yamo Teo, y soy un grobot humanoide diseñado por ingenieros de la universidad carlos tercero."},
-        {"presentation3", "Por favor, dime qué quieres que haga."},
-        {"askName", "Podrías decirme tu nombre."},
-        {"answer1", "Uuooooo ouu, que nombre más bonito. Me encanta."},
-        {"answer2", "Que gran nombre. Mi creador humano se yama igual."},
-        {"answer3", "Mis padres no quisieron bauuutizarme con ese nombre. Malditos."},
-        {"notUnderstand", "Lo siento. No te he entendido."},
-        {"okFollow", "Vale. Voy, a comenzar a seguirte."},
-        {"stopFollow", "De acuerdo. Voy, a dejar de seguirte. Hasta pronto."},
-        {"onTheRight", "Ahora, estás, a mi derecha."},
-        {"onTheLeft", "Ahora, estás, a mi izquierda."},
-        {"onTheCenter", "Ahora, estás, en el centro."},
+    const std::unordered_map<snt, std::string> spanishSentences = {
+        {snt::PRESENTATION_1, "Demostración de detección de caras iniciada."},
+        {snt::PRESENTATION_2, "Hola. Me yamo Teo, y soy un grobot humanoide diseñado por ingenieros de la universidad carlos tercero."},
+        {snt::PRESENTATION_3, "Por favor, dime qué quieres que haga."},
+        {snt::ASK_NAME, "Podrías decirme tu nombre."},
+        {snt::ANSWER_1, "Uuooooo ouu, que nombre más bonito. Me encanta."},
+        {snt::ANSWER_2, "Que gran nombre. Mi creador humano se yama igual."},
+        {snt::ANSWER_3, "Mis padres no quisieron bauuutizarme con ese nombre. Malditos."},
+        {snt::NOT_UNDERSTAND, "Lo siento. No te he entendido."},
+        {snt::FOLLOW, "Vale. Voy, a comenzar a seguirte."},
+        {snt::STOP_FOLLOWING, "De acuerdo. Voy, a dejar de seguirte. Hasta pronto."},
+        {snt::ON_THE_RIGHT, "Ahora, estás, a mi derecha."},
+        {snt::ON_THE_LEFT, "Ahora, estás, a mi izquierda."},
+        {snt::ON_THE_CENTER, "Ahora, estás, en el centro."},
     };
 
-    const std::unordered_map<std::string, std::string> spanishCommands = {
-        {"hiTeo", "hola teo"},
-        {"followMe", "sigueme"},
-        {"myNameIs", "me llamo"},
-        {"stopFollowing", "para teo"},
+    const std::unordered_map<cmd, std::string> spanishCommands = {
+        {cmd::HI_TEO, "hola teo"},
+        {cmd::FOLLOW_ME, "sigueme"},
+        {cmd::MY_NAME_IS, "me llamo"},
+        {cmd::STOP_FOLLOWING, "para teo"},
     };
+
+    std::string getStateDescription(state s)
+    {
+        switch (s)
+        {
+        case state::PRESENTATION:
+            return "presentation";
+        case state::ASK_NAME:
+            return "ask name";
+        case state::DIALOGUE:
+            return "dialogue";
+        case state::LISTEN:
+            return "listen";
+        case state::FOLLOW:
+            return "follow";
+        case state::STOP_FOLLOWING:
+            return "stop following";
+        default:
+            return "unknown";
+        }
+    }
 }
 
 constexpr auto DEFAULT_PREFIX = "/followMeDialogueManager";
@@ -237,11 +262,11 @@ bool FollowMeDialogueManager::close()
 
 void FollowMeDialogueManager::run()
 {
-    ttsSayAndWait(sentences["presentation1"]);
+    ttsSayAndWait(sentence::PRESENTATION_1);
     bool isFollowing = false;
 
-    enum class answers { ANSWER1, ANSWER2, ANSWER3 };
-    answers answer = answers::ANSWER1;
+    enum class answers { ANSWER_1, ANSWER_2, ANSWER_3 };
+    answers answer = answers::ANSWER_1;
 
     std::string listened;
 
@@ -250,7 +275,7 @@ void FollowMeDialogueManager::run()
         // override state machine if no mic found, keep lingering until thread is stopped
         armCommander.doGreet();
         headCommander.enableFollowing();
-        ttsSayAndWait(sentences["okFollow"]);
+        ttsSayAndWait(sentence::FOLLOW);
         asrListenAndLinger(); // this will loop indefinitely
     }
 
@@ -259,39 +284,39 @@ void FollowMeDialogueManager::run()
         switch (machineState)
         {
         case state::PRESENTATION:
-            ttsSayAndWait(sentences["presentation2"]);
-            ttsSayAndWait(sentences["presentation3"]);
+            ttsSayAndWait(sentence::PRESENTATION_2);
+            ttsSayAndWait(sentence::PRESENTATION_3);
             machineState = state::LISTEN;
             break;
 
         case state::ASK_NAME:
             armCommander.doGreet();
-            ttsSayAndWait(sentences["askName"]);
+            ttsSayAndWait(sentence::ASK_NAME);
             machineState = state::DIALOGUE;
             break;
 
         case state::DIALOGUE:
             listened = asrListenAndWait();
 
-            if (listened.find(voiceCommands["stopFollowing"]) != std::string::npos)
+            if (listened.find(voiceCommands[command::STOP_FOLLOWING]) != std::string::npos)
             {
                 machineState = state::STOP_FOLLOWING;
             }
-            else if (listened.find(voiceCommands["myNameIs"]) != std::string::npos)
+            else if (listened.find(voiceCommands[command::MY_NAME_IS]) != std::string::npos)
             {
                 switch (answer)
                 {
-                case answers::ANSWER1:
-                    ttsSayAndWait(sentences["answer1"]);
-                    answer = answers::ANSWER2;
+                case answers::ANSWER_1:
+                    ttsSayAndWait(sentence::ANSWER_1);
+                    answer = answers::ANSWER_2;
                     break;
-                case answers::ANSWER2:
-                    ttsSayAndWait(sentences["answer2"]);
-                    answer = answers::ANSWER3;
+                case answers::ANSWER_2:
+                    ttsSayAndWait(sentence::ANSWER_2);
+                    answer = answers::ANSWER_3;
                     break;
-                case answers::ANSWER3:
-                    ttsSayAndWait(sentences["answer3"]);
-                    answer = answers::ANSWER1;
+                case answers::ANSWER_3:
+                    ttsSayAndWait(sentence::ANSWER_3);
+                    answer = answers::ANSWER_1;
                     break;
                 }
 
@@ -299,7 +324,7 @@ void FollowMeDialogueManager::run()
             }
             else
             {
-                ttsSayAndWait(sentences["notUnderstand"]);
+                ttsSayAndWait(sentence::NOT_UNDERSTAND);
                 machineState = state::ASK_NAME;
             }
 
@@ -308,11 +333,11 @@ void FollowMeDialogueManager::run()
         case state::LISTEN:
             listened = isFollowing ? asrListenAndLinger() : asrListenAndWait();
 
-            if (listened.find(voiceCommands["hiTeo"]) != std::string::npos)
+            if (listened.find(voiceCommands[command::HI_TEO]) != std::string::npos)
                 machineState = state::PRESENTATION;
-            else if (listened.find(voiceCommands["followMe"]) != std::string::npos)
+            else if (listened.find(voiceCommands[command::FOLLOW_ME]) != std::string::npos)
                 machineState = state::FOLLOW;
-            else if (listened.find(voiceCommands["stopFollowing"]) != std::string::npos)
+            else if (listened.find(voiceCommands[command::STOP_FOLLOWING]) != std::string::npos)
                 machineState = state::STOP_FOLLOWING;
             else
                 machineState = state::LISTEN;
@@ -321,7 +346,7 @@ void FollowMeDialogueManager::run()
 
         case state::FOLLOW:
             headCommander.enableFollowing();
-            ttsSayAndWait(sentences["okFollow"]);
+            ttsSayAndWait(sentence::FOLLOW);
             machineState = state::ASK_NAME;
             isFollowing = true;
             break;
@@ -329,7 +354,7 @@ void FollowMeDialogueManager::run()
         case state::STOP_FOLLOWING:
             armCommander.disableArmSwinging();
             headCommander.disableFollowing();
-            ttsSayAndWait(sentences["stopFollow"]);
+            ttsSayAndWait(sentence::STOP_FOLLOWING);
             machineState = state::LISTEN;
             isFollowing = false;
             break;
@@ -369,12 +394,14 @@ std::tuple<bool, std::string, std::string> FollowMeDialogueManager::checkOutputC
     return {true, {}, {}};
 }
 
-void FollowMeDialogueManager::ttsSayAndWait(const std::string & sayString)
+void FollowMeDialogueManager::ttsSayAndWait(sentence snt)
 {
     if (usingMic && !asr.muteMicrophone())
     {
         yWarning() << "Failed to mute microphone";
     }
+
+    auto sayString = sentences[snt];
 
     if (!tts.say(sayString))
     {
@@ -438,18 +465,18 @@ std::string FollowMeDialogueManager::asrListenAndLinger()
         if (encValue > SIGNAL_THRESHOLD && pos != position::LEFT)
         {
             armCommander.doSignalLeft();
-            ttsSayAndWait(sentences["onTheLeft"]);
+            ttsSayAndWait(sentence::ON_THE_LEFT);
             pos = position::LEFT;
         }
         else if (encValue < -SIGNAL_THRESHOLD && pos != position::RIGHT)
         {
             armCommander.doSignalRight();
-            ttsSayAndWait(sentences["onTheRight"]);
+            ttsSayAndWait(sentence::ON_THE_RIGHT);
             pos = position::RIGHT;
         }
         else if (encValue > -CENTER_THRESHOLD && encValue < CENTER_THRESHOLD && pos != position::CENTER)
         {
-            ttsSayAndWait(sentences["onTheCenter"]);
+            ttsSayAndWait(sentence::ON_THE_CENTER);
             pos = position::CENTER;
         }
 
@@ -457,25 +484,4 @@ std::string FollowMeDialogueManager::asrListenAndLinger()
     }
 
     return {};
-}
-
-std::string FollowMeDialogueManager::getStateDescription(state s)
-{
-    switch (s)
-    {
-    case state::PRESENTATION:
-        return "presentation";
-    case state::ASK_NAME:
-        return "ask name";
-    case state::DIALOGUE:
-        return "dialogue";
-    case state::LISTEN:
-        return "listen";
-    case state::FOLLOW:
-        return "follow";
-    case state::STOP_FOLLOWING:
-        return "stop following";
-    default:
-        return "unknown";
-    }
 }

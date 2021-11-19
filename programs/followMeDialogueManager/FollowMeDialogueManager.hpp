@@ -30,6 +30,11 @@ class FollowMeDialogueManager : public yarp::os::RFModule,
                                 public yarp::os::Thread
 {
 public:
+    enum class state { PRESENTATION, ASK_NAME, DIALOGUE, LISTEN, FOLLOW, STOP_FOLLOWING };
+    enum class sentence { PRESENTATION_1, PRESENTATION_2, PRESENTATION_3, ASK_NAME, ANSWER_1, ANSWER_2, ANSWER_3,
+                          NOT_UNDERSTAND, FOLLOW, STOP_FOLLOWING, ON_THE_RIGHT, ON_THE_LEFT, ON_THE_CENTER };
+    enum class command { HI_TEO, FOLLOW_ME, MY_NAME_IS, STOP_FOLLOWING };
+
     ~FollowMeDialogueManager()
     { close(); }
 
@@ -42,13 +47,10 @@ public:
     void run() override;
 
 private:
-    enum class state { PRESENTATION, ASK_NAME, DIALOGUE, LISTEN, FOLLOW, STOP_FOLLOWING };
-
     std::tuple<bool, std::string, std::string> checkOutputConnections();
-    void ttsSayAndWait(const std::string & sayString);
+    void ttsSayAndWait(sentence snt);
     std::string asrListenAndWait();
     std::string asrListenAndLinger();
-    static std::string getStateDescription(state s);
 
     FollowMeArmCommandsIDL armCommander;
     FollowMeHeadCommandsIDL headCommander;
@@ -64,8 +66,8 @@ private:
     bool usingMic;
     state machineState {state::LISTEN};
 
-    std::unordered_map<std::string, std::string> sentences;
-    std::unordered_map<std::string, std::string> voiceCommands;
+    std::unordered_map<sentence, std::string> sentences;
+    std::unordered_map<command, std::string> voiceCommands;
 };
 
 } // namespace roboticslab
