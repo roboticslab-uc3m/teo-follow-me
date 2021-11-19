@@ -23,7 +23,7 @@ namespace roboticslab
 {
 
 /**
- * @ingroup follow-me_programs
+ * @ingroup followMeDialogueManager
  * @brief Dialogue Manager.
  */
 class FollowMeDialogueManager : public yarp::os::RFModule,

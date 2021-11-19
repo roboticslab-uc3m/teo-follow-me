@@ -22,7 +22,7 @@ namespace roboticslab
 {
 
 /**
- * @ingroup follow-me_programs
+ * @ingroup followMeArmExecution
  * @brief Arm Execution Core.
  */
 class FollowMeArmExecution : public yarp::os::RFModule,

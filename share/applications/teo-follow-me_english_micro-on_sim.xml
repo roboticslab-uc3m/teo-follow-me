@@ -1,6 +1,6 @@
 <application>
 
-    <name>follow-me_english_micro-on</name>
+    <name>teo-follow-me_english_micro-on_sim</name>
 
     <module>
         <name>followMeDialogueManager</name>
@@ -10,13 +10,13 @@
 
     <module>
         <name>followMeHeadExecution</name>
-        <parameters>--robot /teo</parameters>
+        <parameters>--robot /teoSim</parameters>
         <node>localhost</node>
     </module>
 
     <module>
         <name>followMeArmExecution</name>
-        <parameters>--robot /teo --armSpeed 30.0</parameters>
+        <parameters>--robot /teoSim --armSpeed 30.0</parameters>
         <node>localhost</node>
     </module>
 
@@ -31,19 +31,13 @@
     </connection>
 
     <module>
-        <name>yarpdev</name>
-        <parameters>--context sensors --from asus-xtion.ini</parameters>
-        <node>/head</node>
-    </module>
-
-    <module>
         <name>rgbdDetection</name>
-        <parameters>--sensorRemote /teo/xtion --detector HaarDetector --period 0.2</parameters>
-        <node>/head</node>
+        <parameters>--sensorRemote /teoSim/camera --detector HaarDetector --period 0.2</parameters>
+        <node>localhost</node>
     </module>
 
     <connection>
-        <from>/teo/rgbdDetection/state:o</from>
+        <from>/rgbdDetection/state:o</from>
         <to>/followMeHeadExecution/cv/state:i</to>
     </connection>
 
@@ -54,7 +48,7 @@
     </module>
 
     <connection>
-        <from>/teo/rgbdDetection/img:o</from>
+        <from>/rgbdDetection/img:o</from>
         <to>/yarpview/rgbdDetection/img:i</to>
     </connection>
 

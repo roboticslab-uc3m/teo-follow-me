@@ -1,10 +1,10 @@
 <application>
 
-    <name>follow-me_spanish_micro-on</name>
+    <name>teo-follow-me_spanish_micro-off</name>
 
     <module>
         <name>followMeDialogueManager</name>
-        <parameters>--language spanish --useMic</parameters>
+        <parameters>--language spanish</parameters>
         <node>localhost</node>
     </module>
 
@@ -56,22 +56,6 @@
     <connection>
         <from>/teo/rgbdDetection/img:o</from>
         <to>/yarpview/rgbdDetection/img:i</to>
-    </connection>
-
-    <module>
-        <name>speechRecognition.py</name>
-        <deployer>python3</deployer>
-        <node>localhost</node>
-    </module>
-
-    <connection>
-        <from>/followMeDialogueManager/speechRecognition/rpc:c</from>
-        <to>/speechRecognition/rpc:s</to>
-    </connection>
-
-    <connection>
-        <from>/speechRecognition:o</from>
-        <to>/followMeDialogueManager/speechRecognition:i</to>
     </connection>
 
     <module>

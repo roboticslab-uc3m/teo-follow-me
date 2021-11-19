@@ -1,10 +1,10 @@
 <application>
 
-    <name>follow-me_spanish_micro-off_sim</name>
+    <name>teo-follow-me_english_micro-off_sim</name>
 
     <module>
         <name>followMeDialogueManager</name>
-        <parameters>--language spanish</parameters>
+        <parameters>--language english</parameters>
         <node>localhost</node>
     </module>
 

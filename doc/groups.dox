@@ -4,26 +4,25 @@
 namespace roboticslab {}
 
 /**
- * \defgroup follow-me_libraries follow-me Libraries
+ * \defgroup teo-follow-me_libraries teo-follow-me Libraries
  *
- * @brief follow-me libraries.
- *
+ * @brief teo-follow-me libraries.
  */
 
 /**
- * \defgroup follow-me_programs follow-me Programs
+ * \defgroup teo-follow-me_programs teo-follow-me Programs
  *
- * @brief follow-me programs.
+ * @brief teo-follow-me programs.
  */
 
 /**
- * \defgroup follow-me_applications follow-me Applications (Collections of Programs)
+ * \defgroup teo-follow-me_applications teo-follow-me Applications (Collections of Programs)
  *
- * @brief follow-me applications (collections of programs).
+ * @brief teo-follow-me applications (collections of programs).
  */
 
 /**
- * \defgroup follow-me_examples follow-me Examples
+ * \defgroup teo-follow-me_examples teo-follow-me Examples
  *
- * @brief follow-me examples.
+ * @brief teo-follow-me examples.
  */

@@ -2,7 +2,7 @@
 
 /**
  *
- * @ingroup follow-me_programs
+ * @ingroup teo-follow-me_programs
  * @defgroup followMeHeadExecution followMeHeadExecution
  * @brief Creates an instance of roboticslab::FollowMeHeadExecution.
  */

@@ -1,10 +1,10 @@
 <application>
 
-    <name>follow-me_english_micro-off</name>
+    <name>teo-follow-me_spanish_micro-on</name>
 
     <module>
         <name>followMeDialogueManager</name>
-        <parameters>--language english</parameters>
+        <parameters>--language spanish --useMic</parameters>
         <node>localhost</node>
     </module>
 
@@ -59,8 +59,24 @@
     </connection>
 
     <module>
+        <name>speechRecognition.py</name>
+        <deployer>python3</deployer>
+        <node>localhost</node>
+    </module>
+
+    <connection>
+        <from>/followMeDialogueManager/speechRecognition/rpc:c</from>
+        <to>/speechRecognition/rpc:s</to>
+    </connection>
+
+    <connection>
+        <from>/speechRecognition:o</from>
+        <to>/followMeDialogueManager/speechRecognition:i</to>
+    </connection>
+
+    <module>
         <name>espeakServer</name>
-        <parameters>--name /tts --language mb-en1</parameters>
+        <parameters>--name /tts --language mb-es1</parameters>
         <node>localhost</node>
     </module>
 

@@ -4,7 +4,7 @@
 
 cmake_minimum_required(VERSION 3.12)
 
-project(FOLLOW_ME LANGUAGES CXX)
+project(TEO_FOLLOW_ME LANGUAGES CXX)
 
 # Let the user specify a configuration (only single-config generators).
 if(NOT CMAKE_CONFIGURATION_TYPES)
@@ -34,7 +34,7 @@ find_package(YARP 3.4 REQUIRED COMPONENTS os dev idl_tools)
 find_package(ROBOTICSLAB_SPEECH QUIET)
 
 # Configure installation paths for YARP resources.
-yarp_configure_external_installation(follow-me)
+yarp_configure_external_installation(teo-follow-me)
 
 # Standard installation directories.
 include(GNUInstallDirs)

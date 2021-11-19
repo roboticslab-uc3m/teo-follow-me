@@ -237,7 +237,7 @@
     </g>
     <g text-rendering="geometricPrecision" stroke-miterlimit="1.45" shape-rendering="geometricPrecision" transform="matrix(1,0,0,1,1059,-127)" stroke-linecap="butt">
       <path fill="none" d="M110.6177 175.9814 L323.8 175.9814 L323.8 201.8842 L110.6177 201.8842 Z" clip-path="url(#clipPath2)"/>
-      <text x="187.8124" xml:space="preserve" y="193.0871" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none">follow-me</text>
+      <text x="174.8124" xml:space="preserve" y="193.0871" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none">teo-follow-me</text>
     </g>
     <g fill="url(#linearGradient12)" text-rendering="geometricPrecision" shape-rendering="geometricPrecision" transform="matrix(1,0,0,1,1059,-127)" stroke="url(#linearGradient12)">
       <path d="M110.6177 218.0508 L323.175 218.0508 L323.175 243.9536 L110.6177 243.9536 Z" stroke="none" clip-path="url(#clipPath2)"/>
