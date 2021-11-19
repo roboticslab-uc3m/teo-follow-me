@@ -62,13 +62,9 @@ private:
     bool hasNewSetpoints {false};
     state currentState {state::REST};
 
-    yarp::dev::PolyDriver leftArmDevice;
-    yarp::dev::IControlMode * leftArmIControlMode;
-    yarp::dev::IPositionControl * leftArmIPositionControl;
-
-    yarp::dev::PolyDriver rightArmDevice;
-    yarp::dev::IControlMode * rightArmIControlMode;
-    yarp::dev::IPositionControl * rightArmIPositionControl;
+    yarp::dev::PolyDriver armsDevice;
+    yarp::dev::IControlMode * armsIControlMode;
+    yarp::dev::IPositionControl * armsIPositionControl;
 
     yarp::os::RpcServer serverPort;
 };

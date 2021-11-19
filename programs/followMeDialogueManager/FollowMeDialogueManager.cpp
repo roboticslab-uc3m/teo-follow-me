@@ -141,8 +141,6 @@ bool FollowMeDialogueManager::configure(yarp::os::ResourceFinder & rf)
         asr.yarp().attachAsClient(asrConfigClient);
     }
 
-    std::string voice, langCode;
-
     if (language == "english")
     {
         voice = "mb-en1";
@@ -160,18 +158,6 @@ bool FollowMeDialogueManager::configure(yarp::os::ResourceFinder & rf)
     else
     {
         yError() << "Unsupported language, please use '--language english' or '--language spanish', got:" << language;
-        return false;
-    }
-
-    if (!tts.setLanguage(voice))
-    {
-        yError() << "Failed to set TTS voice to" << voice;
-        return false;
-    }
-
-    if (usingMic && !asr.setDictionary(ASR_DICTIONARY, langCode))
-    {
-        yError() << "Failed to set ASR dictionary to" << ASR_DICTIONARY << "and language code to" << langCode;
         return false;
     }
 
@@ -255,6 +241,23 @@ bool FollowMeDialogueManager::close()
     {
         asrConfigClient.close();
         inAsrPort.close();
+    }
+
+    return true;
+}
+
+bool FollowMeDialogueManager::threadInit()
+{
+    if (!tts.setLanguage(voice))
+    {
+        yError() << "Failed to set TTS voice to" << voice;
+        return false;
+    }
+
+    if (usingMic && !asr.setDictionary(ASR_DICTIONARY, langCode))
+    {
+        yError() << "Failed to set ASR dictionary to" << ASR_DICTIONARY << "and language code to" << langCode;
+        return false;
     }
 
     return true;
@@ -413,10 +416,12 @@ void FollowMeDialogueManager::ttsSayAndWait(sentence snt)
 
         do
         {
-            yarp::os::SystemClock::delaySystem(1.0); // more time due to ASR
+            yarp::os::SystemClock::delaySystem(0.1);
         }
         while (!yarp::os::Thread::isStopping() && !tts.checkSayDone());
     }
+
+    yarp::os::SystemClock::delaySystem(1.0); // more time due to ASR
 
     if (usingMic && !asr.unmuteMicrophone())
     {

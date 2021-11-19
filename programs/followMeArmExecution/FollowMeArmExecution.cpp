@@ -2,6 +2,8 @@
 
 #include "FollowMeArmExecution.hpp"
 
+#include <vector>
+
 #include <yarp/os/LogStream.h>
 #include <yarp/os/Property.h>
 
@@ -26,89 +28,54 @@ bool FollowMeArmExecution::configure(yarp::os::ResourceFinder & rf)
         return false;
     }
 
-    // ------ LEFT ARM -------
-
-    yarp::os::Property leftArmOptions {
-        {"device", yarp::os::Value("remote_controlboard")},
-        {"remote", yarp::os::Value(robot + "/leftArm")},
-        {"local", yarp::os::Value(std::string(DEFAULT_PREFIX) + "/leftArm")}
+    yarp::os::Property armsOptions {
+        {"device", yarp::os::Value("remotecontrolboardremapper")},
+        {"localPortPrefix", yarp::os::Value(DEFAULT_PREFIX)}
     };
 
-    if (!leftArmDevice.open(leftArmOptions))
-    {
-        yError() << "Failed to open left arm device";
-        return false;
-    }
-
-    if (!leftArmDevice.view(leftArmIControlMode) || !leftArmDevice.view(leftArmIPositionControl))
-    {
-        yError() << "Failed to view left arm device interfaces";
-        return false;
-    }
-
-    // ------ RIGHT ARM -------
-
-    yarp::os::Property rightArmOptions {
-        {"device", yarp::os::Value("remote_controlboard")},
-        {"remote", yarp::os::Value(robot + "/rightArm")},
-        {"local", yarp::os::Value(std::string(DEFAULT_PREFIX) + "/rightArm")}
+    yarp::os::Bottle remotePorts {
+        yarp::os::Value(robot + "/leftArm"),
+        yarp::os::Value(robot + "/rightArm")
     };
 
-    if (!rightArmDevice.open(rightArmOptions))
+    armsOptions.put("remoteControlBoards", yarp::os::Value::makeList(remotePorts.toString().c_str()));
+
+    yarp::os::Bottle axesNames {
+        yarp::os::Value("FrontalLeftShoulder"), yarp::os::Value("SagittalLeftShoulder"), yarp::os::Value("AxialLeftShoulder"),
+        yarp::os::Value("FrontalLeftElbow"), yarp::os::Value("AxialLeftWrist"), yarp::os::Value("FrontalLeftWrist"),
+        yarp::os::Value("FrontalRightShoulder"), yarp::os::Value("SagittalRightShoulder"), yarp::os::Value("AxialRightShoulder"),
+        yarp::os::Value("FrontalRightElbow"), yarp::os::Value("AxialRightWrist"), yarp::os::Value("FrontalRightWrist")
+    };
+
+    armsOptions.put("axesNames", yarp::os::Value::makeList(axesNames.toString().c_str()));
+
+    if (!armsDevice.open(armsOptions))
     {
-        yError() << "Failed to open right arm device";
+        yError() << "Failed to open arms device";
         return false;
     }
 
-    if (!rightArmDevice.view(rightArmIControlMode) || !rightArmDevice.view(rightArmIPositionControl))
+    if (!armsDevice.view(armsIControlMode) || !armsDevice.view(armsIPositionControl))
     {
-        yError() << "Failed to view right arm device interfaces";
+        yError() << "Failed to view arms device interfaces";
         return false;
     }
 
-    //-- Set control modes for both arms
-
-    int leftArmAxes;
-    leftArmIPositionControl->getAxes(&leftArmAxes);
-
-    if (!leftArmIControlMode->setControlModes(std::vector<int>(leftArmAxes, VOCAB_CM_POSITION).data()))
+    if (!armsIControlMode->setControlModes(std::vector<int>(axesNames.size(), VOCAB_CM_POSITION).data()))
     {
-        yError() << "Failed to set position control mode for left arm";
+        yError() << "Failed to set position control mode for arms";
         return false;
     }
 
-    int rightArmAxes;
-    rightArmIPositionControl->getAxes(&rightArmAxes);
-
-    if (!rightArmIControlMode->setControlModes(std::vector<int>(rightArmAxes, VOCAB_CM_POSITION).data()))
+    if (!armsIPositionControl->setRefSpeeds(std::vector<double>(axesNames.size(), DEFAULT_REF_SPEED).data()))
     {
-        yError() << "Failed to set position control mode for right arm";
+        yError() << "Failed to set reference speeds for arms";
         return false;
     }
 
-    // -- Configuring reference speeds and accelerations
-
-    if (!leftArmIPositionControl->setRefSpeeds(std::vector<double>(leftArmAxes, DEFAULT_REF_SPEED).data()))
+    if (!armsIPositionControl->setRefAccelerations(std::vector<double>(axesNames.size(), DEFAULT_REF_ACCELERATION).data()))
     {
-        yError() << "Failed to set reference speeds for left arm";
-        return false;
-    }
-
-    if (!rightArmIPositionControl->setRefSpeeds(std::vector<double>(rightArmAxes, DEFAULT_REF_SPEED).data()))
-    {
-        yError() << "Failed to set reference speeds for right arm";
-        return false;
-    }
-
-    if (!leftArmIPositionControl->setRefAccelerations(std::vector<double>(leftArmAxes, DEFAULT_REF_ACCELERATION).data()))
-    {
-        yError() << "Failed to set reference accelerations for left arm";
-        return false;
-    }
-
-    if (!rightArmIPositionControl->setRefAccelerations(std::vector<double>(rightArmAxes, DEFAULT_REF_ACCELERATION).data()))
-    {
-        yError() << "Failed to set reference accelerations for right arm";
+        yError() << "Failed to set reference accelerations for arms";
         return false;
     }
 
@@ -131,8 +98,7 @@ bool FollowMeArmExecution::interruptModule()
 bool FollowMeArmExecution::close()
 {
     serverPort.close();
-    leftArmDevice.close();
-    rightArmDevice.close();
+    armsDevice.close();
     return true;
 }
 
@@ -155,14 +121,13 @@ bool FollowMeArmExecution::updateModule()
         hasNewSetpoints = false;
         lock.unlock();
 
-        if (!leftArmIPositionControl->positionMove(std::get<0>(setpoints).data()))
-        {
-            yWarning() << "Failed to send new setpoints to left arm";
-        }
+        std::vector<double> values;
+        values.insert(values.end(), std::get<0>(setpoints).begin(), std::get<0>(setpoints).end());
+        values.insert(values.end(), std::get<1>(setpoints).begin(), std::get<1>(setpoints).end());
 
-        if (!rightArmIPositionControl->positionMove(std::get<1>(setpoints).data()))
+        if (!armsIPositionControl->positionMove(values.data()))
         {
-            yWarning() << "Failed to send new setpoints to right arm";
+            yWarning() << "Failed to send new setpoints to arms";
         }
     }
     else if (!hasNewSetpoints && isMotionDone && currentSetpoints.empty())
@@ -239,21 +204,13 @@ bool FollowMeArmExecution::stop()
         hasNewSetpoints = false;
     }
 
-    bool ok = true;
-
-    if (!leftArmIPositionControl->stop())
+    if (!armsIPositionControl->stop())
     {
-        yError() << "Failed to stop left arm";
-        ok = false;
+        yError() << "Failed to stop arms";
+        return false;
     }
 
-    if (!rightArmIPositionControl->stop())
-    {
-        yError() << "Failed to stop right arm";
-        ok = false;
-    }
-
-    return ok;
+    return true;
 }
 
 void FollowMeArmExecution::registerSetpoints(state newState, std::initializer_list<setpoints_t> setpoints)
@@ -269,21 +226,14 @@ void FollowMeArmExecution::registerSetpoints(state newState, std::initializer_li
 
 bool FollowMeArmExecution::checkMotionDone()
 {
-    bool leftArmDone = true;
+    bool motionDone = true;
 
-    if (!leftArmIPositionControl->checkMotionDone(&leftArmDone))
+    if (!armsIPositionControl->checkMotionDone(&motionDone))
     {
-        yWarning() << "Unable to check motion state of left arm";
+        yWarning() << "Unable to check motion state of arms";
     }
 
-    bool rightArmDone = true;
-
-    if (!rightArmIPositionControl->checkMotionDone(&rightArmDone))
-    {
-        yWarning() << "Unable to check motion state of right arm";
-    }
-
-    return leftArmDone && rightArmDone;
+    return motionDone;
 }
 
 std::string FollowMeArmExecution::getStateDescription(state s)

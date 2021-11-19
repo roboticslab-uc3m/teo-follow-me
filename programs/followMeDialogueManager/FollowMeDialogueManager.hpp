@@ -44,6 +44,7 @@ public:
     double getPeriod() override;
     bool updateModule() override;
 
+    bool threadInit() override;
     void run() override;
 
 private:
@@ -63,6 +64,8 @@ private:
     yarp::os::RpcClient headExecutionClient;
     yarp::os::RpcClient armExecutionClient;
 
+    std::string voice;
+    std::string langCode;
     bool usingMic;
     state machineState {state::LISTEN};
 
