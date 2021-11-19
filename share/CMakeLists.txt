@@ -3,9 +3,12 @@
 # URL: https://github.com/roboticslab-uc3m/follow-me
 
 yarp_install(FILES applications/ymanager.ini
-                   applications/follow-me_english_micro-off.xml
                    applications/follow-me_english_micro-off_sim.xml
+                   applications/follow-me_english_micro-off.xml
+                   applications/follow-me_english_micro-on_sim.xml
                    applications/follow-me_english_micro-on.xml
+                   applications/follow-me_spanish_micro-off_sim.xml
                    applications/follow-me_spanish_micro-off.xml
+                   applications/follow-me_spanish_micro-on_sim.xml
                    applications/follow-me_spanish_micro-on.xml
              DESTINATION ${FOLLOW-ME_APPLICATIONS_INSTALL_DIR})

@@ -1,10 +1,10 @@
 <application>
 
-    <name>follow-me_english_micro-off_sim</name>
+    <name>follow-me_spanish_micro-off_sim</name>
 
     <module>
         <name>followMeDialogueManager</name>
-        <parameters>--language english</parameters>
+        <parameters>--language spanish</parameters>
         <node>localhost</node>
     </module>
 
