@@ -59,8 +59,7 @@
     </connection>
 
     <module>
-        <name>speechRecognition.py</name>
-        <deployer>python3</deployer>
+        <name>speechRecognition</name>
         <node>localhost</node>
     </module>
 
