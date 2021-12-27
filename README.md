@@ -2,7 +2,7 @@
 
 A robotic face following and arm waving demo.
 
-How to run the demo: [Spanish guide](http://robots.uc3m.es/index.php/Procedimiento_Demos)
+How to run the demo: [Spanish guide](https://robots.uc3m.es/teo-developer-manual/demo-procedure.html)
 
 <p align="center">
     <img src="doc/fig/teo-follow-me-big.png" alt="teo-follow-me-big image"/>
