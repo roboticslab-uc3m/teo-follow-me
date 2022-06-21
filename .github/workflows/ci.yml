@@ -64,6 +64,12 @@ jobs:
         ref: ${{matrix.robotology.yarp}}
         path: .deps/yarp
 
+    - name: Check out speech
+      uses: actions/checkout@v2
+      with:
+        repository: roboticslab-uc3m/speech
+        path: .deps/speech
+
     - name: Set up CMake 3.12
       uses: jwlawson/actions-setup-cmake@v1.7
       with:
@@ -75,7 +81,7 @@ jobs:
         key: ${{matrix.os}}-${{matrix.robotology.yarp}}-${{matrix.compiler.cc}}
 
     - name: Create build trees
-      run: cmake -E make_directory build .deps/ycm/build .deps/yarp/build
+      run: cmake -E make_directory build .deps/ycm/build .deps/yarp/build .deps/speech/build
 
     - name: Set environment variables
       run: echo "CMAKE_COMPILER=-DCMAKE_C_COMPILER=${{matrix.compiler.cc}} -DCMAKE_CXX_COMPILER=${{matrix.compiler.cxx}}" >> $GITHUB_ENV
@@ -91,6 +97,13 @@ jobs:
       working-directory: ${{github.workspace}}/.deps/yarp/build
       run: |
         cmake .. $CMAKE_COMPILER $CMAKE_CCACHE_LAUNCHER -DSKIP_ACE=ON -DYARP_DISABLE_VERSION_SOURCE=ON
+        cmake --build . --parallel
+        sudo cmake --build . --target install
+
+    - name: Build speech
+      working-directory: ${{github.workspace}}/.deps/speech/build
+      run: |
+        cmake .. $CMAKE_COMPILER $CMAKE_CCACHE_LAUNCHER
         cmake --build . --parallel
         sudo cmake --build . --target install
 
