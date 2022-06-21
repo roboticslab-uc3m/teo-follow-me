@@ -171,14 +171,14 @@ double FollowMeDialogueManager::getPeriod()
 
 bool FollowMeDialogueManager::updateModule()
 {
-    constexpr auto throttle = 1.0; // [s]
-    auto connectionState = checkOutputConnections();
+    static const auto throttle = 1.0; // [s]
+    auto [isConnected, port, description] = checkOutputConnections();
 
-    if (!std::get<0>(connectionState))
+    if (!isConnected)
     {
         if (yarp::os::Thread::isRunning())
         {
-            yInfo() << "Port" << std::get<1>(connectionState) << "disconnected, forcing presentation stop";
+            yInfo() << "Port" << port << "disconnected, forcing presentation stop";
 
             if (!yarp::os::Thread::stop())
             {
@@ -188,7 +188,7 @@ bool FollowMeDialogueManager::updateModule()
         }
         else
         {
-            yInfoThrottle(throttle) << "Waiting for" << std::get<1>(connectionState) << "to be connected to" << std::get<2>(connectionState);
+            yInfoThrottle(throttle) << "Waiting for" << port << "to be connected to" << description;
         }
     }
     else
@@ -269,7 +269,7 @@ void FollowMeDialogueManager::run()
     bool isFollowing = false;
 
     enum class answers { ANSWER_1, ANSWER_2, ANSWER_3 };
-    answers answer = answers::ANSWER_1;
+    auto answer = answers::ANSWER_1;
 
     std::string listened;
 
@@ -404,9 +404,7 @@ void FollowMeDialogueManager::ttsSayAndWait(sentence snt)
         yWarning() << "Failed to mute microphone";
     }
 
-    auto sayString = sentences[snt];
-
-    if (!tts.say(sayString))
+    if (auto sayString = sentences[snt]; !tts.say(sayString))
     {
         yWarning() << "Failed to say:" << sayString;
     }
@@ -452,13 +450,12 @@ std::string FollowMeDialogueManager::asrListenAndWait()
 std::string FollowMeDialogueManager::asrListenAndLinger()
 {
     enum class position { UNKNOWN, LEFT, CENTER, RIGHT };
-    position pos = position::UNKNOWN;
+    auto pos = position::UNKNOWN;
 
     while (!yarp::os::Thread::isStopping())
     {
-        const auto * b = inAsrPort.read(false); // don't wait
-
-        if (b && b->size() > 0)
+        // don't wait
+        if (const auto * b = inAsrPort.read(false); b && b->size() > 0)
         {
             auto text = b->get(0).asString();
             yDebug() << "Listened:" << text;

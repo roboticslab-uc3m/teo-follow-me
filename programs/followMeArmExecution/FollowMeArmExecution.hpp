@@ -7,7 +7,6 @@
 #include <deque>
 #include <initializer_list>
 #include <mutex>
-#include <string>
 #include <tuple>
 
 #include <yarp/os/RFModule.h>
@@ -29,6 +28,9 @@ class FollowMeArmExecution : public yarp::os::RFModule,
                              public FollowMeArmCommandsIDL
 {
 public:
+    using setpoints_arm_t = std::array<double, 6>;
+    using setpoints_t = std::tuple<setpoints_arm_t, setpoints_arm_t>;
+
     ~FollowMeArmExecution()
     { close(); }
 
@@ -48,14 +50,9 @@ public:
 private:
     enum class state { GREET, SIGNAL_LEFT, SIGNAL_RIGHT, SWING, HOMING, REST };
 
-    using setpoints_arm_t = std::array<double, 6>;
-    using setpoints_t = std::tuple<setpoints_arm_t, setpoints_arm_t>;
-
     void registerSetpoints(state newState, std::initializer_list<setpoints_t> setpoints);
     bool checkMotionDone();
-    static std::string getStateDescription(state s);
-
-    const setpoints_arm_t armZeros {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+    static const char * getStateDescription(state s);
 
     std::deque<setpoints_t> currentSetpoints;
     std::mutex actionMutex;

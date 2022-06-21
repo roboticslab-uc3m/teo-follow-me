@@ -21,11 +21,7 @@ if(ENABLE_FollowMeCommandsIDL)
 
     target_include_directories(FollowMeCommandsIDL PUBLIC ${idl_include_dirs})
 
-    install(TARGETS FollowMeCommandsIDL
-            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-            PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+    install(TARGETS FollowMeCommandsIDL)
 
     add_library(ROBOTICSLAB::FollowMeCommandsIDL ALIAS FollowMeCommandsIDL)
 

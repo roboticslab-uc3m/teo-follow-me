@@ -12,7 +12,6 @@ if(ENABLE_followMeArmExecution)
                                                YARP::YARP_dev
                                                ROBOTICSLAB::FollowMeCommandsIDL)
 
-    install(TARGETS followMeArmExecution
-            DESTINATION ${CMAKE_INSTALL_BINDIR})
+    install(TARGETS followMeArmExecution)
 
 endif()

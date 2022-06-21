@@ -2,6 +2,7 @@
 
 #include "FollowMeArmExecution.hpp"
 
+#include <string>
 #include <vector>
 
 #include <yarp/os/LogStream.h>
@@ -13,6 +14,8 @@ constexpr auto DEFAULT_ROBOT = "/teo";
 constexpr auto DEFAULT_PREFIX = "/followMeArmExecution";
 constexpr auto DEFAULT_REF_SPEED = 30.0;
 constexpr auto DEFAULT_REF_ACCELERATION = 30.0;
+
+constexpr FollowMeArmExecution::setpoints_arm_t armZeros {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 
 bool FollowMeArmExecution::configure(yarp::os::ResourceFinder & rf)
 {
@@ -61,19 +64,19 @@ bool FollowMeArmExecution::configure(yarp::os::ResourceFinder & rf)
         return false;
     }
 
-    if (!armsIControlMode->setControlModes(std::vector<int>(axesNames.size(), VOCAB_CM_POSITION).data()))
+    if (!armsIControlMode->setControlModes(std::vector(axesNames.size(), VOCAB_CM_POSITION).data()))
     {
         yError() << "Failed to set position control mode for arms";
         return false;
     }
 
-    if (!armsIPositionControl->setRefSpeeds(std::vector<double>(axesNames.size(), DEFAULT_REF_SPEED).data()))
+    if (!armsIPositionControl->setRefSpeeds(std::vector(axesNames.size(), DEFAULT_REF_SPEED).data()))
     {
         yError() << "Failed to set reference speeds for arms";
         return false;
     }
 
-    if (!armsIPositionControl->setRefAccelerations(std::vector<double>(axesNames.size(), DEFAULT_REF_ACCELERATION).data()))
+    if (!armsIPositionControl->setRefAccelerations(std::vector(axesNames.size(), DEFAULT_REF_ACCELERATION).data()))
     {
         yError() << "Failed to set reference accelerations for arms";
         return false;
@@ -116,14 +119,14 @@ bool FollowMeArmExecution::updateModule()
 
     if (hasNewSetpoints || (isMotionDone && !currentSetpoints.empty()))
     {
-        auto setpoints = currentSetpoints.front();
+        auto [leftArm, rightArm] = currentSetpoints.front();
         currentSetpoints.pop_front();
         hasNewSetpoints = false;
         lock.unlock();
 
         std::vector<double> values;
-        values.insert(values.end(), std::get<0>(setpoints).begin(), std::get<0>(setpoints).end());
-        values.insert(values.end(), std::get<1>(setpoints).begin(), std::get<1>(setpoints).end());
+        values.insert(values.end(), leftArm.begin(), leftArm.end());
+        values.insert(values.end(), rightArm.begin(), rightArm.end());
 
         if (!armsIPositionControl->positionMove(values.data()))
         {
@@ -236,7 +239,7 @@ bool FollowMeArmExecution::checkMotionDone()
     return motionDone;
 }
 
-std::string FollowMeArmExecution::getStateDescription(state s)
+const char * FollowMeArmExecution::getStateDescription(state s)
 {
     switch (s)
     {

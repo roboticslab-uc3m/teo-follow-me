@@ -16,8 +16,7 @@ if(ENABLE_followMeDialogueManager)
                                                   ROBOTICSLAB::SpeechIDL
                                                   ROBOTICSLAB::FollowMeCommandsIDL)
 
-    install(TARGETS followMeDialogueManager
-            DESTINATION ${CMAKE_INSTALL_BINDIR})
+    install(TARGETS followMeDialogueManager)
 
 else()
 

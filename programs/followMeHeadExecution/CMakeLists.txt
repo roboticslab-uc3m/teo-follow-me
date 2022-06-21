@@ -12,7 +12,6 @@ if(ENABLE_followMeHeadExecution)
                                                 YARP::YARP_dev
                                                 ROBOTICSLAB::FollowMeCommandsIDL)
 
-    install(TARGETS followMeHeadExecution
-            DESTINATION ${CMAKE_INSTALL_BINDIR})
+    install(TARGETS followMeHeadExecution)
 
 endif()

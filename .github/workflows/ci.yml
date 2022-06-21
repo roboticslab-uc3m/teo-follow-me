@@ -19,7 +19,7 @@ jobs:
     outputs:
       should_skip: ${{steps.skip_check.outputs.should_skip}}
     steps:
-    - uses: fkirc/skip-duplicate-actions@master
+    - uses: fkirc/skip-duplicate-actions@v4
       id: skip_check
       with:
         cancel_others: 'true'
@@ -35,8 +35,8 @@ jobs:
       matrix:
         os: [ubuntu-18.04, ubuntu-20.04]
         robotology:
-        - { yarp: yarp-3.5, ycm: ycm-0.13, cmake: 3.12.x }
-        - { yarp: yarp-3.6, ycm: ycm-0.13, cmake: 3.16.x }
+        - { yarp: yarp-3.6, ycm: ycm-0.14, cmake: 3.16.x }
+        - { yarp: yarp-3.7, ycm: ycm-0.14, cmake: 3.16.x }
         - { yarp: master, ycm: master, cmake: 3.16.x }
         compiler:
         - { cc: gcc, cxx: g++ }
@@ -48,73 +48,69 @@ jobs:
 
     steps:
     - name: Check out teo-follow-me
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Check out YCM
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: robotology/ycm
         ref: ${{matrix.robotology.ycm}}
         path: .deps/ycm
 
     - name: Check out YARP
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: robotology/yarp
         ref: ${{matrix.robotology.yarp}}
         path: .deps/yarp
 
     - name: Check out speech
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: roboticslab-uc3m/speech
         path: .deps/speech
 
-    - name: Set up CMake 3.12
-      uses: jwlawson/actions-setup-cmake@v1.7
+    - name: Set up CMake
+      uses: jwlawson/actions-setup-cmake@v1
       with:
         cmake-version: ${{matrix.robotology.cmake}}
 
     - name: Set up Ccache
-      uses: hendrikmuhs/ccache-action@v1
+      uses: hendrikmuhs/ccache-action@v1.2
       with:
         key: ${{matrix.os}}-${{matrix.robotology.yarp}}-${{matrix.compiler.cc}}
 
-    - name: Create build trees
-      run: cmake -E make_directory build .deps/ycm/build .deps/yarp/build .deps/speech/build
-
     - name: Set environment variables
-      run: echo "CMAKE_COMPILER=-DCMAKE_C_COMPILER=${{matrix.compiler.cc}} -DCMAKE_CXX_COMPILER=${{matrix.compiler.cxx}}" >> $GITHUB_ENV
+      run: |
+        echo "CC=${{matrix.compiler.cc}}" >> $GITHUB_ENV
+        echo "CXX=${{matrix.compiler.cxx}}" >> $GITHUB_ENV
 
     - name: Build YCM
-      working-directory: ${{github.workspace}}/.deps/ycm/build
       run: |
-        cmake ..
-        cmake --build .
-        sudo cmake --build . --target install
+        cmake -S .deps/ycm -B .deps/ycm/build
+        cmake --build .deps/ycm/build
+        sudo cmake --install .deps/ycm/build
 
     - name: Build YARP
-      working-directory: ${{github.workspace}}/.deps/yarp/build
       run: |
-        cmake .. $CMAKE_COMPILER $CMAKE_CCACHE_LAUNCHER -DSKIP_ACE=ON -DYARP_DISABLE_VERSION_SOURCE=ON
-        cmake --build . --parallel
-        sudo cmake --build . --target install
+        cmake -S .deps/yarp -B .deps/yarp/build $CMAKE_CCACHE_LAUNCHER -DSKIP_ACE=ON -DYARP_DISABLE_VERSION_SOURCE=ON
+        cmake --build .deps/yarp/build --parallel
+        sudo cmake --install .deps/yarp/build
 
     - name: Build speech
-      working-directory: ${{github.workspace}}/.deps/speech/build
       run: |
-        cmake .. $CMAKE_COMPILER $CMAKE_CCACHE_LAUNCHER
-        cmake --build . --parallel
-        sudo cmake --build . --target install
+        cmake -S .deps/speech -B .deps/speech/build $CMAKE_CCACHE_LAUNCHER
+        cmake --build .deps/speech/build --parallel
+        sudo cmake --install .deps/speech/build
 
-    - name: Build teo-follow-me
-      working-directory: ${{github.workspace}}/build
-      run: |
-        cmake .. $CMAKE_COMPILER $CMAKE_CCACHE_LAUNCHER
-        cmake --build .
-        sudo cmake --build . --target install
-        sudo ldconfig
+    - name: Configure teo-follow-me
+      run: cmake -S . -B build $CMAKE_CCACHE_LAUNCHER
+
+    - name: Compile teo-follow-me
+      run: cmake --build build
+
+    - name: Install teo-follow-me
+      run: sudo cmake --install build && sudo ldconfig
 
     - name: Uninstall teo-follow-me
-      working-directory: ${{github.workspace}}/build
-      run: sudo cmake --build . --target uninstall
+      run: sudo cmake --build build --target uninstall

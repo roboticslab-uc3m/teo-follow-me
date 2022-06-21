@@ -4,6 +4,7 @@
 
 #include <cmath> // std::abs, std::copysign
 
+#include <array>
 #include <vector>
 
 #include <yarp/os/LogStream.h>
@@ -17,6 +18,8 @@ constexpr auto DEFAULT_REF_SPEED = 30.0;
 constexpr auto DEFAULT_REF_ACCELERATION = 30.0;
 constexpr auto DETECTION_DEADBAND = 0.03; // [m]
 constexpr auto RELATIVE_INCREMENT = 2.0; // [deg]
+
+constexpr std::array<double, 2> headZeros {0.0, 0.0};
 
 bool FollowMeHeadExecution::configure(yarp::os::ResourceFinder &rf)
 {
@@ -48,19 +51,19 @@ bool FollowMeHeadExecution::configure(yarp::os::ResourceFinder &rf)
         return false;
     }
 
-    if (!iControlMode->setControlModes(std::vector<int>(2, VOCAB_CM_POSITION).data()))
+    if (!iControlMode->setControlModes(std::vector(2, VOCAB_CM_POSITION).data()))
     {
         yError() << "Failed to set position control mode";
         return false;
     }
 
-    if (!iPositionControl->setRefSpeeds(std::vector<double>(2, DEFAULT_REF_SPEED).data()))
+    if (!iPositionControl->setRefSpeeds(std::vector(2, DEFAULT_REF_SPEED).data()))
     {
         yError() << "Failed to set reference speeds";
         return false;
     }
 
-    if (!iPositionControl->setRefAccelerations(std::vector<double>(2, DEFAULT_REF_ACCELERATION).data()))
+    if (!iPositionControl->setRefAccelerations(std::vector(2, DEFAULT_REF_ACCELERATION).data()))
     {
         yError() << "Failed to set reference accelerations";
         return false;
@@ -166,7 +169,6 @@ void FollowMeHeadExecution::disableFollowing()
 {
     yInfo() << "Received stop following signal, moving to home position";
     isFollowing = false;
-    static const std::vector<double> headZeros(2, 0.0);
 
     if (!iPositionControl->positionMove(headZeros.data()))
     {
