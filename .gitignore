@@ -33,3 +33,9 @@ CMakeLists.txt.user
 
 # Doxygen
 /doc/html/
+
+# IDEs
+/.project
+/.cproject
+/.vs/
+/.vscode/
