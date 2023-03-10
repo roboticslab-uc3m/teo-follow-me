@@ -113,7 +113,7 @@ double FollowMeArmExecution::getPeriod()
 bool FollowMeArmExecution::updateModule()
 {
     bool isMotionDone = checkMotionDone();
-    std::unique_lock<std::mutex> lock(actionMutex);
+    std::unique_lock lock(actionMutex);
 
     yDebugThrottle(1.0) << "Current action:" << getStateDescription(currentState);
 
@@ -201,7 +201,7 @@ bool FollowMeArmExecution::stop()
     yInfo() << "Received stop command";
 
     {
-        std::lock_guard<std::mutex> lock(actionMutex);
+        std::lock_guard lock(actionMutex);
         currentState = state::REST;
         currentSetpoints.clear();
         hasNewSetpoints = false;
@@ -220,7 +220,7 @@ void FollowMeArmExecution::registerSetpoints(state newState, std::initializer_li
 {
     yInfo() << "Registered new action:" << getStateDescription(newState);
 
-    std::lock_guard<std::mutex> lock(actionMutex);
+    std::lock_guard lock(actionMutex);
     currentState = newState;
     currentSetpoints.clear();
     currentSetpoints.insert(currentSetpoints.end(), setpoints);
