@@ -13,11 +13,11 @@
 #include <yarp/os/RpcClient.h>
 #include <yarp/os/Thread.h>
 
-#include <TextToSpeechIDL.h>
-#include <SpeechRecognitionIDL.h>
+#include <SpeechSynthesis.h>
+#include <SpeechRecognition.h>
 
-#include "FollowMeHeadCommandsIDL.h"
-#include "FollowMeArmCommandsIDL.h"
+#include "FollowMeHeadCommands.h"
+#include "FollowMeArmCommands.h"
 
 namespace roboticslab
 {
@@ -53,10 +53,10 @@ private:
     std::string asrListenAndWait();
     std::string asrListenAndLinger();
 
-    FollowMeArmCommandsIDL armCommander;
-    FollowMeHeadCommandsIDL headCommander;
-    TextToSpeechIDL tts;
-    SpeechRecognitionIDL asr;
+    FollowMeArmCommands armCommander;
+    FollowMeHeadCommands headCommander;
+    SpeechSynthesis tts;
+    SpeechRecognition asr;
 
     yarp::os::BufferedPort<yarp::os::Bottle> inAsrPort;
     yarp::os::RpcClient ttsClient;

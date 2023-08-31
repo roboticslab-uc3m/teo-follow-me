@@ -15,7 +15,7 @@
 #include <yarp/dev/IPositionControl.h>
 #include <yarp/dev/PolyDriver.h>
 
-#include "FollowMeArmCommandsIDL.h"
+#include "FollowMeArmCommands.h"
 
 namespace roboticslab
 {
@@ -25,7 +25,7 @@ namespace roboticslab
  * @brief Arm Execution Core.
  */
 class FollowMeArmExecution : public yarp::os::RFModule,
-                             public FollowMeArmCommandsIDL
+                             public FollowMeArmCommands
 {
 public:
     using setpoints_arm_t = std::array<double, 6>;

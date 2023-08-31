@@ -1,6 +1,6 @@
 namespace yarp roboticslab
 
-service FollowMeHeadCommandsIDL
+service FollowMeHeadCommands
 {
     oneway void enableFollowing();
     oneway void disableFollowing();
@@ -8,7 +8,7 @@ service FollowMeHeadCommandsIDL
     bool stop();
 }
 
-service FollowMeArmCommandsIDL
+service FollowMeArmCommands
 {
     oneway void doGreet();
     oneway void doSignalLeft();

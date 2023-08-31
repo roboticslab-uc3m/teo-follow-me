@@ -16,7 +16,7 @@
 #include <yarp/dev/IPositionControl.h>
 #include <yarp/dev/PolyDriver.h>
 
-#include "FollowMeHeadCommandsIDL.h"
+#include "FollowMeHeadCommands.h"
 
 namespace roboticslab
 {
@@ -27,7 +27,7 @@ namespace roboticslab
  */
 class FollowMeHeadExecution : public yarp::os::RFModule,
                               public yarp::os::TypedReaderCallback<yarp::os::Bottle>,
-                              public FollowMeHeadCommandsIDL
+                              public FollowMeHeadCommands
 {
 public:
     ~FollowMeHeadExecution()
