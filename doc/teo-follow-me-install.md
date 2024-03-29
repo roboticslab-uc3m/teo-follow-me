@@ -3,7 +3,7 @@
 First install the dependencies:
 - [Install CMake 3.16+](https://github.com/roboticslab-uc3m/installation-guides/blob/master/docs/install-cmake.md)
 - [Install YCM 0.11+](https://github.com/roboticslab-uc3m/installation-guides/blob/master/docs/install-ycm.md)
-- [Install YARP 3.6+](https://github.com/roboticslab-uc3m/installation-guides/blob/master/docs/install-yarp.md)
+- [Install YARP 3.8+](https://github.com/roboticslab-uc3m/installation-guides/blob/master/docs/install-yarp.md)
 
 ### Install teo-follow-me demo on Ubuntu
 
