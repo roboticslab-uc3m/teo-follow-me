@@ -1,8 +1,8 @@
 # Authors: see AUTHORS.md at project root.
 # CopyPolicy: released under the terms of the LGPLv2.1, see LICENSE at project root.
-# URL: https://github.com/roboticslab-uc3m/follow-me
+# URL: https://github.com/roboticslab-uc3m/teo-follow-me
 
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.19...3.28)
 
 project(TEO_FOLLOW_ME LANGUAGES CXX)
 
@@ -28,7 +28,7 @@ endif()
 
 # Hard dependencies.
 find_package(YCM 0.11 REQUIRED)
-find_package(YARP 3.8 REQUIRED COMPONENTS os dev idl_tools)
+find_package(YARP 3.10 REQUIRED COMPONENTS os dev idl_tools)
 
 # Soft dependencies.
 find_package(ROBOTICSLAB_SPEECH QUIET)
