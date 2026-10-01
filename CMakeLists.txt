@@ -24,7 +24,11 @@ endif()
 
 # Hard dependencies.
 find_package(YCM 0.11 REQUIRED)
-find_package(YARP 3.11 REQUIRED COMPONENTS os dev idl_tools)
+set(_yarp_components os dev idl_tools)
+find_package(YARP 3.12 QUIET COMPONENTS ${_yarp_components})
+if(NOT YARP_FOUND)
+    find_package(YARP 4.0 REQUIRED COMPONENTS ${_yarp_components})
+endif()
 
 # Soft dependencies.
 find_package(ROBOTICSLAB_SPEECH QUIET)

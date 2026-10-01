@@ -60,8 +60,8 @@ private:
     state currentState {state::REST};
 
     yarp::dev::PolyDriver armsDevice;
-    yarp::dev::IControlMode * armsIControlMode;
-    yarp::dev::IPositionControl * armsIPositionControl;
+    yarp::dev::IControlMode * armsIControlMode {nullptr};
+    yarp::dev::IPositionControl * armsIPositionControl {nullptr};
 
     yarp::os::RpcServer serverPort;
 };

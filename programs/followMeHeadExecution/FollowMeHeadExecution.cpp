@@ -7,6 +7,8 @@
 #include <array>
 #include <vector>
 
+#include <yarp/conf/version.h>
+
 #include <yarp/os/LogStream.h>
 #include <yarp/os/Property.h>
 
@@ -51,19 +53,31 @@ bool FollowMeHeadExecution::configure(yarp::os::ResourceFinder &rf)
         return false;
     }
 
+#if YARP_VERSION_COMPARE(>=, 4, 0, 0)
+    if (!iControlMode->setControlModes(std::vector(2, yarp::dev::SelectableControlModeEnum::VOCAB_CM_POSITION)))
+#else
     if (!iControlMode->setControlModes(std::vector(2, VOCAB_CM_POSITION).data()))
+#endif
     {
         yError() << "Failed to set position control mode";
         return false;
     }
 
+#if YARP_VERSION_COMPARE(>=, 4, 0, 0)
+    if (!iPositionControl->setTrajSpeeds(std::vector(2, DEFAULT_REF_SPEED).data()))
+#else
     if (!iPositionControl->setRefSpeeds(std::vector(2, DEFAULT_REF_SPEED).data()))
+#endif
     {
         yError() << "Failed to set reference speeds";
         return false;
     }
 
+#if YARP_VERSION_COMPARE(>=, 4, 0, 0)
+    if (!iPositionControl->setTrajAccelerations(std::vector(2, DEFAULT_REF_ACCELERATION).data()))
+#else
     if (!iPositionControl->setRefAccelerations(std::vector(2, DEFAULT_REF_ACCELERATION).data()))
+#endif
     {
         yError() << "Failed to set reference accelerations";
         return false;

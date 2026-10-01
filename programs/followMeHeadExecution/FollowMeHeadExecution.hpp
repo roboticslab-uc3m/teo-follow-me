@@ -51,9 +51,9 @@ private:
     yarp::os::BufferedPort<yarp::os::Bottle> detectionPort;
 
     yarp::dev::PolyDriver headDevice;
-    yarp::dev::IControlMode * iControlMode;
-    yarp::dev::IEncoders * iEncoders;
-    yarp::dev::IPositionControl * iPositionControl;
+    yarp::dev::IControlMode * iControlMode {nullptr};
+    yarp::dev::IEncoders * iEncoders {nullptr};
+    yarp::dev::IPositionControl * iPositionControl {nullptr};
 
     std::atomic_bool isFollowing {false};
 };

@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+#include <yarp/conf/version.h>
+
 #include <yarp/os/LogStream.h>
 #include <yarp/os/Property.h>
 
@@ -64,19 +66,31 @@ bool FollowMeArmExecution::configure(yarp::os::ResourceFinder & rf)
         return false;
     }
 
+#if YARP_VERSION_COMPARE(>=, 4, 0, 0)
+    if (!armsIControlMode->setControlModes(std::vector(axesNames.size(), yarp::dev::SelectableControlModeEnum::VOCAB_CM_POSITION)))
+#else
     if (!armsIControlMode->setControlModes(std::vector(axesNames.size(), VOCAB_CM_POSITION).data()))
+#endif
     {
         yError() << "Failed to set position control mode for arms";
         return false;
     }
 
+#if YARP_VERSION_COMPARE(>=, 4, 0, 0)
+    if (!armsIPositionControl->setTrajSpeeds(std::vector(axesNames.size(), DEFAULT_REF_SPEED).data()))
+#else
     if (!armsIPositionControl->setRefSpeeds(std::vector(axesNames.size(), DEFAULT_REF_SPEED).data()))
+#endif
     {
         yError() << "Failed to set reference speeds for arms";
         return false;
     }
 
+#if YARP_VERSION_COMPARE(>=, 4, 0, 0)
+    if (!armsIPositionControl->setTrajAccelerations(std::vector(axesNames.size(), DEFAULT_REF_ACCELERATION).data()))
+#else
     if (!armsIPositionControl->setRefAccelerations(std::vector(axesNames.size(), DEFAULT_REF_ACCELERATION).data()))
+#endif
     {
         yError() << "Failed to set reference accelerations for arms";
         return false;
@@ -231,7 +245,11 @@ bool FollowMeArmExecution::checkMotionDone()
 {
     bool motionDone = true;
 
+#if YARP_VERSION_COMPARE(>=, 4, 0, 0)
+    if (!armsIPositionControl->checkMotionDone(motionDone))
+#else
     if (!armsIPositionControl->checkMotionDone(&motionDone))
+#endif
     {
         yWarning() << "Unable to check motion state of arms";
     }
